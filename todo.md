@@ -1,0 +1,60 @@
+# Wealth Wellness Hub — TODO
+
+## Phase 1: Setup
+- [x] Initialize project scaffold
+- [x] Write design.md
+- [x] Generate app logo and update branding
+- [x] Update theme colors (navy/emerald palette)
+
+## Phase 2: Core Structure
+- [x] Update tab navigation (Dashboard, Banks, Investments, Loans, Insurance)
+- [x] Add all icon mappings to icon-symbol.tsx
+- [x] Create shared data layer (AsyncStorage-backed stores)
+- [x] Create shared UI components (StatCard, SectionHeader, EmptyState, ProgressBar)
+- [x] Create data types and interfaces
+- [x] AppDataContext provider
+
+## Phase 3: Dashboard
+- [x] Wealth Wellness Score gauge
+- [x] Total Net Worth display
+- [x] Asset allocation horizontal bar
+- [x] Financial health metric cards (Diversification, Liquidity, Debt-to-Asset, Credit Score)
+- [x] AI Recommendations cards
+
+## Phase 4: Banks Module
+- [x] Bank accounts list screen
+- [x] Add/edit bank account form
+- [x] Credit score section (CBS-style breakdown with grade)
+- [x] Loan capacity calculator (TDSR-based)
+- [x] Monthly interest earned summary
+- [x] Loan summary per bank
+
+## Phase 5: Investments Module
+- [x] Investment portfolio overview with P&L
+- [x] Pie chart by asset class (react-native-svg)
+- [x] Asset class expandable cards
+- [x] Holdings list per asset class (stocks, crypto, ETFs, bonds, futures, options, REITs, commodities)
+- [x] Add/edit/delete holding form
+- [x] AI portfolio suggestions panel
+
+## Phase 6: Loans Module
+- [x] Loans overview with total outstanding
+- [x] Aggregated outstanding balances table (CBS format, matching provided image)
+- [x] 6-month historical trend chart
+- [x] Loan cards with instalment/months/interest/progress bar
+- [x] Add/edit/delete loan form
+- [x] Security type classification (Secured / Unsecured IB / Unsecured NIB / Exempted)
+
+## Phase 7: Insurance Module
+- [x] Insurance policies list with expiry tracking
+- [x] Add/edit/delete policy form
+- [x] PDF import via document picker (persistent storage)
+- [x] Coverage breakdown by type
+- [x] Policy status badges (Active / Expiring Soon / Expired)
+
+## Phase 8: Polish & Delivery
+- [x] App logo generated and applied
+- [x] All screens reviewed for consistency
+- [x] Empty states for all lists
+- [x] Unit tests for all financial calculations (13 tests passing)
+- [x] Checkpoint saved

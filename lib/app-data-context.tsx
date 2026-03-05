@@ -1,0 +1,148 @@
+import React, { createContext, useContext, useEffect, useState, useCallback } from 'react';
+import { AppData, BankAccount, Loan, Holding, InsurancePolicy, CreditScoreData } from './types';
+import { loadAppData, saveAppData, resetAppData } from './store';
+
+interface AppDataContextValue {
+  data: AppData;
+  isLoading: boolean;
+  // Bank accounts
+  addBankAccount: (account: Omit<BankAccount, 'id' | 'createdAt'>) => Promise<void>;
+  updateBankAccount: (id: string, updates: Partial<BankAccount>) => Promise<void>;
+  deleteBankAccount: (id: string) => Promise<void>;
+  // Loans
+  addLoan: (loan: Omit<Loan, 'id'>) => Promise<void>;
+  updateLoan: (id: string, updates: Partial<Loan>) => Promise<void>;
+  deleteLoan: (id: string) => Promise<void>;
+  // Holdings
+  addHolding: (holding: Omit<Holding, 'id'>) => Promise<void>;
+  updateHolding: (id: string, updates: Partial<Holding>) => Promise<void>;
+  deleteHolding: (id: string) => Promise<void>;
+  // Insurance
+  addInsurancePolicy: (policy: Omit<InsurancePolicy, 'id'>) => Promise<void>;
+  updateInsurancePolicy: (id: string, updates: Partial<InsurancePolicy>) => Promise<void>;
+  deleteInsurancePolicy: (id: string) => Promise<void>;
+  // Credit score
+  updateCreditScore: (score: Partial<CreditScoreData>) => Promise<void>;
+  // Utility
+  refreshData: () => Promise<void>;
+  resetData: () => Promise<void>;
+}
+
+const AppDataContext = createContext<AppDataContextValue | null>(null);
+
+function generateId(): string {
+  return `${Date.now()}_${Math.random().toString(36).slice(2, 9)}`;
+}
+
+export function AppDataProvider({ children }: { children: React.ReactNode }) {
+  const [data, setData] = useState<AppData>({
+    bankAccounts: [],
+    loans: [],
+    holdings: [],
+    insurancePolicies: [],
+    creditScore: { score: 1825, paymentHistory: 88, amountsOwed: 62, lengthOfCredit: 75, creditMix: 80, newCredit: 70, lastUpdated: '' },
+  });
+  const [isLoading, setIsLoading] = useState(true);
+
+  const refreshData = useCallback(async () => {
+    setIsLoading(true);
+    const loaded = await loadAppData();
+    setData(loaded);
+    setIsLoading(false);
+  }, []);
+
+  useEffect(() => {
+    refreshData();
+  }, [refreshData]);
+
+  const persist = useCallback(async (newData: AppData) => {
+    setData(newData);
+    await saveAppData(newData);
+  }, []);
+
+  // Bank accounts
+  const addBankAccount = useCallback(async (account: Omit<BankAccount, 'id' | 'createdAt'>) => {
+    const newAccount: BankAccount = { ...account, id: generateId(), createdAt: new Date().toISOString().split('T')[0] };
+    await persist({ ...data, bankAccounts: [...data.bankAccounts, newAccount] });
+  }, [data, persist]);
+
+  const updateBankAccount = useCallback(async (id: string, updates: Partial<BankAccount>) => {
+    await persist({ ...data, bankAccounts: data.bankAccounts.map(a => a.id === id ? { ...a, ...updates } : a) });
+  }, [data, persist]);
+
+  const deleteBankAccount = useCallback(async (id: string) => {
+    await persist({ ...data, bankAccounts: data.bankAccounts.filter(a => a.id !== id) });
+  }, [data, persist]);
+
+  // Loans
+  const addLoan = useCallback(async (loan: Omit<Loan, 'id'>) => {
+    const newLoan: Loan = { ...loan, id: generateId() };
+    await persist({ ...data, loans: [...data.loans, newLoan] });
+  }, [data, persist]);
+
+  const updateLoan = useCallback(async (id: string, updates: Partial<Loan>) => {
+    await persist({ ...data, loans: data.loans.map(l => l.id === id ? { ...l, ...updates } : l) });
+  }, [data, persist]);
+
+  const deleteLoan = useCallback(async (id: string) => {
+    await persist({ ...data, loans: data.loans.filter(l => l.id !== id) });
+  }, [data, persist]);
+
+  // Holdings
+  const addHolding = useCallback(async (holding: Omit<Holding, 'id'>) => {
+    const newHolding: Holding = { ...holding, id: generateId() };
+    await persist({ ...data, holdings: [...data.holdings, newHolding] });
+  }, [data, persist]);
+
+  const updateHolding = useCallback(async (id: string, updates: Partial<Holding>) => {
+    await persist({ ...data, holdings: data.holdings.map(h => h.id === id ? { ...h, ...updates } : h) });
+  }, [data, persist]);
+
+  const deleteHolding = useCallback(async (id: string) => {
+    await persist({ ...data, holdings: data.holdings.filter(h => h.id !== id) });
+  }, [data, persist]);
+
+  // Insurance
+  const addInsurancePolicy = useCallback(async (policy: Omit<InsurancePolicy, 'id'>) => {
+    const newPolicy: InsurancePolicy = { ...policy, id: generateId() };
+    await persist({ ...data, insurancePolicies: [...data.insurancePolicies, newPolicy] });
+  }, [data, persist]);
+
+  const updateInsurancePolicy = useCallback(async (id: string, updates: Partial<InsurancePolicy>) => {
+    await persist({ ...data, insurancePolicies: data.insurancePolicies.map(p => p.id === id ? { ...p, ...updates } : p) });
+  }, [data, persist]);
+
+  const deleteInsurancePolicy = useCallback(async (id: string) => {
+    await persist({ ...data, insurancePolicies: data.insurancePolicies.filter(p => p.id !== id) });
+  }, [data, persist]);
+
+  // Credit score
+  const updateCreditScore = useCallback(async (score: Partial<CreditScoreData>) => {
+    await persist({ ...data, creditScore: { ...data.creditScore, ...score } });
+  }, [data, persist]);
+
+  const resetData = useCallback(async () => {
+    const fresh = await resetAppData();
+    setData(fresh);
+  }, []);
+
+  return (
+    <AppDataContext.Provider value={{
+      data, isLoading,
+      addBankAccount, updateBankAccount, deleteBankAccount,
+      addLoan, updateLoan, deleteLoan,
+      addHolding, updateHolding, deleteHolding,
+      addInsurancePolicy, updateInsurancePolicy, deleteInsurancePolicy,
+      updateCreditScore,
+      refreshData, resetData,
+    }}>
+      {children}
+    </AppDataContext.Provider>
+  );
+}
+
+export function useAppData(): AppDataContextValue {
+  const ctx = useContext(AppDataContext);
+  if (!ctx) throw new Error('useAppData must be used within AppDataProvider');
+  return ctx;
+}
