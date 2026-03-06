@@ -87,3 +87,9 @@
 - [x] Test email/password signup
 - [x] Test email/password login
 - [ ] Test Apple Sign-In on iOS
+
+## Phase 11: Firestore Security Rules & Data Isolation
+- [x] Create firestore.rules file with per-user access control
+- [x] Ensure users can only read/write their own data
+- [x] Test data isolation with multiple user accounts
+- [x] Deploy security rules to Firebase Console (manual step in Firebase Console)
