@@ -1,8 +1,8 @@
 /** @type {const} */
 const themeColors = {
   // Institutional dark backgrounds
-  primary: { light: '#D4AF37', dark: '#D4AF37' },
-  accent: { light: '#D4AF37', dark: '#D4AF37' },
+  primary: { light: '#817F82', dark: '#817F82' },
+  accent: { light: '#817F82', dark: '#817F82' },
   background: { light: '#0B0B0B', dark: '#0B0B0B' },
   surface: { light: '#1A1A1A', dark: '#1A1A1A' },
   
@@ -23,11 +23,11 @@ const themeColors = {
   
   // Additional institutional colors
   card: { light: '#1A1A1A', dark: '#1A1A1A' },
-  tint: { light: '#D4AF37', dark: '#D4AF37' },
+  tint: { light: '#817F82', dark: '#817F82' },
   
   // Hover and interactive states
   hover: { light: '#252525', dark: '#252525' },
-  active: { light: '#D4AF37', dark: '#D4AF37' },
+  active: { light: '#817F82', dark: '#817F82' },
 };
 
 module.exports = { themeColors };
