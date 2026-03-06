@@ -198,16 +198,7 @@ export default function DashboardScreen() {
         contentContainerStyle={{ paddingBottom: 32 }}
         showsVerticalScrollIndicator={false}
       >
-        {/* Header */}
-        <View style={[styles.header, { backgroundColor: colors.primary }]}>
-          <View>
-            <Text style={styles.greeting}>{greeting}</Text>
-            <Text style={styles.headerDate}>{dateStr}</Text>
-          </View>
-          <View style={[styles.headerBadge, { backgroundColor: 'rgba(255,255,255,0.15)' }]}>
-            <IconSymbol name="bell.fill" size={20} color="#FFFFFF" />
-          </View>
-        </View>
+
 
         <View style={styles.content}>
           {/* Net Worth + Wellness Score */}
