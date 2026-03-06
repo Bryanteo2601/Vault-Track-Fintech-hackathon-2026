@@ -1,17 +1,33 @@
 /** @type {const} */
 const themeColors = {
-  primary: { light: '#1A3C5E', dark: '#2A5C8E' },
-  accent: { light: '#00C896', dark: '#00E0A8' },
-  background: { light: '#F0F4F8', dark: '#0D1B2A' },
-  surface: { light: '#FFFFFF', dark: '#1A2B3C' },
-  foreground: { light: '#11181C', dark: '#ECEDEE' },
-  muted: { light: '#64748B', dark: '#94A3B8' },
-  border: { light: '#E2E8F0', dark: '#243447' },
-  success: { light: '#00C896', dark: '#00E0A8' },
-  warning: { light: '#F59E0B', dark: '#FBBF24' },
-  error: { light: '#EF4444', dark: '#F87171' },
-  card: { light: '#FFFFFF', dark: '#1E3248' },
-  tint: { light: '#1A3C5E', dark: '#00C896' },
+  // Institutional dark backgrounds
+  primary: { light: '#2F6FED', dark: '#2F6FED' },
+  accent: { light: '#C9A227', dark: '#C9A227' },
+  background: { light: '#0B0B0B', dark: '#0B0B0B' },
+  surface: { light: '#1A1A1A', dark: '#1A1A1A' },
+  
+  // Secondary panels and elevated surfaces
+  panel: { light: '#151515', dark: '#151515' },
+  
+  // Text colors for institutional clarity
+  foreground: { light: '#E5E5E5', dark: '#E5E5E5' },
+  muted: { light: '#A0A0A0', dark: '#A0A0A0' },
+  
+  // Borders - subtle but defined
+  border: { light: '#2A2A2A', dark: '#2A2A2A' },
+  
+  // Status colors - institutional style
+  success: { light: '#26A69A', dark: '#26A69A' },
+  warning: { light: '#FFA726', dark: '#FFA726' },
+  error: { light: '#EF5350', dark: '#EF5350' },
+  
+  // Additional institutional colors
+  card: { light: '#1A1A1A', dark: '#1A1A1A' },
+  tint: { light: '#2F6FED', dark: '#2F6FED' },
+  
+  // Hover and interactive states
+  hover: { light: '#252525', dark: '#252525' },
+  active: { light: '#2F6FED', dark: '#2F6FED' },
 };
 
 module.exports = { themeColors };

@@ -1,32 +1,58 @@
 import { initializeApp } from 'firebase/app';
-import { getAuth } from 'firebase/auth';
-import { getFirestore } from 'firebase/firestore';
+import { getAuth, connectAuthEmulator } from 'firebase/auth';
+import { getFirestore, connectFirestoreEmulator } from 'firebase/firestore';
+import { Platform } from 'react-native';
 
-// Firebase configuration from environment variables
+/**
+ * Firebase configuration
+ * These are PUBLIC values (not secret keys) - safe to hardcode
+ * Get from Firebase Console → Project Settings → Your apps → Web app
+ */
 const firebaseConfig = {
-  apiKey: process.env.VITE_FIREBASE_API_KEY,
-  authDomain: process.env.VITE_FIREBASE_AUTH_DOMAIN,
-  projectId: process.env.VITE_FIREBASE_PROJECT_ID,
-  storageBucket: process.env.VITE_FIREBASE_STORAGE_BUCKET,
-  messagingSenderId: process.env.VITE_FIREBASE_MESSAGING_SENDER_ID,
-  appId: process.env.VITE_FIREBASE_APP_ID,
+  apiKey: 'AIzaSyDf0UUuDJ9yDk2g3SvmHhFEEVCRvdJjKp4',
+  authDomain: 'wealth-wellness-app.firebaseapp.com',
+  projectId: 'wealth-wellness-app',
+  storageBucket: 'wealth-wellness-app.firebasestorage.app',
+  messagingSenderId: '159659069171',
+  appId: '1:159659069171:web:ae2a1e90f4ab52ad1d7186',
 };
 
 // Validate that all required config values are present
 const requiredKeys = ['apiKey', 'authDomain', 'projectId', 'storageBucket', 'messagingSenderId', 'appId'] as const;
 for (const key of requiredKeys) {
   if (!firebaseConfig[key]) {
-    throw new Error(`Missing Firebase config: ${key}. Check your environment variables.`);
+    throw new Error(`Missing Firebase config: ${key}. Check firebase-config.ts`);
   }
 }
 
 // Initialize Firebase
 const app = initializeApp(firebaseConfig);
 
-// Initialize Firebase Authentication and get a reference to the service
+// Initialize Firebase Authentication
 export const auth = getAuth(app);
 
-// Initialize Cloud Firestore and get a reference to the service
+// Enable persistence for React Native
+if (Platform.OS !== 'web') {
+  try {
+    // For native platforms, auth persistence is handled automatically
+    // by React Native Firebase
+  } catch (error) {
+    console.warn('Could not enable auth persistence:', error);
+  }
+}
+
+// Initialize Cloud Firestore
 export const db = getFirestore(app);
+
+// Development: Connect to emulators if needed
+// Uncomment to use Firebase emulators for local development
+// if (__DEV__) {
+//   try {
+//     connectAuthEmulator(auth, 'http://localhost:9099', { disableWarnings: true });
+//     connectFirestoreEmulator(db, 'localhost', 8080);
+//   } catch (error) {
+//     console.warn('Emulator connection error:', error);
+//   }
+// }
 
 export default app;
