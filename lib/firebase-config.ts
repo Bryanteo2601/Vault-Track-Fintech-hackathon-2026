@@ -1,6 +1,6 @@
-import { initializeApp } from 'firebase/app';
-import { getAuth, connectAuthEmulator } from 'firebase/auth';
-import { getFirestore, connectFirestoreEmulator } from 'firebase/firestore';
+import { initializeApp, getApp, getApps } from 'firebase/app';
+import { initializeAuth, browserLocalPersistence, getAuth } from 'firebase/auth';
+import { getFirestore } from 'firebase/firestore';
 import { Platform } from 'react-native';
 
 /**
@@ -21,38 +21,35 @@ const firebaseConfig = {
 const requiredKeys = ['apiKey', 'authDomain', 'projectId', 'storageBucket', 'messagingSenderId', 'appId'] as const;
 for (const key of requiredKeys) {
   if (!firebaseConfig[key]) {
-    throw new Error(`Missing Firebase config: ${key}. Check firebase-config.ts`);
+    console.error(`Missing Firebase config: ${key}. Check firebase-config.ts`);
   }
 }
 
-// Initialize Firebase
-const app = initializeApp(firebaseConfig);
+let app: any = null;
+let auth: any = null;
+let db: any = null;
 
-// Initialize Firebase Authentication
-export const auth = getAuth(app);
-
-// Enable persistence for React Native
-if (Platform.OS !== 'web') {
-  try {
-    // For native platforms, auth persistence is handled automatically
-    // by React Native Firebase
-  } catch (error) {
-    console.warn('Could not enable auth persistence:', error);
+try {
+  // Initialize Firebase - use existing app if already initialized
+  if (getApps().length === 0) {
+    app = initializeApp(firebaseConfig);
+  } else {
+    app = getApp();
   }
+
+  // Initialize Firebase Authentication with persistence
+  // For React Native/Expo, use browserLocalPersistence which works across platforms
+  auth = initializeAuth(app, {
+    persistence: browserLocalPersistence,
+  });
+
+  // Initialize Cloud Firestore
+  db = getFirestore(app);
+
+  console.log('✅ Firebase initialized successfully');
+} catch (error) {
+  console.error('❌ Firebase initialization error:', error);
 }
 
-// Initialize Cloud Firestore
-export const db = getFirestore(app);
-
-// Development: Connect to emulators if needed
-// Uncomment to use Firebase emulators for local development
-// if (__DEV__) {
-//   try {
-//     connectAuthEmulator(auth, 'http://localhost:9099', { disableWarnings: true });
-//     connectFirestoreEmulator(db, 'localhost', 8080);
-//   } catch (error) {
-//     console.warn('Emulator connection error:', error);
-//   }
-// }
-
+export { auth, db, app };
 export default app;

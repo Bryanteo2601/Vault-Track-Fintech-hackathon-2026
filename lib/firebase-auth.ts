@@ -57,11 +57,10 @@ export async function signUp(
 
     // Create Firestore user document
     const userDocRef = doc(db, 'users', user.uid);
-    const userData: FirebaseUser = {
+    const userData: any = {
       uid: user.uid,
       email: user.email || '',
       displayName,
-      photoURL: user.photoURL || undefined,
       createdAt: serverTimestamp(),
       updatedAt: serverTimestamp(),
       bankAccounts: [],
@@ -78,6 +77,11 @@ export async function signUp(
         lastUpdated: new Date().toISOString(),
       },
     };
+
+    // Only add photoURL if it exists (avoid undefined values in Firestore)
+    if (user.photoURL) {
+      userData.photoURL = user.photoURL;
+    }
 
     await setDoc(userDocRef, userData);
 
