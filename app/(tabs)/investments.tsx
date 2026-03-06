@@ -2,7 +2,6 @@ import React, { useState, useMemo } from 'react';
 import { ScrollView, View, Text, StyleSheet, Pressable, Modal,
   TextInput, Alert, KeyboardAvoidingView, Platform, FlatList
 } from 'react-native';
-import { useRouter } from 'expo-router';
 import { ScreenContainer } from '@/components/screen-container';
 import { useAppColors } from '@/hooks/use-app-colors';
 import { useAppData } from '@/lib/app-data-context';
@@ -232,7 +231,6 @@ function HoldingModal({ visible, holding, onClose, onSave }: {
 
 // ─── Main Investments Screen ──────────────────────────────────────────────────
 export default function InvestmentsScreen() {
-  const router = useRouter();
   const colors = useAppColors();
   const { data, addHolding, updateHolding, deleteHolding } = useAppData();
   const [modalVisible, setModalVisible] = useState(false);
@@ -310,16 +308,10 @@ export default function InvestmentsScreen() {
             <Text style={styles.headerTitle}>Investment Portfolio</Text>
             <Text style={styles.headerSub}>{data.holdings.length} holdings across {Object.keys(portfolioByClass).length} asset classes</Text>
           </View>
-          <View style={{ flexDirection: 'row', gap: 8 }}>
-            <Pressable onPress={() => router.push('/stock-screener')}
-              style={({ pressed }) => [styles.addBtn, pressed && { opacity: 0.8 }]}>
-              <Text style={{ color: '#FFFFFF', fontSize: 18 }}>🔍</Text>
-            </Pressable>
-            <Pressable onPress={() => { setEditingHolding(undefined); setModalVisible(true); }}
-              style={({ pressed }) => [styles.addBtn, pressed && { opacity: 0.8 }]}>
-              <IconSymbol name="plus" size={22} color="#FFFFFF" />
-            </Pressable>
-          </View>
+          <Pressable onPress={() => { setEditingHolding(undefined); setModalVisible(true); }}
+            style={({ pressed }) => [styles.addBtn, pressed && { opacity: 0.8 }]}>
+            <IconSymbol name="plus" size={22} color="#FFFFFF" />
+          </Pressable>
         </View>
 
         <View style={styles.content}>
