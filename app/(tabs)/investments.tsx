@@ -9,6 +9,7 @@ import { Holding, AssetClass } from '@/lib/types';
 import { formatCurrency, formatPercent, calcPortfolioByAssetClass } from '@/lib/store';
 import { IconSymbol } from '@/components/ui/icon-symbol';
 import Svg, { G, Path, Circle, Text as SvgText } from 'react-native-svg';
+import { useRouter } from 'expo-router';
 
 // ─── Asset Class Config ───────────────────────────────────────────────────────
 const assetClassConfig: Record<AssetClass, { label: string; color: string; icon: string; description: string }> = {
@@ -232,6 +233,7 @@ function HoldingModal({ visible, holding, onClose, onSave }: {
 // ─── Main Investments Screen ──────────────────────────────────────────────────
 export default function InvestmentsScreen() {
   const colors = useAppColors();
+  const router = useRouter();
   const { data, addHolding, updateHolding, deleteHolding } = useAppData();
   const [modalVisible, setModalVisible] = useState(false);
   const [editingHolding, setEditingHolding] = useState<Holding | undefined>();
@@ -333,6 +335,19 @@ export default function InvestmentsScreen() {
               </View>
             </View>
           </View>
+
+          {/* Stress Test Button */}
+          <Pressable
+            onPress={() => router.push('/stress-test' as any)}
+            style={({ pressed }) => [styles.stressTestBtn, { backgroundColor: colors.warning, opacity: pressed ? 0.8 : 1 }]}
+          >
+            <Text style={{ fontSize: 18, marginRight: 8 }}>⚠️</Text>
+            <View style={{ flex: 1 }}>
+              <Text style={{ fontSize: 14, fontWeight: '600', color: '#000' }}>Portfolio Stress Test</Text>
+              <Text style={{ fontSize: 11, color: 'rgba(0,0,0,0.6)' }}>Simulate market scenarios</Text>
+            </View>
+            <IconSymbol name="chevron.right" size={20} color="#000" />
+          </Pressable>
 
           {/* Pie Chart */}
           {pieData.length > 0 && (
@@ -494,6 +509,7 @@ const styles = StyleSheet.create({
   aiContent: { flex: 1 },
   aiTitle: { fontSize: 14, fontWeight: '700', marginBottom: 4 },
   aiDesc: { fontSize: 12, lineHeight: 18 },
+  stressTestBtn: { flexDirection: 'row', alignItems: 'center', gap: 12, borderRadius: 14, padding: 14, marginBottom: 16 },
   // Modal
   modal: { flex: 1 },
   modalHeader: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', padding: 20, paddingBottom: 0 },

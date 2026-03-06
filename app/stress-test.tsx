@@ -1,0 +1,248 @@
+import React, { useMemo, useState } from 'react';
+import { ScrollView, View, Text, StyleSheet, Pressable, Dimensions } from 'react-native';
+import { ScreenContainer } from '@/components/screen-container';
+import { useAppColors } from '@/hooks/use-app-colors';
+import { useRouter } from 'expo-router';
+import { IconSymbol } from '@/components/ui/icon-symbol';
+import {
+  PREDEFINED_SCENARIOS,
+  generateStressTestReport,
+  type StressTestScenario,
+} from '@/lib/stress-test-types';
+
+const { width } = Dimensions.get('window');
+
+export default function StressTestScreen() {
+  const colors = useAppColors();
+  const router = useRouter();
+  const [selectedScenario, setSelectedScenario] = useState<StressTestScenario | null>(null);
+
+  // Sample portfolio data
+  const portfolioData = {
+    totalValue: 500000,
+    assets: {
+      'Stocks': 250000,
+      'Bonds': 100000,
+      'Crypto': 75000,
+      'Real Estate': 75000,
+    },
+  };
+
+  // Generate stress test report
+  const stressReport = useMemo(() => {
+    const scenarios = Object.entries(PREDEFINED_SCENARIOS).map(([key, scenario]) => ({
+      ...scenario,
+      id: key,
+    })) as StressTestScenario[];
+
+    return generateStressTestReport(portfolioData.totalValue, portfolioData.assets, scenarios);
+  }, []);
+
+  const worstCase = stressReport.worstCaseScenario;
+  const bestCase = stressReport.bestCaseScenario;
+
+  const getRiskColor = (riskLevel: string) => {
+    switch (riskLevel) {
+      case 'critical':
+        return colors.error;
+      case 'high':
+        return colors.warning;
+      case 'medium':
+        return '#FFA500';
+      default:
+        return colors.success;
+    }
+  };
+
+  return (
+    <ScreenContainer containerClassName="bg-background">
+      {/* Header */}
+      <View style={{ paddingBottom: 16, borderBottomWidth: 1, borderBottomColor: colors.border, marginBottom: 16 }}>
+        <Pressable onPress={() => router.back()} style={{ flexDirection: 'row', alignItems: 'center', gap: 8, marginBottom: 8 }}>
+          <IconSymbol name="chevron.left" size={24} color={colors.accent} />
+          <Text style={{ fontSize: 16, fontWeight: '600', color: colors.accent }}>Back</Text>
+        </Pressable>
+        <Text style={{ fontSize: 24, fontWeight: '700', color: colors.foreground, marginBottom: 4 }}>Portfolio Stress Test</Text>
+        <Text style={{ fontSize: 12, color: colors.muted }}>Simulate market scenarios and assess portfolio resilience</Text>
+      </View>
+
+      <ScrollView style={{ flex: 1 }} contentContainerStyle={{ paddingBottom: 20 }} showsVerticalScrollIndicator={false}>
+        {/* Portfolio Resilience Score */}
+        <View style={[styles.scoreCard, { backgroundColor: colors.surface, borderColor: colors.border }]}>
+          <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginBottom: 12 }}>
+            <Text style={{ fontSize: 14, fontWeight: '600', color: colors.foreground }}>Portfolio Resilience Score</Text>
+            <Text style={{ fontSize: 28, fontWeight: '700', color: colors.primary }}>
+              {stressReport.portfolioResilience.toFixed(0)}/100
+            </Text>
+          </View>
+          <View style={{ height: 8, backgroundColor: colors.border, borderRadius: 4, overflow: 'hidden' }}>
+            <View
+              style={{
+                height: '100%',
+                width: `${stressReport.portfolioResilience}%`,
+                backgroundColor: stressReport.portfolioResilience > 70 ? colors.success : colors.warning,
+              }}
+            />
+          </View>
+          <Text style={{ fontSize: 11, color: colors.muted, marginTop: 8 }}>
+            {stressReport.portfolioResilience > 70 ? '✅ Good resilience' : '⚠️ Low resilience to market shocks'}
+          </Text>
+        </View>
+
+        {/* Worst vs Best Case */}
+        <Text style={[styles.sectionTitle, { color: colors.foreground }]}>Scenario Impact</Text>
+
+        <View style={{ flexDirection: 'row', gap: 12, marginBottom: 16 }}>
+          {/* Worst Case */}
+          <View style={[styles.caseCard, { backgroundColor: colors.surface, borderColor: colors.border, flex: 1 }]}>
+            <Text style={{ fontSize: 12, fontWeight: '600', color: colors.muted, marginBottom: 8 }}>Worst Case</Text>
+            <Text style={{ fontSize: 16, fontWeight: '700', color: colors.error, marginBottom: 4 }}>
+              {worstCase.percentageChange.toFixed(1)}%
+            </Text>
+            <Text style={{ fontSize: 11, color: colors.muted, marginBottom: 8 }}>{worstCase.scenarioName}</Text>
+            <Text style={{ fontSize: 12, fontWeight: '600', color: colors.error }}>
+              SGD {worstCase.dollarChange.toLocaleString()}
+            </Text>
+          </View>
+
+          {/* Best Case */}
+          <View style={[styles.caseCard, { backgroundColor: colors.surface, borderColor: colors.border, flex: 1 }]}>
+            <Text style={{ fontSize: 12, fontWeight: '600', color: colors.muted, marginBottom: 8 }}>Best Case</Text>
+            <Text style={{ fontSize: 16, fontWeight: '700', color: colors.success, marginBottom: 4 }}>
+              {bestCase.percentageChange.toFixed(1)}%
+            </Text>
+            <Text style={{ fontSize: 11, color: colors.muted, marginBottom: 8 }}>{bestCase.scenarioName}</Text>
+            <Text style={{ fontSize: 12, fontWeight: '600', color: colors.success }}>
+              SGD {bestCase.dollarChange.toLocaleString()}
+            </Text>
+          </View>
+        </View>
+
+        {/* Predefined Scenarios */}
+        <Text style={[styles.sectionTitle, { color: colors.foreground }]}>Market Scenarios</Text>
+
+        {stressReport.scenarios.map((result, idx) => (
+          <Pressable
+            key={idx}
+            onPress={() => setSelectedScenario(stressReport.scenarios[idx] as any)}
+            style={({ pressed }) => [
+              styles.scenarioCard,
+              {
+                backgroundColor: colors.surface,
+                borderColor: getRiskColor(result.riskLevel),
+                borderLeftWidth: 4,
+                opacity: pressed ? 0.7 : 1,
+              },
+            ]}
+          >
+            <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'flex-start' }}>
+              <View style={{ flex: 1 }}>
+                <Text style={{ fontSize: 14, fontWeight: '600', color: colors.foreground, marginBottom: 4 }}>
+                  {result.scenarioName}
+                </Text>
+                <Text style={{ fontSize: 11, color: colors.muted, marginBottom: 8 }}>
+                  Probability: {(PREDEFINED_SCENARIOS[result.scenarioId as StressTestScenario['scenario']]?.probability || 0) * 100}%
+                </Text>
+                <View style={{ flexDirection: 'row', gap: 12 }}>
+                  <View>
+                    <Text style={{ fontSize: 10, color: colors.muted }}>Impact</Text>
+                    <Text style={{ fontSize: 14, fontWeight: '700', color: getRiskColor(result.riskLevel) }}>
+                      {result.percentageChange.toFixed(1)}%
+                    </Text>
+                  </View>
+                  <View>
+                    <Text style={{ fontSize: 10, color: colors.muted }}>Amount</Text>
+                    <Text style={{ fontSize: 14, fontWeight: '700', color: getRiskColor(result.riskLevel) }}>
+                      SGD {result.dollarChange.toLocaleString()}
+                    </Text>
+                  </View>
+                  <View>
+                    <Text style={{ fontSize: 10, color: colors.muted }}>Recovery</Text>
+                    <Text style={{ fontSize: 14, fontWeight: '700', color: colors.foreground }}>
+                      {result.timeToRecover}mo
+                    </Text>
+                  </View>
+                </View>
+              </View>
+              <View style={{ alignItems: 'center' }}>
+                <Text style={{ fontSize: 20, marginBottom: 4 }}>
+                  {result.riskLevel === 'critical' ? '🔴' : result.riskLevel === 'high' ? '🟠' : result.riskLevel === 'medium' ? '🟡' : '🟢'}
+                </Text>
+                <Text style={{ fontSize: 10, color: colors.muted, textAlign: 'center' }}>{result.riskLevel}</Text>
+              </View>
+            </View>
+          </Pressable>
+        ))}
+
+        {/* AI Chat Button */}
+        <Pressable
+          onPress={() => router.push('/stress-test-ai-chat' as any)}
+          style={({ pressed }) => [
+            styles.aiButton,
+            {
+              backgroundColor: colors.primary,
+              opacity: pressed ? 0.8 : 1,
+            },
+          ]}
+        >
+          <Text style={{ fontSize: 16, color: 'white', marginRight: 8 }}>💬</Text>
+          <Text style={{ fontSize: 16, fontWeight: '600', color: 'white' }}>Ask AI About Stress Tests</Text>
+        </Pressable>
+
+        {/* Recommendations */}
+        {stressReport.recommendations.length > 0 && (
+          <>
+            <Text style={[styles.sectionTitle, { color: colors.foreground }]}>Recommendations</Text>
+            <View style={[styles.recommendationCard, { backgroundColor: colors.surface, borderColor: colors.border }]}>
+              {stressReport.recommendations.map((rec, idx) => (
+                <Text key={idx} style={{ fontSize: 12, color: colors.muted, marginBottom: 8, lineHeight: 18 }}>
+                  • {rec}
+                </Text>
+              ))}
+            </View>
+          </>
+        )}
+      </ScrollView>
+    </ScreenContainer>
+  );
+}
+
+const styles = StyleSheet.create({
+  scoreCard: {
+    borderRadius: 12,
+    padding: 16,
+    marginBottom: 20,
+    borderWidth: 1,
+  },
+  sectionTitle: {
+    fontSize: 16,
+    fontWeight: '700',
+    marginBottom: 12,
+    marginTop: 8,
+  },
+  caseCard: {
+    borderRadius: 12,
+    padding: 12,
+    borderWidth: 1,
+  },
+  scenarioCard: {
+    borderRadius: 12,
+    padding: 14,
+    marginBottom: 12,
+    borderWidth: 1,
+  },
+  aiButton: {
+    borderRadius: 12,
+    padding: 16,
+    marginVertical: 16,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  recommendationCard: {
+    borderRadius: 12,
+    padding: 14,
+    marginBottom: 16,
+    borderWidth: 1,
+  },
+});

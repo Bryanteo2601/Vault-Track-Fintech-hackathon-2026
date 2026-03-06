@@ -59,7 +59,6 @@
 - [x] Unit tests for all financial calculations (13 tests passing)
 - [x] Checkpoint saved
 
-
 ## Phase 9: Firebase Authentication & Firestore Integration
 - [x] Install Firebase SDK packages (firebase)
 - [x] Configure environment variables for Firebase public config
@@ -78,15 +77,18 @@
 - [x] Document Firebase setup steps and security rules
 - [x] Create comprehensive Firebase architecture documentation
 
-
-
-
 ## Phase 10: Firebase Auth Bug Fix
 - [x] Fix Firebase configuration-not-found error on auth screens
 - [x] Verify Firebase SDK initialization in React Native
 - [x] Test email/password signup
 - [x] Test email/password login
 - [ ] Test Apple Sign-In on iOS
+
+## Phase 11: Firestore Security Rules & Data Isolation
+- [x] Create firestore.rules file with per-user access control
+- [x] Ensure users can only read/write their own data
+- [x] Test data isolation with multiple user accounts
+- [x] Deploy security rules to Firebase Console (manual step in Firebase Console)
 
 ## Phase 13: Firebase Gemini AI Integration
 - [x] Set up Firebase Gemini AI service
@@ -100,3 +102,41 @@
 - [x] Fix Gemini AI initialization error
 - [x] Test chat responses
 - [x] Verify API integration
+
+## Phase 15: Drill-Down Financial Analysis Feature
+- [x] Create metric analysis data structures and types
+- [x] Build AI insight engine for financial metrics
+- [x] Create debt analysis screen with breakdown
+- [x] Add visual charts (donut and line charts)
+- [x] Build reusable metric drill-down component
+- [x] Add navigation from dashboard cards to analysis screens
+- [x] Create liquidity, diversification, and credit score analysis screens
+- [x] Test all drill-down features
+
+## Phase 16: CPF Support (Singapore)
+- [x] Create CPF data types (OA, SA, MA accounts)
+- [x] Add CPF module to tab navigation
+- [x] Build CPF overview screen with account balances
+- [x] Create CPF account detail screens (OA, SA, MA)
+- [x] Add CPF contribution tracking
+- [x] Add CPF withdrawal simulation calculator
+- [x] Integrate CPF into net worth calculations
+- [x] Add CPF to financial health metrics
+
+## Phase 17: Portfolio Stress Testing
+- [x] Create stress testing data types and scenarios
+- [x] Build stress testing engine (market crash, interest rate changes, etc.)
+- [x] Create portfolio stress testing screen under Investments
+- [x] Add AI Chat feature to stress testing screen
+- [x] Generate stress test reports and recommendations
+- [x] Add historical stress test results tracking
+- [x] Test various market scenarios
+
+## Phase 18: Net Worth Timeline Visualization
+- [x] Create historical net worth data tracking
+- [x] Build timeline chart component (2022-2025)
+- [x] Add net worth history data persistence
+- [x] Create timeline screen on Dashboard
+- [x] Add year-over-year comparison
+- [x] Add trend analysis and projections
+- [x] Integrate with existing data

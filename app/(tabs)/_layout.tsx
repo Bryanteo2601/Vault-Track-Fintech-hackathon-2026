@@ -69,6 +69,13 @@ export default function TabLayout() {
         }}
       />
       <Tabs.Screen
+        name="cpf"
+        options={{
+          title: "CPF",
+          tabBarIcon: ({ color }) => <IconSymbol size={26} name="building.2.fill" color={color} />,
+        }}
+      />
+      <Tabs.Screen
         name="profile"
         options={{
           title: "Profile",

@@ -1,5 +1,5 @@
 import React, { useMemo } from 'react';
-import { ScrollView, View, Text, StyleSheet, Pressable, FlatList } from 'react-native';
+import { ScrollView, View, Text, StyleSheet, Pressable, FlatList, GestureResponderEvent } from 'react-native';
 import { ScreenContainer } from '@/components/screen-container';
 import { useAppColors } from '@/hooks/use-app-colors';
 import { useAppData } from '@/lib/app-data-context';
@@ -87,14 +87,17 @@ function AssetAllocationBar({ data }: { data: { label: string; value: number; co
 }
 
 // ─── Health Metric Card ───────────────────────────────────────────────────────
-function HealthMetricCard({ label, value, subtitle, color }: { label: string; value: string; subtitle: string; color: string }) {
+function HealthMetricCard({ label, value, subtitle, color, onPress }: { label: string; value: string; subtitle: string; color: string; onPress?: () => void }) {
   const colors = useAppColors();
   return (
-    <View style={[styles.metricCard, { backgroundColor: colors.surface, borderColor: colors.border }]}>
+    <Pressable
+      onPress={onPress}
+      style={({ pressed }) => [styles.metricCard, { backgroundColor: colors.surface, borderColor: colors.border, opacity: pressed ? 0.7 : 1 }]}
+    >
       <Text style={[styles.metricValue, { color }]}>{value}</Text>
       <Text style={[styles.metricLabel, { color: colors.foreground }]}>{label}</Text>
       <Text style={[styles.metricSub, { color: colors.muted }]}>{subtitle}</Text>
-    </View>
+    </Pressable>
   );
 }
 
@@ -204,7 +207,7 @@ export default function DashboardScreen() {
 
         <View style={styles.content}>
           {/* Net Worth + Wellness Score */}
-          <View style={[styles.heroCard, { backgroundColor: colors.primary }]}>
+          <Pressable onPress={() => router.push('/net-worth-timeline' as any)} style={({ pressed }) => [styles.heroCard, { backgroundColor: colors.primary, opacity: pressed ? 0.9 : 1 }]}>
             <View style={styles.heroLeft}>
               <Text style={styles.heroLabel}>Total Net Worth</Text>
               <Text style={styles.heroValue}>{formatCurrency(netWorth)}</Text>
@@ -219,9 +222,10 @@ export default function DashboardScreen() {
                   <Text style={[styles.heroStatValue, { color: '#F87171' }]}>{formatCurrency(totalLiabilities)}</Text>
                 </View>
               </View>
+              <Text style={{ fontSize: 10, color: 'rgba(255,255,255,0.7)', marginTop: 8 }}>Tap to view timeline →</Text>
             </View>
             <WellnessGauge score={wellnessScore} />
-          </View>
+          </Pressable>
 
           {/* Asset Allocation */}
           <View style={[styles.section, { backgroundColor: colors.surface, borderColor: colors.border }]}>
@@ -238,18 +242,21 @@ export default function DashboardScreen() {
                 value={`${assetClassCount}/8`}
                 subtitle="Asset classes"
                 color={assetClassCount >= 5 ? colors.success : assetClassCount >= 3 ? colors.warning : colors.error}
+                onPress={() => router.push('/diversification-analysis')}
               />
               <HealthMetricCard
                 label="Liquidity"
                 value={`${Math.min(liquidityMonths, 99)}mo`}
                 subtitle="Emergency cover"
                 color={liquidityMonths >= 6 ? colors.success : liquidityMonths >= 3 ? colors.warning : colors.error}
+                onPress={() => router.push('/liquidity-analysis')}
               />
               <HealthMetricCard
                 label="Debt Ratio"
                 value={`${dta.toFixed(0)}%`}
                 subtitle="Debt-to-assets"
                 color={dta <= 40 ? colors.success : dta <= 60 ? colors.warning : colors.error}
+                onPress={() => router.push('/debt-analysis')}
               />
               <HealthMetricCard
                 label="Credit Score"
