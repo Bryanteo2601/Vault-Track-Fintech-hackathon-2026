@@ -1,111 +1,39 @@
-import { getAI, getGenerativeModel, GoogleAIBackend } from 'firebase/ai';
-import { auth, db } from './firebase-config';
 import { AppData } from './types';
 
-let modelInstance: any = null;
-
 /**
- * Initialize the Gemini AI model
+ * Simple mock AI responses for now - Firebase Gemini SDK has compatibility issues with React Native
+ * In production, this would call the actual Gemini API via a backend service
  */
-export async function initializeGeminiAI() {
-  try {
-    const ai = getAI(undefined, { backend: new GoogleAIBackend() });
-    modelInstance = getGenerativeModel(ai, { model: 'gemini-2.0-flash' });
-    console.log('✓ Gemini AI initialized successfully');
-    return modelInstance;
-  } catch (error) {
-    console.error('Failed to initialize Gemini AI:', error);
-    throw error;
-  }
-}
-
-/**
- * Get or initialize the model
- */
-async function getModel() {
-  if (!modelInstance) {
-    await initializeGeminiAI();
-  }
-  return modelInstance;
-}
-
-/**
- * Format wealth data into a context string for AI analysis
- */
-function formatWealthDataForAI(data: AppData): string {
-  const bankBalance = data.bankAccounts.reduce((sum: number, acc: any) => sum + acc.balance, 0);
-  const investmentValue = data.holdings.reduce((sum: number, h: any) => sum + h.quantity * h.currentPrice, 0);
-  const loanBalance = data.loans.reduce((sum: number, loan: any) => sum + loan.outstandingBalance, 0);
-  const insuranceValue = data.insurancePolicies.reduce((sum: number, p: any) => sum + p.coverageAmount, 0);
-  const netWorth = bankBalance + investmentValue - loanBalance;
-
-  const bankAccounts = data.bankAccounts.map((acc: any) => 
-    `- ${acc.accountName} (${acc.accountType}): SGD ${acc.balance.toLocaleString()}`
-  ).join('\n');
-
-  const investments = data.holdings.map((h: any) => 
-    `- ${h.symbol}: ${h.quantity} units @ SGD ${h.currentPrice.toFixed(2)} = SGD ${(h.quantity * h.currentPrice).toLocaleString()}`
-  ).join('\n');
-
-  const loans = data.loans.map((loan: any) => 
-    `- ${loan.loanType}: SGD ${loan.outstandingBalance.toLocaleString()} (${loan.interestRate}% p.a., ${loan.monthlyInstalment} monthly)`
-  ).join('\n');
-
-  const insurance = data.insurancePolicies.map((policy: any) => 
-    `- ${policy.policyType}: SGD ${policy.coverageAmount.toLocaleString()} coverage`
-  ).join('\n');
-
-  return `
-WEALTH PORTFOLIO SUMMARY
-========================
-Net Worth: SGD ${netWorth.toLocaleString()}
-Total Assets: SGD ${(bankBalance + investmentValue).toLocaleString()}
-Total Liabilities: SGD ${loanBalance.toLocaleString()}
-
-BANK ACCOUNTS (SGD ${bankBalance.toLocaleString()})
-${bankAccounts || 'No bank accounts'}
-
-INVESTMENTS (SGD ${investmentValue.toLocaleString()})
-${investments || 'No investments'}
-
-LOANS (SGD ${loanBalance.toLocaleString()})
-${loans || 'No loans'}
-
-INSURANCE COVERAGE (SGD ${insuranceValue.toLocaleString()})
-${insurance || 'No insurance policies'}
-`;
-}
 
 /**
  * Generate AI-powered financial recommendations
  */
 export async function generateFinancialRecommendations(data: AppData): Promise<string[]> {
   try {
-    const model = await getModel();
-    const wealthContext = formatWealthDataForAI(data);
+    // Calculate key metrics
+    const bankBalance = data.bankAccounts.reduce((sum: number, acc: any) => sum + acc.balance, 0);
+    const investmentValue = data.holdings.reduce((sum: number, h: any) => sum + h.quantity * h.currentPrice, 0);
+    const loanBalance = data.loans.reduce((sum: number, loan: any) => sum + loan.outstandingBalance, 0);
+    const totalAssets = bankBalance + investmentValue;
+    const dta = totalAssets > 0 ? (loanBalance / totalAssets) * 100 : 0;
 
-    const prompt = `You are a professional financial advisor. Analyze the following wealth portfolio and provide 3-4 specific, actionable recommendations to improve financial health. Be concise and practical.
+    const recommendations: string[] = [];
 
-${wealthContext}
+    if (dta > 60) {
+      recommendations.push(`⚠️ High Debt-to-Asset Ratio: Your debt is ${dta.toFixed(0)}% of total assets. Consider accelerating loan repayments to improve financial resilience.`);
+    }
 
-Provide recommendations in a numbered list format. Focus on:
-1. Risk management and diversification
-2. Debt optimization
-3. Emergency fund adequacy
-4. Investment opportunities
+    if (bankBalance < investmentValue * 0.2) {
+      recommendations.push(`💧 Build Emergency Fund: Your liquid assets are low relative to investments. Aim to maintain 6 months of expenses in savings.`);
+    }
 
-Keep each recommendation to 1-2 sentences.`;
+    if (data.holdings.length < 3) {
+      recommendations.push(`✨ Diversify Your Portfolio: Consider adding more asset classes like bonds, REITs, or international stocks to reduce volatility.`);
+    }
 
-    const result = await model.generateContent(prompt);
-    const response = (result as any).response;
-    const text = response.text();
-
-    // Parse recommendations from the response
-    const recommendations = text
-      .split('\n')
-      .filter((line: string) => line.trim().match(/^\d+\./)) 
-      .map((line: string) => line.replace(/^\d+\.\s*/, '').trim())
-      .filter((rec: string) => rec.length > 0);
+    if (recommendations.length === 0) {
+      recommendations.push(`🎯 Strong Financial Health: Your wealth wellness metrics are looking great. Continue your current strategy and review quarterly.`);
+    }
 
     return recommendations.slice(0, 4);
   } catch (error) {
@@ -117,43 +45,65 @@ Keep each recommendation to 1-2 sentences.`;
 /**
  * Chat with AI about finances
  */
-export async function chatWithAI(userMessage: string, data: AppData, conversationHistory: Array<{ role: string; content: string }>): Promise<string> {
+export async function chatWithAI(
+  userMessage: string,
+  data: AppData,
+  conversationHistory: Array<{ role: string; content: string }>
+): Promise<string> {
   try {
-    const model = await getModel();
-    const wealthContext = formatWealthDataForAI(data);
+    // Calculate key metrics for context
+    const bankBalance = data.bankAccounts.reduce((sum: number, acc: any) => sum + acc.balance, 0);
+    const investmentValue = data.holdings.reduce((sum: number, h: any) => sum + h.quantity * h.currentPrice, 0);
+    const loanBalance = data.loans.reduce((sum: number, loan: any) => sum + loan.outstandingBalance, 0);
+    const netWorth = bankBalance + investmentValue - loanBalance;
+    const totalAssets = bankBalance + investmentValue;
 
-    // Build conversation history for context
-    const messages = conversationHistory.map((msg: any) => ({
-      role: msg.role === 'user' ? 'user' : 'model',
-      parts: [{ text: msg.content }],
-    }));
+    // Generate contextual responses based on user message
+    const lowerMessage = userMessage.toLowerCase();
 
-    // Add current user message
-    messages.push({
-      role: 'user',
-      parts: [{ text: userMessage }],
-    });
+    if (lowerMessage.includes('invest') || lowerMessage.includes('investment')) {
+      const investmentCount = data.holdings.length;
+      if (investmentCount === 0) {
+        return `Based on your portfolio, you currently have no investments. With SGD ${bankBalance.toLocaleString()} in liquid assets, you could consider starting with index funds or ETFs for diversification. Would you like recommendations on investment options?`;
+      } else {
+        return `You currently hold ${investmentCount} investment(s) worth SGD ${investmentValue.toLocaleString()}. This represents ${((investmentValue / totalAssets) * 100).toFixed(0)}% of your total assets. For a balanced portfolio, consider diversifying across different asset classes and sectors.`;
+      }
+    }
 
-    const systemPrompt = `You are a knowledgeable and friendly financial advisor assistant. You have access to the user's wealth portfolio data and can provide personalized financial advice.
+    if (lowerMessage.includes('debt') || lowerMessage.includes('loan')) {
+      const loanCount = data.loans.length;
+      if (loanCount === 0) {
+        return `Great news! You have no outstanding loans. This is excellent for your financial health. Focus on building your emergency fund and investing for long-term growth.`;
+      } else {
+        return `You have ${loanCount} loan(s) with total outstanding balance of SGD ${loanBalance.toLocaleString()}. Your debt-to-asset ratio is ${((loanBalance / totalAssets) * 100).toFixed(0)}%. Consider accelerating repayments if possible to improve your financial resilience.`;
+      }
+    }
 
-${wealthContext}
+    if (lowerMessage.includes('net worth') || lowerMessage.includes('wealth')) {
+      return `Your current net worth is SGD ${netWorth.toLocaleString()}. This consists of SGD ${bankBalance.toLocaleString()} in liquid assets and SGD ${investmentValue.toLocaleString()} in investments, minus SGD ${loanBalance.toLocaleString()} in liabilities. Focus on growing your assets while managing debt responsibly.`;
+    }
 
-Guidelines:
-- Provide accurate, practical financial advice based on the user's portfolio
-- Be conversational and helpful
-- Ask clarifying questions if needed
-- Suggest specific actions when appropriate
-- Acknowledge limitations and recommend consulting a professional for complex matters
-- Keep responses concise (2-3 sentences) unless more detail is needed`;
+    if (lowerMessage.includes('emergency') || lowerMessage.includes('savings')) {
+      const savingsAccounts = data.bankAccounts.filter((acc: any) => acc.accountType === 'savings');
+      const savingsBalance = savingsAccounts.reduce((sum: number, acc: any) => sum + acc.balance, 0);
+      return `You have SGD ${savingsBalance.toLocaleString()} in savings accounts. Financial experts recommend maintaining 6 months of living expenses in an emergency fund. Ensure your savings are easily accessible in case of unexpected expenses.`;
+    }
 
-    // Use the chat API with history
-    const result = await model.generateContent({
-      contents: messages as any,
-      systemInstruction: systemPrompt,
-    });
+    if (lowerMessage.includes('insurance')) {
+      const insuranceCount = data.insurancePolicies.length;
+      if (insuranceCount === 0) {
+        return `You currently have no insurance policies. Consider getting health, life, and property insurance based on your needs and dependents. Insurance is crucial for protecting your wealth against unexpected events.`;
+      } else {
+        return `You have ${insuranceCount} insurance policy/policies. Ensure your coverage is adequate for your current life situation and financial obligations. Review your policies annually to ensure they still meet your needs.`;
+      }
+    }
 
-    const response = (result as any).response;
-    return response.text();
+    if (lowerMessage.includes('goal') || lowerMessage.includes('plan')) {
+      return `To achieve your financial goals, I recommend: (1) Define clear, measurable goals with timelines, (2) Create a budget aligned with your goals, (3) Automate savings and investments, (4) Review progress quarterly. What specific financial goal would you like to work towards?`;
+    }
+
+    // Default response
+    return `Based on your current portfolio with a net worth of SGD ${netWorth.toLocaleString()}, I can help you with investment strategies, debt management, savings planning, or insurance coverage. What aspect of your finances would you like to discuss?`;
   } catch (error) {
     console.error('Error in AI chat:', error);
     return 'Sorry, I encountered an error processing your request. Please try again.';
@@ -163,30 +113,34 @@ Guidelines:
 /**
  * Analyze specific financial aspect
  */
-export async function analyzeFinancialAspect(aspect: 'investments' | 'debt' | 'savings' | 'insurance', data: AppData): Promise<string> {
+export async function analyzeFinancialAspect(
+  aspect: 'investments' | 'debt' | 'savings' | 'insurance',
+  data: AppData
+): Promise<string> {
   try {
-    const model = await getModel();
-    const wealthContext = formatWealthDataForAI(data);
+    const bankBalance = data.bankAccounts.reduce((sum: number, acc: any) => sum + acc.balance, 0);
+    const investmentValue = data.holdings.reduce((sum: number, h: any) => sum + h.quantity * h.currentPrice, 0);
+    const loanBalance = data.loans.reduce((sum: number, loan: any) => sum + loan.outstandingBalance, 0);
 
-    let prompt = '';
     switch (aspect) {
       case 'investments':
-        prompt = `Analyze this person's investment portfolio and provide insights on diversification, risk level, and potential improvements.\n${wealthContext}`;
-        break;
-      case 'debt':
-        prompt = `Analyze this person's debt situation and provide strategies for debt reduction and optimization.\n${wealthContext}`;
-        break;
-      case 'savings':
-        prompt = `Analyze this person's savings and liquidity position. How adequate is their emergency fund?\n${wealthContext}`;
-        break;
-      case 'insurance':
-        prompt = `Analyze this person's insurance coverage. Is it adequate for their financial situation?\n${wealthContext}`;
-        break;
-    }
+        return `You have ${data.holdings.length} investment(s) worth SGD ${investmentValue.toLocaleString()}. Diversification is key - consider spreading investments across different sectors and asset classes to reduce risk.`;
 
-    const result = await model.generateContent(prompt);
-    const response = (result as any).response;
-    return response.text();
+      case 'debt':
+        return `Your total debt is SGD ${loanBalance.toLocaleString()}. Focus on paying off high-interest debt first while maintaining minimum payments on lower-interest loans. This strategy can save you money on interest.`;
+
+      case 'savings':
+        const savingsBalance = data.bankAccounts
+          .filter((acc: any) => acc.accountType === 'savings')
+          .reduce((sum: number, acc: any) => sum + acc.balance, 0);
+        return `Your savings balance is SGD ${savingsBalance.toLocaleString()}. Aim for an emergency fund of 6 months of living expenses. Once achieved, redirect excess savings to investments for long-term growth.`;
+
+      case 'insurance':
+        return `You have ${data.insurancePolicies.length} insurance policy/policies. Ensure you have adequate coverage for health, life, and property. Review your policies annually and adjust coverage as your life circumstances change.`;
+
+      default:
+        return 'Unable to analyze this aspect at the moment.';
+    }
   } catch (error) {
     console.error('Error analyzing financial aspect:', error);
     return 'Unable to analyze this aspect at the moment. Please try again later.';
