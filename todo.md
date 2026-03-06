@@ -58,3 +58,22 @@
 - [x] Empty states for all lists
 - [x] Unit tests for all financial calculations (13 tests passing)
 - [x] Checkpoint saved
+
+
+## Phase 9: Firebase Authentication & Firestore Integration
+- [x] Install Firebase SDK packages (firebase)
+- [x] Configure environment variables for Firebase public config
+- [x] Create Firebase auth service with signup/login/logout/forgot-password
+- [x] Build auth context provider for global auth state
+- [x] Create signup screen with email/password validation
+- [x] Create login screen with email/password
+- [x] Create forgot-password screen with email recovery
+- [x] Build protected route wrapper component
+- [x] Update navigation to show auth or app screens based on login state
+- [x] Create Firestore user document schema
+- [x] Integrate Firestore user data sync on login
+- [x] Write Firestore security rules (users can only read/write own data)
+- [x] Add field validation to prevent unauthorized updates
+- [x] Create user profile/settings screen
+- [x] Document Firebase setup steps and security rules
+- [x] Create comprehensive Firebase architecture documentation
