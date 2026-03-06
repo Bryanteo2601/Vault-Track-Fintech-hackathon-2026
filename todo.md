@@ -87,3 +87,11 @@
 - [x] Test email/password signup
 - [x] Test email/password login
 - [ ] Test Apple Sign-In on iOS
+
+## Phase 13: Firebase Gemini AI Integration
+- [x] Set up Firebase Gemini AI service
+- [x] Create AI financial analysis service
+- [x] Add AI recommendations to dashboard
+- [x] Create AI chat assistant screen
+- [x] Add chat history persistence
+- [ ] Test AI responses and optimize prompts

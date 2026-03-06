@@ -3,6 +3,7 @@ import { ScrollView, View, Text, StyleSheet, Pressable, FlatList } from 'react-n
 import { ScreenContainer } from '@/components/screen-container';
 import { useAppColors } from '@/hooks/use-app-colors';
 import { useAppData } from '@/lib/app-data-context';
+import { useRouter } from 'expo-router';
 import {
   calcNetWorth,
   calcTotalAssets,
@@ -119,6 +120,7 @@ function AIRecommendationCard({ icon, title, description, type }: { icon: string
 // ─── Main Dashboard ───────────────────────────────────────────────────────────
 export default function DashboardScreen() {
   const colors = useAppColors();
+  const router = useRouter();
   const { data, isLoading } = useAppData();
 
   const netWorth = useMemo(() => calcNetWorth(data), [data]);
@@ -259,10 +261,31 @@ export default function DashboardScreen() {
           </ScrollView>
 
           {/* AI Recommendations */}
-          <Text style={[styles.sectionLabel, { color: colors.foreground }]}>AI Recommendations</Text>
+          <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginBottom: 12 }}>
+            <Text style={[styles.sectionLabel, { color: colors.foreground }]}>AI Recommendations</Text>
+            <Pressable onPress={() => router.push('/ai-chat')} style={{ padding: 8 }}>
+              <Text style={{ fontSize: 12, color: colors.primary, fontWeight: '600' }}>Chat →</Text>
+            </Pressable>
+          </View>
           {aiRecommendations.map((rec, i) => (
             <AIRecommendationCard key={i} {...rec} />
           ))}
+          
+          {/* AI Chat Button */}
+          <Pressable 
+            onPress={() => router.push('/ai-chat')}
+            style={({ pressed }) => [{
+              backgroundColor: colors.primary,
+              borderRadius: 12,
+              padding: 16,
+              marginTop: 16,
+              opacity: pressed ? 0.8 : 1,
+            }]}
+          >
+            <Text style={{ color: '#FFFFFF', fontSize: 16, fontWeight: '700', textAlign: 'center' }}>
+              💬 Ask AI Financial Advisor
+            </Text>
+          </Pressable>
         </View>
       </ScrollView>
     </ScreenContainer>
