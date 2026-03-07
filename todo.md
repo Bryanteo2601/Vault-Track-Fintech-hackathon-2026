@@ -208,3 +208,13 @@
 - [x] Subscription section displays current tier (FREE) with upgrade prompt
 - [x] Upgrade modal shows tier comparison with pricing and features
 - [x] All TypeScript errors resolved
+
+## Phase 25: Navigation & Subscription Flow Refactor
+- [x] Subscription tab already removed from bottom navigation
+- [x] Created comprehensive Manage Subscription screen with tier comparison
+- [x] Built locked feature upgrade modal component
+- [x] Updated Profile page with "Manage Subscription" button
+- [x] Removed inline upgrade modal from Profile
+- [x] All TypeScript errors resolved
+- [x] Dev server compiling successfully
+- [x] Bottom navigation clean with 7 essential tabs (Dashboard, Banks, Investments, Loans, Insurance, CPF, Profile)
