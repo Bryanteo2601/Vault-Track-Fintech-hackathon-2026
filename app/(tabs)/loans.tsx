@@ -7,7 +7,7 @@ import { ScreenContainer } from '@/components/screen-container';
 import { useAppColors } from '@/hooks/use-app-colors';
 import { useAppData } from '@/lib/app-data-context';
 import { Loan, LoanType, LoanSecurityType } from '@/lib/types';
-import { formatCurrency, calcTotalInterestPayable, calcTotalPaid, aggregatedBalanceHistory } from '@/lib/store';
+import { formatCurrency } from '@/lib/store';
 import { IconSymbol } from '@/components/ui/icon-symbol';
 import Svg, { Polyline, Line, Text as SvgText, Circle } from 'react-native-svg';
 
@@ -31,7 +31,7 @@ const securityTypeConfig: Record<LoanSecurityType, { label: string; color: strin
 };
 
 // ─── Trend Line Chart ─────────────────────────────────────────────────────────
-function TrendChart({ history }: { history: typeof aggregatedBalanceHistory }) {
+function TrendChart({ history }: { history: any[] }) {
   const colors = useAppColors();
   const width = 340;
   const height = 100;
@@ -39,12 +39,12 @@ function TrendChart({ history }: { history: typeof aggregatedBalanceHistory }) {
   const chartW = width - padding.left - padding.right;
   const chartH = height - padding.top - padding.bottom;
 
-  const values = history.map(h => h.secured + h.unsecuredInterestBearing + h.unsecuredNonInterest);
-  const minVal = Math.min(...values);
-  const maxVal = Math.max(...values);
+  const values = history.length > 0 ? history.map((h: any) => (h.secured || 0) + (h.unsecuredInterestBearing || 0) + (h.unsecuredNonInterest || 0)) : [0];
+  const minVal = values.length > 0 ? Math.min(...values) : 0;
+  const maxVal = values.length > 0 ? Math.max(...values) : 100;
   const range = maxVal - minVal || 1;
 
-  const points = history.map((_, i) => {
+  const points = history.map((_: any, i: number) => {
     const x = padding.left + (i / (history.length - 1)) * chartW;
     const y = padding.top + chartH - ((values[i] - minVal) / range) * chartH;
     return `${x},${y}`;
@@ -55,12 +55,12 @@ function TrendChart({ history }: { history: typeof aggregatedBalanceHistory }) {
   return (
     <Svg width={width} height={height}>
       <Polyline points={points} fill="none" stroke={colors.accent} strokeWidth={2} />
-      {history.map((h, i) => {
+      {history.map((h: any, i: any) => {
         const x = padding.left + (i / (history.length - 1)) * chartW;
         const y = padding.top + chartH - ((values[i] - minVal) / range) * chartH;
         return <Circle key={i} cx={x} cy={y} r={3} fill={colors.accent} />;
       })}
-      {history.map((h, i) => {
+      {history.map((h: any, i: any) => {
         const x = padding.left + (i / (history.length - 1)) * chartW;
         return (
           <SvgText key={i} x={x} y={height - 4} textAnchor="middle" fontSize={8} fill={colors.muted}>
@@ -84,8 +84,8 @@ function LoanCard({ loan, onEdit, onDelete }: { loan: Loan; onEdit: () => void; 
   const [expanded, setExpanded] = useState(false);
   const cfg = loanTypeConfig[loan.loanType];
   const secCfg = securityTypeConfig[loan.securityType];
-  const totalInterest = calcTotalInterestPayable(loan);
-  const totalPaid = calcTotalPaid(loan);
+  const totalInterest = (loan.originalAmount * loan.interestRate * loan.monthsRemaining) / 100 / 12;
+  const totalPaid = (loan.originalAmount - loan.outstandingBalance);
   const progressPct = loan.totalMonths > 0 ? ((loan.totalMonths - loan.monthsRemaining) / loan.totalMonths) * 100 : 0;
   const yearsLeft = Math.floor(loan.monthsRemaining / 12);
   const monthsLeft = loan.monthsRemaining % 12;
@@ -332,7 +332,7 @@ export default function LoansScreen() {
   const totalUnsecuredNI = useMemo(() => data.loans.filter(l => l.securityType === 'unsecured_non_interest').reduce((s, l) => s + l.outstandingBalance, 0), [data.loans]);
   const totalOutstanding = totalSecured + totalUnsecuredIB + totalUnsecuredNI;
   const totalMonthly = useMemo(() => data.loans.reduce((s, l) => s + l.monthlyInstalment, 0), [data.loans]);
-  const totalInterest = useMemo(() => data.loans.reduce((s, l) => s + Math.max(0, calcTotalInterestPayable(l)), 0), [data.loans]);
+  const totalInterest = useMemo(() => data.loans.reduce((s, l) => s + Math.max(0, (l.originalAmount * l.interestRate * l.monthsRemaining) / 100 / 12), 0), [data.loans]);
 
   const handleEdit = (loan: Loan) => { setEditingLoan(loan); setModalVisible(true); };
   const handleDelete = (loan: Loan) => {
@@ -394,7 +394,7 @@ export default function LoansScreen() {
                   <Text style={[styles.tableCell, styles.tableCellHeader, { color: colors.foreground, width: 110 }]}>Unsecured (NIB)</Text>
                   <Text style={[styles.tableCell, styles.tableCellHeader, { color: colors.foreground, width: 80 }]}>Exempted</Text>
                 </View>
-                {aggregatedBalanceHistory.map((row, i) => (
+                {data.loans.map((row: any, i: any) => (
                   <View key={i} style={[styles.tableRow, { backgroundColor: i % 2 === 0 ? colors.surface : colors.background }]}>
                     <Text style={[styles.tableCell, { color: colors.foreground, width: 80, fontWeight: i === 0 ? '700' : '400' }]}>{row.month}</Text>
                     <Text style={[styles.tableCell, { color: colors.foreground, width: 100 }]}>{row.secured.toLocaleString()}</Text>
@@ -405,9 +405,9 @@ export default function LoansScreen() {
                 ))}
                 <View style={[styles.tableRow, { backgroundColor: colors.primary + '20' }]}>
                   <Text style={[styles.tableCell, styles.tableCellHeader, { color: colors.foreground, width: 80 }]}>Total</Text>
-                  <Text style={[styles.tableCell, styles.tableCellHeader, { color: colors.error, width: 100 }]}>{aggregatedBalanceHistory[0].secured.toLocaleString()}</Text>
-                  <Text style={[styles.tableCell, styles.tableCellHeader, { color: colors.error, width: 110 }]}>{aggregatedBalanceHistory[0].unsecuredInterestBearing.toLocaleString()}</Text>
-                  <Text style={[styles.tableCell, styles.tableCellHeader, { color: colors.error, width: 110 }]}>{aggregatedBalanceHistory[0].unsecuredNonInterest.toLocaleString()}</Text>
+                  <Text style={[styles.tableCell, styles.tableCellHeader, { color: colors.error, width: 100 }]}>{data.loans.reduce((sum, l) => sum + l.outstandingBalance, 0).toLocaleString()}</Text>
+                  <Text style={[styles.tableCell, styles.tableCellHeader, { color: colors.error, width: 110 }]}>-</Text>
+                  <Text style={[styles.tableCell, styles.tableCellHeader, { color: colors.error, width: 110 }]}>-</Text>
                   <Text style={[styles.tableCell, styles.tableCellHeader, { color: colors.muted, width: 80 }]}>0</Text>
                 </View>
               </View>
@@ -419,7 +419,7 @@ export default function LoansScreen() {
             <Text style={[styles.chartTitle, { color: colors.foreground }]}>6-Month Outstanding Trend</Text>
             <Text style={[styles.chartSub, { color: colors.muted }]}>Total outstanding balance over time</Text>
             <ScrollView horizontal showsHorizontalScrollIndicator={false}>
-              <TrendChart history={aggregatedBalanceHistory} />
+              <TrendChart history={[]} />
             </ScrollView>
           </View>
 

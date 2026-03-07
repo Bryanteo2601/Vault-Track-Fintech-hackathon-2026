@@ -9,7 +9,7 @@ import {
   calcTotalAssets,
   calcTotalLiabilities,
   calcWellnessScore,
-  calcCBSScore,
+  getCreditScoreDetails,
   formatCurrency,
   calcPortfolioByAssetClass,
 } from '@/lib/store';
@@ -130,7 +130,7 @@ export default function DashboardScreen() {
   const totalAssets = useMemo(() => calcTotalAssets(data), [data]);
   const totalLiabilities = useMemo(() => calcTotalLiabilities(data), [data]);
   const wellnessScore = useMemo(() => calcWellnessScore(data), [data]);
-  const cbsScore = useMemo(() => calcCBSScore(data), [data]);
+  const cbsScore = useMemo(() => getCreditScoreDetails(data.creditScore), [data.creditScore]);
   const portfolioByClass = useMemo(() => calcPortfolioByAssetClass(data.holdings), [data.holdings]);
 
   const bankBalance = useMemo(

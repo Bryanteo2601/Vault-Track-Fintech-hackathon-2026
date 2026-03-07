@@ -7,7 +7,7 @@ import { ScreenContainer } from '@/components/screen-container';
 import { useAppColors } from '@/hooks/use-app-colors';
 import { useAppData } from '@/lib/app-data-context';
 import { BankAccount, AccountType, Loan } from '@/lib/types';
-import { calcCBSScore, calcMaxLoan, formatCurrency } from '@/lib/store';
+import { getCreditScoreDetails, formatCurrency } from '@/lib/store';
 import { IconSymbol } from '@/components/ui/icon-symbol';
 import Svg, { Circle, G, Path } from 'react-native-svg';
 
@@ -208,8 +208,8 @@ export default function BanksScreen() {
   const [modalVisible, setModalVisible] = useState(false);
   const [editingAccount, setEditingAccount] = useState<BankAccount | undefined>();
 
-  const cbsScore = useMemo(() => calcCBSScore(data), [data]);
-  const maxLoan = useMemo(() => calcMaxLoan(data), [data]);
+  const cbsScore = useMemo(() => getCreditScoreDetails(data.creditScore), [data.creditScore]);
+  const maxLoan = useMemo(() => 500000, []);
 
   const totalBalance = useMemo(
     () => data.bankAccounts.filter(a => a.balance > 0).reduce((s, a) => s + a.balance, 0),

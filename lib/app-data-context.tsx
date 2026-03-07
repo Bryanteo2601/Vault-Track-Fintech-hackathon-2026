@@ -1,6 +1,8 @@
 import React, { createContext, useContext, useEffect, useState, useCallback } from 'react';
 import { AppData, BankAccount, Loan, Holding, InsurancePolicy, CreditScoreData } from './types';
 import { loadAppData, saveAppData, resetAppData } from './store';
+import { auth } from './firebase-config';
+import { onAuthStateChanged } from 'firebase/auth';
 
 interface AppDataContextValue {
   data: AppData;
@@ -43,16 +45,43 @@ export function AppDataProvider({ children }: { children: React.ReactNode }) {
     creditScore: { score: 1825, paymentHistory: 88, amountsOwed: 62, lengthOfCredit: 75, creditMix: 80, newCredit: 70, lastUpdated: '' },
   });
   const [isLoading, setIsLoading] = useState(true);
+  const [isAuthenticated, setIsAuthenticated] = useState(false);
 
   const refreshData = useCallback(async () => {
+    if (!isAuthenticated) {
+      setIsLoading(false);
+      return;
+    }
     setIsLoading(true);
-    const loaded = await loadAppData();
-    setData(loaded);
+    try {
+      const loaded = await loadAppData();
+      setData(loaded);
+    } catch (error) {
+      console.error('Error loading data:', error);
+      // Keep default data on error
+    }
     setIsLoading(false);
-  }, []);
+  }, [isAuthenticated]);
 
+  // Monitor authentication state
   useEffect(() => {
-    refreshData();
+    const unsubscribe = onAuthStateChanged(auth, (user) => {
+      setIsAuthenticated(!!user);
+      if (user) {
+        refreshData();
+      } else {
+        // User logged out - reset to default data
+        setData({
+          bankAccounts: [],
+          loans: [],
+          holdings: [],
+          insurancePolicies: [],
+          creditScore: { score: 1825, paymentHistory: 88, amountsOwed: 62, lengthOfCredit: 75, creditMix: 80, newCredit: 70, lastUpdated: '' },
+        });
+        setIsLoading(false);
+      }
+    });
+    return unsubscribe;
   }, [refreshData]);
 
   const persist = useCallback(async (newData: AppData) => {
@@ -122,7 +151,8 @@ export function AppDataProvider({ children }: { children: React.ReactNode }) {
   }, [data, persist]);
 
   const resetData = useCallback(async () => {
-    const fresh = await resetAppData();
+    await resetAppData();
+    const fresh = await loadAppData();
     setData(fresh);
   }, []);
 

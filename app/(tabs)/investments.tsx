@@ -6,7 +6,7 @@ import { ScreenContainer } from '@/components/screen-container';
 import { useAppColors } from '@/hooks/use-app-colors';
 import { useAppData } from '@/lib/app-data-context';
 import { Holding, AssetClass } from '@/lib/types';
-import { formatCurrency, formatPercent, calcPortfolioByAssetClass } from '@/lib/store';
+import { formatCurrency, calcPortfolioByAssetClass } from '@/lib/store';
 import { IconSymbol } from '@/components/ui/icon-symbol';
 import Svg, { G, Path, Circle, Text as SvgText } from 'react-native-svg';
 import { useRouter } from 'expo-router';
