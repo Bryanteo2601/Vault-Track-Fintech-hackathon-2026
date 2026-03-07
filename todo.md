@@ -178,3 +178,13 @@
 - [x] Integrate all components into CPF screen and test
 - [x] Created 24 comprehensive unit tests (all passing)
 - [x] CPF dashboard fully functional with dynamic calculations
+
+## Phase 22: AI Chatbot Improvement - Financial Analysis Assistant
+- [x] Review current AI chatbot implementation and system prompt
+- [x] Create improved AI system prompt with financial analysis framework
+- [x] Update AI chat service to use new prompt and data context
+- [x] Test AI responses with sample portfolio data
+- [x] Verify output follows 5-point format (Snapshot, Observations, Risks, Opportunities, Questions)
+- [x] Fixed age input display to show "years old" instead of "SGD"
+- [x] Created 25 comprehensive unit tests (all passing)
+- [x] AI chatbot now provides data-driven analysis instead of generic advice

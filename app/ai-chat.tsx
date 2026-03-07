@@ -22,7 +22,7 @@ export default function AIChatScreen() {
     {
       id: '1',
       role: 'assistant',
-      content: 'Hello! 👋 I\'m your AI Financial Advisor. I can help you analyze your wealth portfolio, answer questions about your finances, and provide personalized recommendations. What would you like to know?',
+      content: 'Hello! 👋 I\'m your Financial Wellness & Portfolio Analysis Assistant. I analyze your portfolio data to identify concentration risks, liquidity gaps, and asset allocation imbalances. I provide specific, data-driven insights—not generic advice. Try asking me to "analyze my portfolio" or "review my investments."',
       timestamp: new Date(),
     },
   ]);
@@ -93,7 +93,7 @@ export default function AIChatScreen() {
               <IconSymbol name="chevron.left" size={24} color={colors.foreground} />
             </Pressable>
             <View>
-              <Text style={{ fontSize: 18, fontWeight: '700', color: colors.foreground }}>AI Financial Advisor</Text>
+              <Text style={{ fontSize: 18, fontWeight: '700', color: colors.foreground }}>Portfolio Analysis</Text>
               <Text style={{ fontSize: 12, color: colors.muted }}>Powered by Gemini</Text>
             </View>
           </View>
