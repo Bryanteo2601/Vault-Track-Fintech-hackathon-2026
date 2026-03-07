@@ -12,6 +12,7 @@ interface CPFEditableInputProps {
   description?: string;
   isEditing: boolean;
   onEditToggle: () => void;
+  unit?: 'currency' | 'years'; // 'currency' for SGD, 'years' for age
 }
 
 export function CPFEditableInput({
@@ -23,6 +24,7 @@ export function CPFEditableInput({
   description,
   isEditing,
   onEditToggle,
+  unit = 'currency',
 }: CPFEditableInputProps) {
   const colors = useAppColors();
   const [inputValue, setInputValue] = useState(value.toString());
@@ -60,7 +62,9 @@ export function CPFEditableInput({
       {isEditing ? (
         <View style={styles.editMode}>
           <View style={[styles.inputContainer, { borderColor: color }]}>
-            <Text style={[styles.currencySymbol, { color: colors.muted }]}>SGD</Text>
+            {unit === 'currency' && (
+              <Text style={[styles.currencySymbol, { color: colors.muted }]}>SGD</Text>
+            )}
             <TextInput
               style={[styles.textInput, { color: colors.foreground }]}
               value={inputValue}
@@ -69,6 +73,9 @@ export function CPFEditableInput({
               placeholder="0"
               placeholderTextColor={colors.muted}
             />
+            {unit === 'years' && (
+              <Text style={[styles.unitSuffix, { color: colors.muted }]}>years old</Text>
+            )}
           </View>
           <View style={styles.buttonRow}>
             <Pressable
@@ -94,7 +101,9 @@ export function CPFEditableInput({
           </View>
         </View>
       ) : (
-        <Text style={[styles.value, { color: colors.foreground }]}>{formatCurrency(value)}</Text>
+        <Text style={[styles.value, { color: colors.foreground }]}>
+          {unit === 'currency' ? formatCurrency(value) : `${value} years old`}
+        </Text>
       )}
     </View>
   );
@@ -152,6 +161,11 @@ const styles = StyleSheet.create({
     fontSize: 14,
     fontWeight: '600',
     marginRight: 4,
+  },
+  unitSuffix: {
+    fontSize: 14,
+    fontWeight: '600',
+    marginLeft: 4,
   },
   textInput: {
     flex: 1,

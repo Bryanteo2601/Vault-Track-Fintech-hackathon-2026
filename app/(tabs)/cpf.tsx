@@ -96,6 +96,7 @@ export default function CPFScreen() {
           color={colors.primary}
           isEditing={editingField === 'age'}
           onEditToggle={() => toggleEdit('age')}
+          unit="years"
         />
 
         {/* OA Input */}
