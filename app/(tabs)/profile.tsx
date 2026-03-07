@@ -1,21 +1,19 @@
-import { ScrollView, Text, View, Pressable, ActivityIndicator, Alert } from 'react-native';
 import { useState } from 'react';
 import { useRouter } from 'expo-router';
+import { ScrollView, Text, View, Pressable, Alert, ActivityIndicator } from 'react-native';
 import { ScreenContainer } from '@/components/screen-container';
 import { useFirebaseAuth } from '@/lib/firebase-auth-context';
 import { logOut } from '@/lib/firebase-auth';
 import { useAppColors } from '@/hooks/use-app-colors';
-import { IconSymbol } from '@/components/ui/icon-symbol';
+import { MaterialIcons } from '@expo/vector-icons';
 
 export default function ProfileScreen() {
   const router = useRouter();
   const colors = useAppColors();
   const { user, userData, loading } = useFirebaseAuth();
   const [loggingOut, setLoggingOut] = useState(false);
-
-  const handleManageSubscription = () => {
-    router.push('/(tabs)/manage-subscription');
-  };
+  const [billingCycle, setBillingCycle] = useState<'monthly' | 'annual'>('monthly');
+  const [expandedPlan, setExpandedPlan] = useState<'pro' | 'premium' | null>(null);
 
   const handleLogout = async () => {
     Alert.alert('Sign Out', 'Are you sure you want to sign out?', [
@@ -50,8 +48,6 @@ export default function ProfileScreen() {
       </ScreenContainer>
     );
   }
-
-
 
   return (
     <ScreenContainer className="bg-background">
@@ -92,27 +88,199 @@ export default function ProfileScreen() {
             </View>
           </View>
 
-          {/* Subscription Card */}
-          <View className="bg-surface border border-border rounded-2xl p-6 mb-6">
-            <View className="flex-row items-center justify-between mb-3">
-              <Text className="text-lg font-bold text-foreground">Subscription</Text>
+          {/* Manage Subscription Section */}
+          <View className="mb-8">
+            <View className="flex-row items-center justify-between mb-4">
+              <Text className="text-lg font-bold text-foreground">Manage Subscription</Text>
               <View className="px-3 py-1 rounded-full" style={{ backgroundColor: colors.primary + '20' }}>
-                <Text className="text-xs font-bold" style={{ color: colors.primary }}>
-                  FREE
-                </Text>
+                <Text className="text-xs font-bold" style={{ color: colors.primary }}>FREE</Text>
               </View>
             </View>
-            <Text className="text-sm text-muted mb-4">Unlock AI analytics, advanced planning, and premium insights</Text>
-            <View className="gap-2">
+
+            {/* Current Plan Info */}
+            <View className="bg-background border border-border rounded-2xl p-4 mb-4">
+              <Text className="text-xs text-muted mb-2">Current Plan</Text>
+              <Text className="text-2xl font-bold text-foreground">Free</Text>
+              <Text className="text-xs text-muted mt-1">No cost • Limited features</Text>
+            </View>
+
+            {/* Billing Cycle Toggle */}
+            <View className="mb-4">
+              <Text className="text-sm font-semibold text-foreground mb-2">Billing Cycle</Text>
+              <View className="flex-row gap-2">
+                <Pressable
+                  onPress={() => setBillingCycle('monthly')}
+                  className="flex-1 p-2 rounded-lg items-center active:opacity-80"
+                  style={{
+                    backgroundColor: billingCycle === 'monthly' ? colors.primary : colors.surface,
+                    borderWidth: 1,
+                    borderColor: billingCycle === 'monthly' ? colors.primary : colors.border,
+                  }}
+                >
+                  <Text
+                    className="font-semibold text-xs"
+                    style={{ color: billingCycle === 'monthly' ? colors.background : colors.foreground }}
+                  >
+                    Monthly
+                  </Text>
+                </Pressable>
+                <Pressable
+                  onPress={() => setBillingCycle('annual')}
+                  className="flex-1 p-2 rounded-lg items-center active:opacity-80"
+                  style={{
+                    backgroundColor: billingCycle === 'annual' ? colors.primary : colors.surface,
+                    borderWidth: 1,
+                    borderColor: billingCycle === 'annual' ? colors.primary : colors.border,
+                  }}
+                >
+                  <View className="items-center">
+                    <Text
+                      className="font-semibold text-xs"
+                      style={{ color: billingCycle === 'annual' ? colors.background : colors.foreground }}
+                    >
+                      Annual
+                    </Text>
+                    <Text
+                      className="text-xs"
+                      style={{ color: billingCycle === 'annual' ? colors.background : colors.muted }}
+                    >
+                      Save 20%
+                    </Text>
+                  </View>
+                </Pressable>
+              </View>
+            </View>
+
+            {/* Pro Plan */}
+            <View
+              className="rounded-2xl p-4 mb-3 border"
+              style={{
+                backgroundColor: colors.surface,
+                borderColor: expandedPlan === 'pro' ? colors.primary : colors.border,
+              }}
+            >
               <Pressable
-                onPress={handleManageSubscription}
-                className="p-3 rounded-lg items-center justify-center active:opacity-80 flex-row gap-2"
-                style={{ backgroundColor: colors.primary }}
+                onPress={() => setExpandedPlan(expandedPlan === 'pro' ? null : 'pro')}
+                className="flex-row items-center justify-between active:opacity-80"
               >
-                <Text className="font-bold" style={{ fontSize: 14, color: colors.background }}>
-                  Manage Subscription
-                </Text>
+                <View className="flex-1">
+                  <Text className="text-lg font-bold text-foreground">Pro</Text>
+                  <Text className="text-xs text-muted mt-1">Perfect for serious investors</Text>
+                </View>
+                <View className="items-end">
+                  <Text className="text-lg font-bold" style={{ color: colors.primary }}>
+                    SGD {billingCycle === 'monthly' ? '30' : '300'}
+                  </Text>
+                  <Text className="text-xs text-muted">{billingCycle === 'monthly' ? '/mo' : '/yr'}</Text>
+                </View>
               </Pressable>
+
+              {expandedPlan === 'pro' && (
+                <View className="border-t border-border pt-3 mt-3 gap-2">
+                  <View className="flex-row items-center gap-2">
+                    <MaterialIcons name="check-circle" size={14} color={colors.success} />
+                    <Text className="text-xs text-muted">Financial health breakdown</Text>
+                  </View>
+                  <View className="flex-row items-center gap-2">
+                    <MaterialIcons name="check-circle" size={14} color={colors.success} />
+                    <Text className="text-xs text-muted">Diversification analysis</Text>
+                  </View>
+                  <View className="flex-row items-center gap-2">
+                    <MaterialIcons name="check-circle" size={14} color={colors.success} />
+                    <Text className="text-xs text-muted">CPF retirement projections</Text>
+                  </View>
+                  <View className="flex-row items-center gap-2">
+                    <MaterialIcons name="check-circle" size={14} color={colors.success} />
+                    <Text className="text-xs text-muted">50 AI chats/month</Text>
+                  </View>
+                  <Pressable
+                    className="mt-2 p-2 rounded-lg items-center active:opacity-80"
+                    style={{ backgroundColor: colors.primary }}
+                  >
+                    <Text className="font-bold text-xs" style={{ color: colors.background }}>
+                      Choose Pro
+                    </Text>
+                  </Pressable>
+                </View>
+              )}
+            </View>
+
+            {/* Premium Plan */}
+            <View
+              className="rounded-2xl p-4 border-2"
+              style={{
+                backgroundColor: colors.surface,
+                borderColor: expandedPlan === 'premium' ? colors.primary : colors.primary + '40',
+              }}
+            >
+              <View className="absolute top-2 right-2 px-2 py-1 rounded-full" style={{ backgroundColor: colors.primary + '20' }}>
+                <Text className="text-xs font-bold" style={{ color: colors.primary }}>RECOMMENDED</Text>
+              </View>
+
+              <Pressable
+                onPress={() => setExpandedPlan(expandedPlan === 'premium' ? null : 'premium')}
+                className="flex-row items-center justify-between active:opacity-80"
+              >
+                <View className="flex-1">
+                  <Text className="text-lg font-bold text-foreground">Premium</Text>
+                  <Text className="text-xs text-muted mt-1">Everything + AI wealth coach</Text>
+                </View>
+                <View className="items-end">
+                  <Text className="text-lg font-bold" style={{ color: colors.primary }}>
+                    SGD {billingCycle === 'monthly' ? '50' : '400'}
+                  </Text>
+                  <Text className="text-xs text-muted">{billingCycle === 'monthly' ? '/mo' : '/yr'}</Text>
+                </View>
+              </Pressable>
+
+              {expandedPlan === 'premium' && (
+                <View className="border-t border-border pt-3 mt-3 gap-2">
+                  <View className="flex-row items-center gap-2">
+                    <MaterialIcons name="check-circle" size={14} color={colors.success} />
+                    <Text className="text-xs text-muted">All Pro features</Text>
+                  </View>
+                  <View className="flex-row items-center gap-2">
+                    <MaterialIcons name="check-circle" size={14} color={colors.success} />
+                    <Text className="text-xs text-muted">AI wealth coach</Text>
+                  </View>
+                  <View className="flex-row items-center gap-2">
+                    <MaterialIcons name="check-circle" size={14} color={colors.success} />
+                    <Text className="text-xs text-muted">Portfolio stress testing</Text>
+                  </View>
+                  <View className="flex-row items-center gap-2">
+                    <MaterialIcons name="check-circle" size={14} color={colors.success} />
+                    <Text className="text-xs text-muted">Unlimited AI chats</Text>
+                  </View>
+                  <View className="flex-row items-center gap-2">
+                    <MaterialIcons name="check-circle" size={14} color={colors.success} />
+                    <Text className="text-xs text-muted">Global retirement planner</Text>
+                  </View>
+                  <Pressable
+                    className="mt-2 p-2 rounded-lg items-center active:opacity-80"
+                    style={{ backgroundColor: colors.primary }}
+                  >
+                    <Text className="font-bold text-xs" style={{ color: colors.background }}>
+                      Choose Premium
+                    </Text>
+                  </Pressable>
+                </View>
+              )}
+            </View>
+
+            {/* Billing Info */}
+            <View className="bg-background border border-border rounded-2xl p-3 mt-4 gap-2">
+              <View className="flex-row items-start gap-2">
+                <MaterialIcons name="info" size={14} color={colors.muted} style={{ marginTop: 2 }} />
+                <Text className="text-xs text-muted flex-1">
+                  Your subscription will renew automatically. Cancel anytime.
+                </Text>
+              </View>
+              <View className="flex-row items-start gap-2">
+                <MaterialIcons name="info" size={14} color={colors.muted} style={{ marginTop: 2 }} />
+                <Text className="text-xs text-muted flex-1">
+                  Annual plans save you 20% compared to monthly billing.
+                </Text>
+              </View>
             </View>
           </View>
 
@@ -151,10 +319,10 @@ export default function ProfileScreen() {
               className="flex-row items-center justify-between border border-border rounded-lg px-4 py-3"
             >
               <View className="flex-row items-center gap-3">
-                <IconSymbol name="paperplane.fill" size={20} color={colors.primary} />
-                <Text className="text-base font-semibold text-foreground">Change Password</Text>
+                <MaterialIcons name="lock" size={20} color={colors.muted} />
+                <Text className="text-sm font-semibold text-foreground">Change Password</Text>
               </View>
-              <IconSymbol name="chevron.right" size={20} color={colors.muted} />
+              <MaterialIcons name="chevron-right" size={20} color={colors.muted} />
             </Pressable>
 
             <Pressable
@@ -167,10 +335,10 @@ export default function ProfileScreen() {
               className="flex-row items-center justify-between border border-border rounded-lg px-4 py-3"
             >
               <View className="flex-row items-center gap-3">
-                <IconSymbol name="paperplane.fill" size={20} color={colors.primary} />
-                <Text className="text-base font-semibold text-foreground">Privacy Settings</Text>
+                <MaterialIcons name="privacy-tip" size={20} color={colors.muted} />
+                <Text className="text-sm font-semibold text-foreground">Privacy Settings</Text>
               </View>
-              <IconSymbol name="chevron.right" size={20} color={colors.muted} />
+              <MaterialIcons name="chevron-right" size={20} color={colors.muted} />
             </Pressable>
           </View>
 
@@ -180,17 +348,15 @@ export default function ProfileScreen() {
             disabled={loggingOut}
             style={({ pressed }) => [
               {
-                backgroundColor: colors.error,
-                opacity: pressed && !loggingOut ? 0.9 : 1,
+                backgroundColor: '#EF5350',
+                opacity: pressed || loggingOut ? 0.8 : 1,
               },
             ]}
-            className="rounded-lg py-4 flex-row items-center justify-center gap-2"
+            className="p-3 rounded-lg items-center justify-center"
           >
-            {loggingOut ? (
-              <ActivityIndicator color={colors.background} size="small" />
-            ) : (
-              <Text className="text-background font-semibold text-base">Sign Out</Text>
-            )}
+            <Text className="font-bold text-sm text-white">
+              {loggingOut ? 'Signing Out...' : 'Sign Out'}
+            </Text>
           </Pressable>
         </View>
       </ScrollView>

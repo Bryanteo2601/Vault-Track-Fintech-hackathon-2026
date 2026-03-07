@@ -210,11 +210,13 @@
 - [x] All TypeScript errors resolved
 
 ## Phase 25: Navigation & Subscription Flow Refactor
-- [x] Subscription tab already removed from bottom navigation
-- [x] Created comprehensive Manage Subscription screen with tier comparison
-- [x] Built locked feature upgrade modal component
-- [x] Updated Profile page with "Manage Subscription" button
-- [x] Removed inline upgrade modal from Profile
+- [x] Deleted standalone subscription.tsx and manage-subscription.tsx pages
+- [x] Integrated all subscription management features into Profile page
+- [x] Added expandable Pro and Premium plan cards in Profile
+- [x] Added billing cycle toggle (monthly/annual) in Profile
+- [x] Added tier comparison with features list in Profile
+- [x] Added billing information and FAQ in Profile
 - [x] All TypeScript errors resolved
 - [x] Dev server compiling successfully
 - [x] Bottom navigation clean with 7 essential tabs (Dashboard, Banks, Investments, Loans, Insurance, CPF, Profile)
+- [x] All subscription management now accessible from Profile page only
