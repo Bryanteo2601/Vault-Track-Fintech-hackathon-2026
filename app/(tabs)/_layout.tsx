@@ -82,13 +82,6 @@ export default function TabLayout() {
           tabBarIcon: ({ color }) => <IconSymbol size={26} name="paperplane.fill" color={color} />,
         }}
       />
-      <Tabs.Screen
-        name="subscription"
-        options={{
-          title: "Subscription",
-          tabBarIcon: ({ color }) => <IconSymbol size={26} name="star.fill" color={color} />,
-        }}
-      />
     </Tabs>
   );
 }

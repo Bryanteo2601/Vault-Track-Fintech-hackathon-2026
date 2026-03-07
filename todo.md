@@ -200,9 +200,11 @@
 - [x] Created 23 comprehensive unit tests (all passing)
 - [x] Feature gating system fully functional with 3 tiers (Free, Pro, Premium)
 
-## Phase 24: Add Manage Subscriptions to Profile
-- [x] Create subscription card component for profile
-- [x] Integrate subscription card into profile screen
-- [x] Test subscription card functionality
+## Phase 24: Subscription Management on Profile
+- [x] Removed subscription tab from navigation
+- [x] Added "Manage Subscriptions" section to Profile screen
+- [x] Created upgrade modal with Pro and Premium tier options
+- [x] Improved "Upgrade Now" button UI with better styling
+- [x] Subscription section displays current tier (FREE) with upgrade prompt
+- [x] Upgrade modal shows tier comparison with pricing and features
 - [x] All TypeScript errors resolved
-- [x] Subscription card displays current tier, pricing, renewal date, and action buttons

@@ -29,13 +29,20 @@ export function SubscriptionCard({ onManagePress }: SubscriptionCardProps) {
     );
   }
 
-  if (!subscription) {
-    return null;
-  }
+  // Show default free tier if subscription data is not loaded yet
+  const currentSubscription = subscription || {
+    userId: '',
+    tier: 'free' as const,
+    billingCycle: 'monthly' as const,
+    startDate: new Date().toISOString(),
+    renewalDate: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString(),
+    status: 'active' as const,
+    singpassVerified: false,
+  };
 
-  const currentTier = subscription.tier;
+  const currentTier = currentSubscription.tier;
   const plan = SUBSCRIPTION_PLANS[currentTier];
-  const renewalDate = new Date(subscription.renewalDate);
+  const renewalDate = new Date(currentSubscription.renewalDate);
   const daysUntilRenewal = Math.ceil(
     (renewalDate.getTime() - new Date().getTime()) / (1000 * 60 * 60 * 24)
   );
@@ -94,7 +101,7 @@ export function SubscriptionCard({ onManagePress }: SubscriptionCardProps) {
               className="text-xs font-semibold"
               style={{ color: plan.color }}
             >
-              {subscription.status === 'active' ? 'ACTIVE' : 'INACTIVE'}
+              {currentSubscription.status === 'active' ? 'ACTIVE' : 'INACTIVE'}
             </Text>
           </View>
         </View>
@@ -116,20 +123,22 @@ export function SubscriptionCard({ onManagePress }: SubscriptionCardProps) {
         )}
 
         {/* Renewal Info */}
-        <View
-          className="p-3 rounded-lg gap-1"
-          style={{ backgroundColor: colors.background }}
-        >
-          <View className="flex-row items-center gap-2">
-            <MaterialIcons name="schedule" size={16} color={colors.muted} />
-            <Text style={{ color: colors.muted, fontSize: 12 }} className="flex-1">
-              Renews in {daysUntilRenewal} days
+        {currentTier !== 'free' && (
+          <View
+            className="p-3 rounded-lg gap-1"
+            style={{ backgroundColor: colors.background }}
+          >
+            <View className="flex-row items-center gap-2">
+              <MaterialIcons name="schedule" size={16} color={colors.muted} />
+              <Text style={{ color: colors.muted, fontSize: 12 }} className="flex-1">
+                Renews in {daysUntilRenewal} days
+              </Text>
+            </View>
+            <Text style={{ color: colors.muted, fontSize: 11 }}>
+              {renewalDate.toLocaleDateString()}
             </Text>
           </View>
-          <Text style={{ color: colors.muted, fontSize: 11 }}>
-            {renewalDate.toLocaleDateString()}
-          </Text>
-        </View>
+        )}
 
         {/* Features Count */}
         <View className="flex-row items-center gap-2">
@@ -141,18 +150,20 @@ export function SubscriptionCard({ onManagePress }: SubscriptionCardProps) {
 
         {/* Action Buttons */}
         <View className="gap-2 pt-2">
-          <Pressable
-            onPress={onManagePress}
-            className="p-3 rounded-lg items-center active:opacity-80"
-            style={{ backgroundColor: colors.primary }}
-          >
-            <Text
-              className="font-semibold"
-              style={{ fontSize: 13, color: colors.background }}
+          {currentTier !== 'free' && (
+            <Pressable
+              onPress={onManagePress}
+              className="p-3 rounded-lg items-center active:opacity-80"
+              style={{ backgroundColor: colors.primary }}
             >
-              Manage Subscription
-            </Text>
-          </Pressable>
+              <Text
+                className="font-semibold"
+                style={{ fontSize: 13, color: colors.background }}
+              >
+                Manage Subscription
+              </Text>
+            </Pressable>
+          )}
 
           {canUpgrade && (
             <Pressable

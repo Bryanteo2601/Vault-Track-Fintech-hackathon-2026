@@ -6,16 +6,16 @@ import { useFirebaseAuth } from '@/lib/firebase-auth-context';
 import { logOut } from '@/lib/firebase-auth';
 import { useAppColors } from '@/hooks/use-app-colors';
 import { IconSymbol } from '@/components/ui/icon-symbol';
-import { SubscriptionCard } from '@/components/subscription/subscription-card';
 
 export default function ProfileScreen() {
   const router = useRouter();
   const colors = useAppColors();
   const { user, userData, loading } = useFirebaseAuth();
   const [loggingOut, setLoggingOut] = useState(false);
+  const [showUpgradeModal, setShowUpgradeModal] = useState(false);
 
-  const handleManageSubscription = () => {
-    router.push('/(tabs)/subscription');
+  const handleViewPlans = () => {
+    setShowUpgradeModal(true);
   };
 
   const handleLogout = async () => {
@@ -52,10 +52,80 @@ export default function ProfileScreen() {
     );
   }
 
+  // Upgrade Modal Component
+  const UpgradeModal = () => {
+    if (!showUpgradeModal) return null;
+
+    return (
+      <View
+        className="absolute inset-0 bg-black/50 flex items-end"
+        style={{ zIndex: 1000 }}
+      >
+        <View
+          className="w-full bg-surface rounded-t-3xl p-6 gap-4"
+          style={{ maxHeight: '80%' }}
+        >
+          <View className="flex-row justify-between items-center mb-2">
+            <Text className="text-2xl font-bold text-foreground">Upgrade Your Plan</Text>
+            <Pressable onPress={() => setShowUpgradeModal(false)}>
+              <Text className="text-2xl text-muted">×</Text>
+            </Pressable>
+          </View>
+
+          <ScrollView showsVerticalScrollIndicator={false}>
+            {/* Pro Plan */}
+            <View className="bg-background rounded-2xl p-4 mb-3 border border-border">
+              <View className="flex-row items-center justify-between mb-2">
+                <Text className="text-lg font-bold text-foreground">Pro</Text>
+                <Text className="text-sm font-semibold" style={{ color: colors.primary }}>SGD 30/mo</Text>
+              </View>
+              <Text className="text-xs text-muted mb-3">Perfect for serious investors</Text>
+              <View className="gap-2">
+                <Text className="text-xs text-muted">✓ Financial health breakdown</Text>
+                <Text className="text-xs text-muted">✓ Diversification analysis</Text>
+                <Text className="text-xs text-muted">✓ CPF retirement projections</Text>
+                <Text className="text-xs text-muted">✓ 50 AI chats/month</Text>
+              </View>
+              <Pressable
+                className="mt-3 p-2 rounded-lg items-center active:opacity-80"
+                style={{ backgroundColor: colors.primary }}
+              >
+                <Text className="font-bold text-sm" style={{ color: colors.background }}>Choose Pro</Text>
+              </Pressable>
+            </View>
+
+            {/* Premium Plan */}
+            <View className="bg-background rounded-2xl p-4 border" style={{ borderColor: colors.primary, borderWidth: 2 }}>
+              <View className="flex-row items-center justify-between mb-2">
+                <Text className="text-lg font-bold text-foreground">Premium</Text>
+                <Text className="text-sm font-semibold" style={{ color: colors.primary }}>SGD 50/mo</Text>
+              </View>
+              <Text className="text-xs text-muted mb-3">Everything + AI wealth coach</Text>
+              <View className="gap-2">
+                <Text className="text-xs text-muted">✓ All Pro features</Text>
+                <Text className="text-xs text-muted">✓ AI wealth coach</Text>
+                <Text className="text-xs text-muted">✓ Portfolio stress testing</Text>
+                <Text className="text-xs text-muted">✓ Unlimited AI chats</Text>
+                <Text className="text-xs text-muted">✓ Global retirement planner</Text>
+              </View>
+              <Pressable
+                className="mt-3 p-2 rounded-lg items-center active:opacity-80"
+                style={{ backgroundColor: colors.primary }}
+              >
+                <Text className="font-bold text-sm" style={{ color: colors.background }}>Choose Premium</Text>
+              </Pressable>
+            </View>
+          </ScrollView>
+        </View>
+      </View>
+    );
+  };
+
   return (
     <ScreenContainer className="bg-background">
       <ScrollView contentContainerStyle={{ flexGrow: 1 }} showsVerticalScrollIndicator={false}>
         <View className="flex-1 px-6 py-8">
+          <UpgradeModal />
           {/* Header */}
           <View className="mb-8">
             <Text className="text-4xl font-bold text-foreground mb-2">Profile</Text>
@@ -92,8 +162,27 @@ export default function ProfileScreen() {
           </View>
 
           {/* Subscription Card */}
-          <View className="mb-6">
-            <SubscriptionCard onManagePress={handleManageSubscription} />
+          <View className="bg-surface border border-border rounded-2xl p-6 mb-6">
+            <View className="flex-row items-center justify-between mb-3">
+              <Text className="text-lg font-bold text-foreground">Subscription</Text>
+              <View className="px-3 py-1 rounded-full" style={{ backgroundColor: colors.primary + '20' }}>
+                <Text className="text-xs font-bold" style={{ color: colors.primary }}>
+                  FREE
+                </Text>
+              </View>
+            </View>
+            <Text className="text-sm text-muted mb-4">Unlock AI analytics, advanced planning, and premium insights</Text>
+            <View className="gap-2">
+              <Pressable
+                onPress={handleViewPlans}
+                className="p-3 rounded-lg items-center justify-center active:opacity-80 flex-row gap-2"
+                style={{ backgroundColor: colors.primary }}
+              >
+                <Text className="font-bold" style={{ fontSize: 14, color: colors.background }}>
+                  Upgrade Now
+                </Text>
+              </Pressable>
+            </View>
           </View>
 
           {/* Wealth Data Summary */}
