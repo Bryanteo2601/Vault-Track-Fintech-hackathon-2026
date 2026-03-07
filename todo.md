@@ -188,3 +188,14 @@
 - [x] Fixed age input display to show "years old" instead of "SGD"
 - [x] Created 25 comprehensive unit tests (all passing)
 - [x] AI chatbot now provides data-driven analysis instead of generic advice
+
+## Phase 23: Subscription & Feature Gating System
+- [x] Design subscription schema and feature types
+- [x] Create subscription database schema and Firestore integration
+- [x] Build feature gating logic and hooks (useFeatureGate, useCanPerformAI, useSingpassVerification)
+- [x] Create paywall and upgrade modal UI components
+- [x] Create feature gated section and button components
+- [x] Add subscription management screen with tier comparison
+- [x] Add subscription tab to navigation
+- [x] Created 23 comprehensive unit tests (all passing)
+- [x] Feature gating system fully functional with 3 tiers (Free, Pro, Premium)
