@@ -296,30 +296,37 @@ export default function BanksScreen() {
 
           {/* Credit Score Section */}
           <Text style={[styles.sectionTitle, { color: colors.foreground }]}>Credit Bureau Singapore</Text>
-          <View style={[styles.creditCard, { backgroundColor: colors.surface, borderColor: colors.border }]}>
-            <View style={styles.creditTop}>
-              <CreditScoreGauge score={cbsScore.score} grade={cbsScore.grade} color={cbsScore.color} />
-              <View style={styles.creditRight}>
-                <Text style={[styles.creditTitle, { color: colors.foreground }]}>CBS Credit Score</Text>
-                <Text style={[styles.creditSub, { color: colors.muted }]}>Scale: 1000–2000</Text>
-                <View style={[styles.gradeBadge, { backgroundColor: cbsScore.color + '20' }]}>
-                  <Text style={[styles.gradeBadgeText, { color: cbsScore.color }]}>Grade {cbsScore.grade}</Text>
-                </View>
-                <Text style={[styles.maxLoanLabel, { color: colors.muted }]}>Estimated Max Loan</Text>
-                <Text style={[styles.maxLoanValue, { color: colors.primary }]}>{formatCurrency(maxLoan)}</Text>
-                <Text style={[styles.maxLoanNote, { color: colors.muted }]}>Based on 55% TDSR</Text>
-              </View>
+          {data.creditScore.score === 0 ? (
+            <View style={[styles.emptyState, { backgroundColor: colors.surface, borderColor: colors.border }]}>
+              <Text style={styles.emptyIcon}>📊</Text>
+              <Text style={[styles.emptyText, { color: colors.muted }]}>No credit score data yet. Add bank accounts and loans to build your credit history.</Text>
             </View>
+          ) : (
+            <View style={[styles.creditCard, { backgroundColor: colors.surface, borderColor: colors.border }]}>
+              <View style={styles.creditTop}>
+                <CreditScoreGauge score={cbsScore.score} grade={cbsScore.grade} color={cbsScore.color} />
+                <View style={styles.creditRight}>
+                  <Text style={[styles.creditTitle, { color: colors.foreground }]}>CBS Credit Score</Text>
+                  <Text style={[styles.creditSub, { color: colors.muted }]}>Scale: 1000–2000</Text>
+                  <View style={[styles.gradeBadge, { backgroundColor: cbsScore.color + '20' }]}>
+                    <Text style={[styles.gradeBadgeText, { color: cbsScore.color }]}>Grade {cbsScore.grade}</Text>
+                  </View>
+                  <Text style={[styles.maxLoanLabel, { color: colors.muted }]}>Estimated Max Loan</Text>
+                  <Text style={[styles.maxLoanValue, { color: colors.primary }]}>{formatCurrency(maxLoan)}</Text>
+                  <Text style={[styles.maxLoanNote, { color: colors.muted }]}>Based on 55% TDSR</Text>
+                </View>
+              </View>
 
-            {/* CBS Factor Breakdown */}
-            <View style={[styles.factorDivider, { backgroundColor: colors.border }]} />
-            <Text style={[styles.factorTitle, { color: colors.foreground }]}>Score Breakdown</Text>
-            <CreditFactorBar label="Payment History" value={data.creditScore.paymentHistory} weight="35%" color={data.creditScore.paymentHistory >= 80 ? colors.success : colors.warning} />
-            <CreditFactorBar label="Amounts Owed" value={data.creditScore.amountsOwed} weight="30%" color={data.creditScore.amountsOwed <= 50 ? colors.success : colors.warning} />
-            <CreditFactorBar label="Length of Credit" value={data.creditScore.lengthOfCredit} weight="15%" color={data.creditScore.lengthOfCredit >= 70 ? colors.success : colors.warning} />
-            <CreditFactorBar label="Credit Mix" value={data.creditScore.creditMix} weight="10%" color={data.creditScore.creditMix >= 60 ? colors.success : colors.warning} />
-            <CreditFactorBar label="New Credit" value={data.creditScore.newCredit} weight="10%" color={data.creditScore.newCredit >= 60 ? colors.success : colors.warning} />
-          </View>
+              {/* CBS Factor Breakdown */}
+              <View style={[styles.factorDivider, { backgroundColor: colors.border }]} />
+              <Text style={[styles.factorTitle, { color: colors.foreground }]}>Score Breakdown</Text>
+              <CreditFactorBar label="Payment History" value={data.creditScore.paymentHistory} weight="35%" color={data.creditScore.paymentHistory >= 80 ? colors.success : colors.warning} />
+              <CreditFactorBar label="Amounts Owed" value={data.creditScore.amountsOwed} weight="30%" color={data.creditScore.amountsOwed <= 50 ? colors.success : colors.warning} />
+              <CreditFactorBar label="Length of Credit" value={data.creditScore.lengthOfCredit} weight="15%" color={data.creditScore.lengthOfCredit >= 70 ? colors.success : colors.warning} />
+              <CreditFactorBar label="Credit Mix" value={data.creditScore.creditMix} weight="10%" color={data.creditScore.creditMix >= 60 ? colors.success : colors.warning} />
+              <CreditFactorBar label="New Credit" value={data.creditScore.newCredit} weight="10%" color={data.creditScore.newCredit >= 60 ? colors.success : colors.warning} />
+            </View>
+          )}
 
           {/* Loans per Bank Summary */}
           {data.loans.length > 0 && (

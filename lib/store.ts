@@ -28,54 +28,11 @@ function getUserDataPath(userId: string): string {
 }
 
 // ─── Default Sample Data ──────────────────────────────────────────────────────
-const defaultBankAccounts: BankAccount[] = [
-  {
-    id: 'ba1',
-    bankName: 'DBS Bank',
-    accountNumber: '****1234',
-    accountType: 'savings',
-    balance: 45000,
-    interestRate: 3.5,
-    currency: 'SGD',
-    isPrimary: true,
-    createdAt: '2022-01-15',
-  },
-  {
-    id: 'ba2',
-    bankName: 'OCBC Bank',
-    accountNumber: '****5678',
-    accountType: 'daily',
-    balance: 8500,
-    interestRate: 0.05,
-    currency: 'SGD',
-    isPrimary: false,
-    createdAt: '2021-06-01',
-  },
-  {
-    id: 'ba3',
-    bankName: 'UOB Bank',
-    accountNumber: '****9012',
-    accountType: 'credit',
-    balance: -2500,
-    interestRate: 26.9,
-    currency: 'SGD',
-    isPrimary: false,
-    createdAt: '2020-03-10',
-  },
-  {
-    id: 'ba4',
-    bankName: 'Standard Chartered',
-    accountNumber: '****3456',
-    accountType: 'fixed_deposit',
-    balance: 20000,
-    interestRate: 3.8,
-    currency: 'SGD',
-    isPrimary: false,
-    createdAt: '2023-08-20',
-  },
-];
+const defaultBankAccounts: BankAccount[] = [];
 
-const defaultLoans: Loan[] = [
+const defaultLoans: Loan[] = []; // Empty for new users
+
+const defaultLoansOld: Loan[] = [
   {
     id: 'l1',
     bankName: 'Bank A',
@@ -134,7 +91,9 @@ const defaultLoans: Loan[] = [
   },
 ];
 
-const defaultHoldings: Holding[] = [
+const defaultHoldings: Holding[] = []; // Empty for new users
+
+const defaultHoldingsOld: Holding[] = [
   {
     id: 'h1',
     ticker: 'AAPL',
@@ -181,7 +140,9 @@ const defaultHoldings: Holding[] = [
   },
 ];
 
-const defaultInsurancePolicies: InsurancePolicy[] = [
+const defaultInsurancePolicies: InsurancePolicy[] = []; // Empty for new users
+
+const defaultInsurancePoliciesOld: InsurancePolicy[] = [
   {
     id: 'ip1',
     insurer: 'AIA',
@@ -206,14 +167,15 @@ const defaultInsurancePolicies: InsurancePolicy[] = [
   },
 ];
 
+// Empty credit score for new users - will show "No Data" state
 const defaultCreditScore: CreditScoreData = {
-  score: 1825,
-  paymentHistory: 88,
-  amountsOwed: 62,
-  lengthOfCredit: 75,
-  creditMix: 80,
-  newCredit: 70,
-  lastUpdated: new Date().toISOString(),
+  score: 0,
+  paymentHistory: 0,
+  amountsOwed: 0,
+  lengthOfCredit: 0,
+  creditMix: 0,
+  newCredit: 0,
+  lastUpdated: '',
 };
 
 const defaultAppData: AppData = {
