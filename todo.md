@@ -199,3 +199,10 @@
 - [x] Add subscription tab to navigation
 - [x] Created 23 comprehensive unit tests (all passing)
 - [x] Feature gating system fully functional with 3 tiers (Free, Pro, Premium)
+
+## Phase 24: Add Manage Subscriptions to Profile
+- [x] Create subscription card component for profile
+- [x] Integrate subscription card into profile screen
+- [x] Test subscription card functionality
+- [x] All TypeScript errors resolved
+- [x] Subscription card displays current tier, pricing, renewal date, and action buttons

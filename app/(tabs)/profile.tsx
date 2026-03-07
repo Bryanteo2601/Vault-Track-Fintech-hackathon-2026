@@ -6,12 +6,17 @@ import { useFirebaseAuth } from '@/lib/firebase-auth-context';
 import { logOut } from '@/lib/firebase-auth';
 import { useAppColors } from '@/hooks/use-app-colors';
 import { IconSymbol } from '@/components/ui/icon-symbol';
+import { SubscriptionCard } from '@/components/subscription/subscription-card';
 
 export default function ProfileScreen() {
   const router = useRouter();
   const colors = useAppColors();
   const { user, userData, loading } = useFirebaseAuth();
   const [loggingOut, setLoggingOut] = useState(false);
+
+  const handleManageSubscription = () => {
+    router.push('/(tabs)/subscription');
+  };
 
   const handleLogout = async () => {
     Alert.alert('Sign Out', 'Are you sure you want to sign out?', [
@@ -84,6 +89,11 @@ export default function ProfileScreen() {
                 <Text className="text-xs font-mono text-foreground">{user?.uid?.slice(0, 8)}...</Text>
               </View>
             </View>
+          </View>
+
+          {/* Subscription Card */}
+          <View className="mb-6">
+            <SubscriptionCard onManagePress={handleManageSubscription} />
           </View>
 
           {/* Wealth Data Summary */}
