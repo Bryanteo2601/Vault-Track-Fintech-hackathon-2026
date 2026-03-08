@@ -95,8 +95,10 @@ function HealthMetricCard({ label, value, subtitle, color, onPress }: { label: s
       style={({ pressed }) => [styles.metricCard, { backgroundColor: colors.surface, borderColor: colors.border, opacity: pressed ? 0.7 : 1 }]}
     >
       <Text style={[styles.metricValue, { color }]}>{value}</Text>
-      <Text style={[styles.metricLabel, { color: colors.foreground }]}>{label}</Text>
-      <Text style={[styles.metricSub, { color: colors.muted }]}>{subtitle}</Text>
+      <View style={styles.metricContent}>
+        <Text style={[styles.metricLabel, { color: colors.foreground }]}>{label}</Text>
+        <Text style={[styles.metricSub, { color: colors.muted }]}>{subtitle}</Text>
+      </View>
     </Pressable>
   );
 }
@@ -235,7 +237,8 @@ export default function DashboardScreen() {
           </View>
 
           {/* Financial Health Metrics */}
-          <Text style={[styles.sectionLabel, { color: colors.foreground }]}>Financial Health</Text>
+          <View style={[styles.section, { backgroundColor: colors.surface, borderColor: colors.border }]}>
+            <Text style={[styles.sectionTitle, { color: colors.foreground }]}>Financial Health</Text>
           <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.metricsScroll}>
             <View style={styles.metricsRow}>
               <HealthMetricCard
@@ -267,6 +270,7 @@ export default function DashboardScreen() {
               />
             </View>
           </ScrollView>
+          </View>
 
           {/* AI Recommendations */}
           <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginBottom: 12 }}>
@@ -343,19 +347,23 @@ const styles = StyleSheet.create({
   allocDot: { width: 8, height: 8, borderRadius: 4 },
   allocLegendText: { fontSize: 12 },
   sectionLabel: { fontSize: 18, fontWeight: '700', letterSpacing: -0.3 },
+  metricsGrid: { gap: 8, marginBottom: 16 },
   metricsScroll: { marginHorizontal: -16 },
+  metricsContainer: { gap: 8, marginBottom: 16 },
   metricsRow: { flexDirection: 'row', paddingHorizontal: 16, gap: 12 },
   metricCard: {
-    width: 110,
     borderRadius: 16,
     padding: 14,
     borderWidth: 1,
     alignItems: 'center',
-    gap: 4,
+    flexDirection: 'row',
+    gap: 12,
+    marginBottom: 8,
   },
-  metricValue: { fontSize: 22, fontWeight: '800', letterSpacing: -0.5 },
-  metricLabel: { fontSize: 12, fontWeight: '600', textAlign: 'center' },
-  metricSub: { fontSize: 10, textAlign: 'center' },
+  metricValue: { fontSize: 22, fontWeight: '800', letterSpacing: -0.5, minWidth: 50 },
+  metricContent: { flex: 1 },
+  metricLabel: { fontSize: 12, fontWeight: '600' },
+  metricSub: { fontSize: 10, marginTop: 2 },
   aiCard: {
     borderRadius: 14,
     padding: 14,

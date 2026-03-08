@@ -1,4 +1,4 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useCallback } from 'react';
 import {
   ScrollView, View, Text, StyleSheet, Pressable, Modal,
   TextInput, Alert, KeyboardAvoidingView, Platform
@@ -9,7 +9,6 @@ import { useAppData } from '@/lib/app-data-context';
 import { Loan, LoanType, LoanSecurityType } from '@/lib/types';
 import { formatCurrency } from '@/lib/store';
 import { IconSymbol } from '@/components/ui/icon-symbol';
-import Svg, { Polyline, Line, Text as SvgText, Circle } from 'react-native-svg';
 
 // ─── Loan Type Config ─────────────────────────────────────────────────────────
 const loanTypeConfig: Record<LoanType, { label: string; icon: string; color: string }> = {
@@ -29,54 +28,6 @@ const securityTypeConfig: Record<LoanSecurityType, { label: string; color: strin
   unsecured_non_interest: { label: 'Unsecured (Non-Interest)', color: '#8B5CF6' },
   exempted: { label: 'Exempted', color: '#00C896' },
 };
-
-// ─── Trend Line Chart ─────────────────────────────────────────────────────────
-function TrendChart({ history }: { history: any[] }) {
-  const colors = useAppColors();
-  const width = 340;
-  const height = 100;
-  const padding = { top: 10, right: 10, bottom: 24, left: 50 };
-  const chartW = width - padding.left - padding.right;
-  const chartH = height - padding.top - padding.bottom;
-
-  const values = history.length > 0 ? history.map((h: any) => (h.secured || 0) + (h.unsecuredInterestBearing || 0) + (h.unsecuredNonInterest || 0)) : [0];
-  const minVal = values.length > 0 ? Math.min(...values) : 0;
-  const maxVal = values.length > 0 ? Math.max(...values) : 100;
-  const range = maxVal - minVal || 1;
-
-  const points = history.map((_: any, i: number) => {
-    const x = padding.left + (i / (history.length - 1)) * chartW;
-    const y = padding.top + chartH - ((values[i] - minVal) / range) * chartH;
-    return `${x},${y}`;
-  }).join(' ');
-
-  const formatM = (v: number) => `${(v / 1000000).toFixed(2)}M`;
-
-  return (
-    <Svg width={width} height={height}>
-      <Polyline points={points} fill="none" stroke={colors.accent} strokeWidth={2} />
-      {history.map((h: any, i: any) => {
-        const x = padding.left + (i / (history.length - 1)) * chartW;
-        const y = padding.top + chartH - ((values[i] - minVal) / range) * chartH;
-        return <Circle key={i} cx={x} cy={y} r={3} fill={colors.accent} />;
-      })}
-      {history.map((h: any, i: any) => {
-        const x = padding.left + (i / (history.length - 1)) * chartW;
-        return (
-          <SvgText key={i} x={x} y={height - 4} textAnchor="middle" fontSize={8} fill={colors.muted}>
-            {h.month.split(' ')[0].slice(0, 3)}
-          </SvgText>
-        );
-      })}
-      <SvgText x={padding.left - 4} y={padding.top + 4} textAnchor="end" fontSize={8} fill={colors.muted}>
-        {formatM(maxVal)}
-      </SvgText>
-      <SvgText x={padding.left - 4} y={padding.top + chartH} textAnchor="end" fontSize={8} fill={colors.muted}>
-        {formatM(minVal)}
-      </SvgText>
-    </Svg>
-  );
-}
 
 // ─── Loan Card ────────────────────────────────────────────────────────────────
 function LoanCard({ loan, onEdit, onDelete }: { loan: Loan; onEdit: () => void; onDelete: () => void }) {
@@ -102,71 +53,62 @@ function LoanCard({ loan, onEdit, onDelete }: { loan: Loan; onEdit: () => void; 
             </View>
           </View>
           <View style={styles.loanHeaderRight}>
-            <Text style={[styles.loanBalance, { color: colors.error }]}>{formatCurrency(loan.outstandingBalance, loan.currency)}</Text>
-            <View style={[styles.secBadge, { backgroundColor: secCfg.color + '20' }]}>
-              <Text style={[styles.secBadgeText, { color: secCfg.color }]}>{secCfg.label}</Text>
-            </View>
+            <Text style={[styles.loanAmount, { color: colors.foreground }]}>{formatCurrency(loan.outstandingBalance)}</Text>
+            <Text style={[styles.loanRemaining, { color: colors.muted }]}>{yearsLeft}y {monthsLeft}m left</Text>
           </View>
         </View>
 
         {/* Progress Bar */}
-        <View style={styles.progressSection}>
-          <View style={[styles.progressTrack, { backgroundColor: colors.border }]}>
-            <View style={[styles.progressFill, { width: `${progressPct}%`, backgroundColor: cfg.color }]} />
-          </View>
-          <View style={styles.progressLabels}>
-            <Text style={[styles.progressLabel, { color: colors.muted }]}>Paid {progressPct.toFixed(0)}%</Text>
-            <Text style={[styles.progressLabel, { color: colors.muted }]}>
-              {yearsLeft > 0 ? `${yearsLeft}y ` : ''}{monthsLeft}mo left
-            </Text>
-          </View>
+        <View style={[styles.progressBar, { backgroundColor: colors.border }]}>
+          <View style={[styles.progressFill, { width: `${progressPct}%`, backgroundColor: cfg.color }]} />
         </View>
 
-        {/* Key Stats */}
-        <View style={styles.loanStats}>
-          <View style={styles.loanStat}>
-            <Text style={[styles.loanStatLabel, { color: colors.muted }]}>Monthly</Text>
-            <Text style={[styles.loanStatValue, { color: colors.warning }]}>{formatCurrency(loan.monthlyInstalment, loan.currency)}</Text>
+        {/* Summary Row */}
+        <View style={styles.loanSummary}>
+          <View style={styles.loanSummaryItem}>
+            <Text style={[styles.loanSummaryLabel, { color: colors.muted }]}>Monthly</Text>
+            <Text style={[styles.loanSummaryValue, { color: colors.foreground }]}>{formatCurrency(loan.monthlyInstalment)}</Text>
           </View>
-          <View style={styles.loanStat}>
-            <Text style={[styles.loanStatLabel, { color: colors.muted }]}>Interest p.a.</Text>
-            <Text style={[styles.loanStatValue, { color: colors.foreground }]}>{loan.interestRate.toFixed(2)}%</Text>
+          <View style={[styles.loanSummaryDivider, { backgroundColor: colors.border }]} />
+          <View style={styles.loanSummaryItem}>
+            <Text style={[styles.loanSummaryLabel, { color: colors.muted }]}>Interest Rate</Text>
+            <Text style={[styles.loanSummaryValue, { color: colors.foreground }]}>{loan.interestRate}%</Text>
           </View>
-          <View style={styles.loanStat}>
-            <Text style={[styles.loanStatLabel, { color: colors.muted }]}>Total Interest</Text>
-            <Text style={[styles.loanStatValue, { color: colors.error }]}>{formatCurrency(Math.max(0, totalInterest), loan.currency)}</Text>
+          <View style={[styles.loanSummaryDivider, { backgroundColor: colors.border }]} />
+          <View style={styles.loanSummaryItem}>
+            <Text style={[styles.loanSummaryLabel, { color: colors.muted }]}>Type</Text>
+            <Text style={[styles.loanSummaryValue, { color: secCfg.color }]}>{secCfg.label}</Text>
           </View>
         </View>
       </Pressable>
 
+      {/* Expanded Details */}
       {expanded && (
-        <View style={[styles.loanExpanded, { borderTopColor: colors.border }]}>
-          <View style={styles.expandedGrid}>
-            <View style={styles.expandedItem}>
-              <Text style={[styles.expandedLabel, { color: colors.muted }]}>Original Amount</Text>
-              <Text style={[styles.expandedValue, { color: colors.foreground }]}>{formatCurrency(loan.originalAmount, loan.currency)}</Text>
-            </View>
-            <View style={styles.expandedItem}>
-              <Text style={[styles.expandedLabel, { color: colors.muted }]}>Total Paid</Text>
-              <Text style={[styles.expandedValue, { color: colors.success }]}>{formatCurrency(totalPaid, loan.currency)}</Text>
-            </View>
-            <View style={styles.expandedItem}>
-              <Text style={[styles.expandedLabel, { color: colors.muted }]}>Outstanding</Text>
-              <Text style={[styles.expandedValue, { color: colors.error }]}>{formatCurrency(loan.outstandingBalance, loan.currency)}</Text>
-            </View>
-            <View style={styles.expandedItem}>
-              <Text style={[styles.expandedLabel, { color: colors.muted }]}>Start Date</Text>
-              <Text style={[styles.expandedValue, { color: colors.foreground }]}>{loan.startDate}</Text>
-            </View>
+        <View style={[styles.expandedDetails, { borderTopColor: colors.border }]}>
+          <View style={styles.detailRow}>
+            <Text style={[styles.detailLabel, { color: colors.muted }]}>Original Amount</Text>
+            <Text style={[styles.detailValue, { color: colors.foreground }]}>{formatCurrency(loan.originalAmount)}</Text>
           </View>
-          <View style={styles.expandedActions}>
-            <Pressable onPress={onEdit} style={[styles.expandedBtn, { borderColor: colors.primary }]}>
-              <IconSymbol name="pencil" size={14} color={colors.primary} />
-              <Text style={[styles.expandedBtnText, { color: colors.primary }]}>Edit</Text>
+          <View style={styles.detailRow}>
+            <Text style={[styles.detailLabel, { color: colors.muted }]}>Total Paid</Text>
+            <Text style={[styles.detailValue, { color: colors.success }]}>{formatCurrency(totalPaid)}</Text>
+          </View>
+          <View style={styles.detailRow}>
+            <Text style={[styles.detailLabel, { color: colors.muted }]}>Remaining Interest</Text>
+            <Text style={[styles.detailValue, { color: colors.error }]}>{formatCurrency(totalInterest)}</Text>
+          </View>
+          <View style={styles.detailRow}>
+            <Text style={[styles.detailLabel, { color: colors.muted }]}>Progress</Text>
+            <Text style={[styles.detailValue, { color: colors.foreground }]}>{progressPct.toFixed(1)}%</Text>
+          </View>
+
+          {/* Action Buttons */}
+          <View style={styles.actionButtons}>
+            <Pressable onPress={onEdit} style={({ pressed }) => [styles.editBtn, { backgroundColor: colors.primary, opacity: pressed ? 0.8 : 1 }]}>
+              <Text style={styles.editBtnText}>Edit</Text>
             </Pressable>
-            <Pressable onPress={onDelete} style={[styles.expandedBtn, { borderColor: colors.error }]}>
-              <IconSymbol name="trash.fill" size={14} color={colors.error} />
-              <Text style={[styles.expandedBtnText, { color: colors.error }]}>Delete</Text>
+            <Pressable onPress={onDelete} style={({ pressed }) => [styles.deleteBtn, { backgroundColor: colors.error, opacity: pressed ? 0.8 : 1 }]}>
+              <Text style={styles.deleteBtnText}>Delete</Text>
             </Pressable>
           </View>
         </View>
@@ -175,29 +117,24 @@ function LoanCard({ loan, onEdit, onDelete }: { loan: Loan; onEdit: () => void; 
   );
 }
 
-// ─── Add/Edit Loan Modal ──────────────────────────────────────────────────────
-function LoanModal({ visible, loan, onClose, onSave }: {
-  visible: boolean;
-  loan?: Loan;
-  onClose: () => void;
-  onSave: (data: Omit<Loan, 'id'>) => void;
-}) {
+// ─── Loan Modal ────────────────────────────────────────────────────────────────
+function LoanModal({ visible, loan, onClose, onSave }: { visible: boolean; loan?: Loan; onClose: () => void; onSave: (data: Omit<Loan, 'id'>) => void }) {
   const colors = useAppColors();
-  const [bankName, setBankName] = useState(loan?.bankName || '');
-  const [loanType, setLoanType] = useState<LoanType>(loan?.loanType || 'personal_loan');
-  const [securityType, setSecurityType] = useState<LoanSecurityType>(loan?.securityType || 'unsecured_interest_bearing');
-  const [originalAmount, setOriginalAmount] = useState(loan?.originalAmount?.toString() || '');
-  const [outstandingBalance, setOutstandingBalance] = useState(loan?.outstandingBalance?.toString() || '');
-  const [interestRate, setInterestRate] = useState(loan?.interestRate?.toString() || '');
-  const [monthlyInstalment, setMonthlyInstalment] = useState(loan?.monthlyInstalment?.toString() || '');
-  const [monthsRemaining, setMonthsRemaining] = useState(loan?.monthsRemaining?.toString() || '');
-  const [totalMonths, setTotalMonths] = useState(loan?.totalMonths?.toString() || '');
+  const [bankName, setBankName] = useState('');
+  const [loanType, setLoanType] = useState<LoanType>('personal_loan');
+  const [securityType, setSecurityType] = useState<LoanSecurityType>('unsecured_interest_bearing');
+  const [originalAmount, setOriginalAmount] = useState('');
+  const [outstandingBalance, setOutstandingBalance] = useState('');
+  const [interestRate, setInterestRate] = useState('');
+  const [monthlyInstalment, setMonthlyInstalment] = useState('');
+  const [monthsRemaining, setMonthsRemaining] = useState('');
+  const [totalMonths, setTotalMonths] = useState('');
 
   React.useEffect(() => {
-    if (visible) {
-      setBankName(loan?.bankName || '');
-      setLoanType(loan?.loanType || 'personal_loan');
-      setSecurityType(loan?.securityType || 'unsecured_interest_bearing');
+    if (visible && loan) {
+      setBankName(loan.bankName);
+      setLoanType(loan.loanType);
+      setSecurityType(loan.securityType);
       setOriginalAmount(loan?.originalAmount?.toString() || '');
       setOutstandingBalance(loan?.outstandingBalance?.toString() || '');
       setInterestRate(loan?.interestRate?.toString() || '');
@@ -301,17 +238,17 @@ function LoanModal({ visible, loan, onClose, onSave }: {
               <View style={{ flex: 1 }}>
                 <Text style={[styles.inputLabel, { color: colors.muted }]}>Months Remaining</Text>
                 <TextInput style={[styles.input, { backgroundColor: colors.surface, borderColor: colors.border, color: colors.foreground }]}
-                  value={monthsRemaining} onChangeText={setMonthsRemaining} keyboardType="numeric" placeholder="108" placeholderTextColor={colors.muted} />
+                  value={monthsRemaining} onChangeText={setMonthsRemaining} keyboardType="numeric" placeholder="240" placeholderTextColor={colors.muted} />
               </View>
               <View style={{ flex: 1 }}>
                 <Text style={[styles.inputLabel, { color: colors.muted }]}>Total Months</Text>
                 <TextInput style={[styles.input, { backgroundColor: colors.surface, borderColor: colors.border, color: colors.foreground }]}
-                  value={totalMonths} onChangeText={setTotalMonths} keyboardType="numeric" placeholder="240" placeholderTextColor={colors.muted} />
+                  value={totalMonths} onChangeText={setTotalMonths} keyboardType="numeric" placeholder="360" placeholderTextColor={colors.muted} />
               </View>
             </View>
 
-            <Pressable onPress={handleSave} style={[styles.saveBtn, { backgroundColor: colors.primary }]}>
-              <Text style={styles.saveBtnText}>Save Loan</Text>
+            <Pressable onPress={handleSave} style={({ pressed }) => [styles.saveBtn, { backgroundColor: colors.primary, opacity: pressed ? 0.8 : 1 }]}>
+              <Text style={styles.saveBtnText}>{loan ? 'Update Loan' : 'Add Loan'}</Text>
             </Pressable>
           </ScrollView>
         </View>
@@ -320,7 +257,7 @@ function LoanModal({ visible, loan, onClose, onSave }: {
   );
 }
 
-// ─── Main Loans Screen ────────────────────────────────────────────────────────
+// ─── Main Loans Screen ─────────────────────────────────────────────────────────
 export default function LoansScreen() {
   const colors = useAppColors();
   const { data, addLoan, updateLoan, deleteLoan } = useAppData();
@@ -380,47 +317,23 @@ export default function LoansScreen() {
             </View>
           </View>
 
-          {/* CBS Aggregated Balances Table */}
-          <View style={[styles.tableCard, { backgroundColor: colors.surface, borderColor: colors.border }]}>
-            <View style={[styles.tableHeaderRow, { backgroundColor: colors.primary }]}>
-              <Text style={styles.tableHeaderText}>Aggregated Outstanding Balances (CBS Format)</Text>
-            </View>
-            <ScrollView horizontal showsHorizontalScrollIndicator={true}>
-              <View>
-                <View style={[styles.tableRow, { backgroundColor: colors.primary + '30' }]}>
-                  <Text style={[styles.tableCell, styles.tableCellHeader, { color: colors.foreground, width: 80 }]}>Month</Text>
-                  <Text style={[styles.tableCell, styles.tableCellHeader, { color: colors.foreground, width: 100 }]}>Secured</Text>
-                  <Text style={[styles.tableCell, styles.tableCellHeader, { color: colors.foreground, width: 110 }]}>Unsecured (IB)</Text>
-                  <Text style={[styles.tableCell, styles.tableCellHeader, { color: colors.foreground, width: 110 }]}>Unsecured (NIB)</Text>
-                  <Text style={[styles.tableCell, styles.tableCellHeader, { color: colors.foreground, width: 80 }]}>Exempted</Text>
-                </View>
-                {data.loans.map((row: any, i: any) => (
-                  <View key={i} style={[styles.tableRow, { backgroundColor: i % 2 === 0 ? colors.surface : colors.background }]}>
-                    <Text style={[styles.tableCell, { color: colors.foreground, width: 80, fontWeight: i === 0 ? '700' : '400' }]}>{row.month}</Text>
-                    <Text style={[styles.tableCell, { color: colors.foreground, width: 100 }]}>{row.secured.toLocaleString()}</Text>
-                    <Text style={[styles.tableCell, { color: colors.foreground, width: 110 }]}>{row.unsecuredInterestBearing.toLocaleString()}</Text>
-                    <Text style={[styles.tableCell, { color: colors.foreground, width: 110 }]}>{row.unsecuredNonInterest.toLocaleString()}</Text>
-                    <Text style={[styles.tableCell, { color: colors.muted, width: 80 }]}>{row.exempted.toLocaleString()}</Text>
-                  </View>
-                ))}
-                <View style={[styles.tableRow, { backgroundColor: colors.primary + '20' }]}>
-                  <Text style={[styles.tableCell, styles.tableCellHeader, { color: colors.foreground, width: 80 }]}>Total</Text>
-                  <Text style={[styles.tableCell, styles.tableCellHeader, { color: colors.error, width: 100 }]}>{data.loans.reduce((sum, l) => sum + l.outstandingBalance, 0).toLocaleString()}</Text>
-                  <Text style={[styles.tableCell, styles.tableCellHeader, { color: colors.error, width: 110 }]}>-</Text>
-                  <Text style={[styles.tableCell, styles.tableCellHeader, { color: colors.error, width: 110 }]}>-</Text>
-                  <Text style={[styles.tableCell, styles.tableCellHeader, { color: colors.muted, width: 80 }]}>0</Text>
-                </View>
+          {/* Loan Breakdown by Security Type */}
+          <View style={[styles.breakdownCard, { backgroundColor: colors.surface, borderColor: colors.border }]}>
+            <Text style={[styles.breakdownTitle, { color: colors.foreground }]}>Loan Breakdown by Security Type</Text>
+            <View style={styles.breakdownGrid}>
+              <View style={styles.breakdownItem}>
+                <Text style={[styles.breakdownLabel, { color: colors.muted }]}>Secured</Text>
+                <Text style={[styles.breakdownValue, { color: colors.success }]}>{formatCurrency(totalSecured)}</Text>
               </View>
-            </ScrollView>
-          </View>
-
-          {/* 6-Month Trend Chart */}
-          <View style={[styles.chartCard, { backgroundColor: colors.surface, borderColor: colors.border }]}>
-            <Text style={[styles.chartTitle, { color: colors.foreground }]}>6-Month Outstanding Trend</Text>
-            <Text style={[styles.chartSub, { color: colors.muted }]}>Total outstanding balance over time</Text>
-            <ScrollView horizontal showsHorizontalScrollIndicator={false}>
-              <TrendChart history={[]} />
-            </ScrollView>
+              <View style={styles.breakdownItem}>
+                <Text style={[styles.breakdownLabel, { color: colors.muted }]}>Unsecured (Interest)</Text>
+                <Text style={[styles.breakdownValue, { color: colors.warning }]}>{formatCurrency(totalUnsecuredIB)}</Text>
+              </View>
+              <View style={styles.breakdownItem}>
+                <Text style={[styles.breakdownLabel, { color: colors.muted }]}>Unsecured (Non-Interest)</Text>
+                <Text style={[styles.breakdownValue, { color: colors.error }]}>{formatCurrency(totalUnsecuredNI)}</Text>
+              </View>
+            </View>
           </View>
 
           {/* Loan Cards */}
@@ -428,97 +341,87 @@ export default function LoansScreen() {
           {data.loans.length === 0 ? (
             <View style={[styles.emptyState, { backgroundColor: colors.surface, borderColor: colors.border }]}>
               <Text style={styles.emptyIcon}>💳</Text>
-              <Text style={[styles.emptyText, { color: colors.muted }]}>No loans recorded. Tap + to add a loan.</Text>
+              <Text style={[styles.emptyText, { color: colors.foreground }]}>No loans yet</Text>
+              <Text style={[styles.emptySubtext, { color: colors.muted }]}>Add your loans to track payments and interest</Text>
             </View>
           ) : (
             data.loans.map(loan => (
-              <LoanCard key={loan.id} loan={loan}
-                onEdit={() => handleEdit(loan)}
-                onDelete={() => handleDelete(loan)} />
+              <LoanCard key={loan.id} loan={loan} onEdit={() => handleEdit(loan)} onDelete={() => handleDelete(loan)} />
             ))
           )}
         </View>
       </ScrollView>
 
-      <LoanModal
-        visible={modalVisible}
-        loan={editingLoan}
-        onClose={() => { setModalVisible(false); setEditingLoan(undefined); }}
-        onSave={handleSave}
-      />
+      <LoanModal visible={modalVisible} loan={editingLoan} onClose={() => { setModalVisible(false); setEditingLoan(undefined); }} onSave={handleSave} />
     </ScreenContainer>
   );
 }
 
+// ─── Styles ───────────────────────────────────────────────────────────────────
 const styles = StyleSheet.create({
-  header: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', paddingHorizontal: 20, paddingVertical: 16 },
-  headerTitle: { fontSize: 22, fontWeight: '800', color: '#FFFFFF', letterSpacing: -0.5 },
-  headerSub: { fontSize: 12, color: 'rgba(255,255,255,0.7)', marginTop: 2 },
-  addBtn: { width: 44, height: 44, borderRadius: 22, backgroundColor: 'rgba(255,255,255,0.2)', alignItems: 'center', justifyContent: 'center' },
-  content: { padding: 16, gap: 16 },
-  summaryCard: { borderRadius: 16, padding: 16 },
-  summaryMainLabel: { fontSize: 11, color: 'rgba(255,255,255,0.7)', fontWeight: '500', textTransform: 'uppercase', letterSpacing: 0.5 },
-  summaryMainValue: { fontSize: 28, fontWeight: '800', color: '#FFFFFF', marginTop: 4, marginBottom: 12, letterSpacing: -1 },
-  summaryRow: { flexDirection: 'row', alignItems: 'center', gap: 16 },
-  summaryStat: { flex: 1 },
-  summaryStatLabel: { fontSize: 11, color: 'rgba(255,255,255,0.6)' },
-  summaryStatValue: { fontSize: 16, fontWeight: '700', marginTop: 2 },
-  summaryDivider: { width: 1, height: 36 },
-  tableCard: { borderRadius: 16, borderWidth: 1, overflow: 'hidden' },
-  tableHeaderRow: { padding: 12 },
-  tableHeaderText: { color: '#FFFFFF', fontSize: 13, fontWeight: '700' },
-  tableRow: { flexDirection: 'row', paddingVertical: 8, paddingHorizontal: 12 },
-  tableCell: { fontSize: 11, paddingRight: 8 },
-  tableCellHeader: { fontWeight: '700', fontSize: 11 },
-  chartCard: { borderRadius: 16, padding: 16, borderWidth: 1 },
-  chartTitle: { fontSize: 15, fontWeight: '700', marginBottom: 4 },
-  chartSub: { fontSize: 12, marginBottom: 12 },
-  sectionTitle: { fontSize: 18, fontWeight: '700', letterSpacing: -0.3 },
-  loanCard: { borderRadius: 16, borderWidth: 1, overflow: 'hidden' },
-  loanHeader: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', padding: 14 },
-  loanHeaderLeft: { flexDirection: 'row', alignItems: 'center', gap: 10 },
+  header: { paddingHorizontal: 16, paddingVertical: 16, flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' },
+  headerTitle: { fontSize: 24, fontWeight: 'bold', color: '#FFFFFF', marginBottom: 4 },
+  headerSub: { fontSize: 13, color: 'rgba(255,255,255,0.7)' },
+  addBtn: { width: 40, height: 40, borderRadius: 20, justifyContent: 'center', alignItems: 'center', backgroundColor: 'rgba(255,255,255,0.2)' },
+  content: { paddingHorizontal: 16, paddingVertical: 16, gap: 16 },
+  summaryCard: { borderRadius: 12, padding: 16, marginBottom: 8 },
+  summaryMainLabel: { fontSize: 12, fontWeight: '600', color: 'rgba(255,255,255,0.8)', marginBottom: 4 },
+  summaryMainValue: { fontSize: 28, fontWeight: 'bold', color: '#FFFFFF', marginBottom: 16 },
+  summaryRow: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' },
+  summaryStat: { flex: 1, alignItems: 'center' },
+  summaryStatLabel: { fontSize: 11, color: 'rgba(255,255,255,0.7)', marginBottom: 4 },
+  summaryStatValue: { fontSize: 16, fontWeight: 'bold' },
+  summaryDivider: { width: 1, height: 40, marginHorizontal: 12 },
+  breakdownCard: { borderRadius: 12, padding: 16, borderWidth: 1 },
+  breakdownTitle: { fontSize: 14, fontWeight: '600', marginBottom: 12 },
+  breakdownGrid: { flexDirection: 'row', justifyContent: 'space-between', gap: 12 },
+  breakdownItem: { flex: 1, alignItems: 'center', padding: 12, borderRadius: 8, backgroundColor: 'rgba(0,0,0,0.05)' },
+  breakdownLabel: { fontSize: 11, marginBottom: 6 },
+  breakdownValue: { fontSize: 16, fontWeight: 'bold' },
+  sectionTitle: { fontSize: 16, fontWeight: '600', marginTop: 8, marginBottom: 12 },
+  loanCard: { borderRadius: 12, borderWidth: 1, marginBottom: 12, overflow: 'hidden' },
+  loanHeader: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', padding: 12 },
+  loanHeaderLeft: { flexDirection: 'row', alignItems: 'center', gap: 12, flex: 1 },
   loanIcon: { fontSize: 28 },
-  loanType: { fontSize: 15, fontWeight: '700' },
-  loanBank: { fontSize: 12, marginTop: 1 },
-  loanHeaderRight: { alignItems: 'flex-end', gap: 4 },
-  loanBalance: { fontSize: 17, fontWeight: '800', letterSpacing: -0.5 },
-  secBadge: { paddingHorizontal: 8, paddingVertical: 3, borderRadius: 10 },
-  secBadgeText: { fontSize: 10, fontWeight: '600' },
-  progressSection: { paddingHorizontal: 14, paddingBottom: 10 },
-  progressTrack: { height: 6, borderRadius: 3, overflow: 'hidden', marginBottom: 4 },
-  progressFill: { height: 6, borderRadius: 3 },
-  progressLabels: { flexDirection: 'row', justifyContent: 'space-between' },
-  progressLabel: { fontSize: 11 },
-  loanStats: { flexDirection: 'row', paddingHorizontal: 14, paddingBottom: 14, gap: 8 },
-  loanStat: { flex: 1, alignItems: 'center' },
-  loanStatLabel: { fontSize: 10, textAlign: 'center', marginBottom: 2 },
-  loanStatValue: { fontSize: 13, fontWeight: '700', textAlign: 'center' },
-  loanExpanded: { borderTopWidth: 1, padding: 14 },
-  expandedGrid: { flexDirection: 'row', flexWrap: 'wrap', gap: 12, marginBottom: 12 },
-  expandedItem: { width: '45%' },
-  expandedLabel: { fontSize: 11, marginBottom: 2 },
-  expandedValue: { fontSize: 14, fontWeight: '700' },
-  expandedActions: { flexDirection: 'row', gap: 10 },
-  expandedBtn: { flex: 1, flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 6, borderWidth: 1.5, borderRadius: 10, padding: 10 },
-  expandedBtnText: { fontSize: 13, fontWeight: '600' },
-  emptyState: { borderRadius: 16, padding: 32, borderWidth: 1, alignItems: 'center', gap: 8 },
-  emptyIcon: { fontSize: 40 },
-  emptyText: { fontSize: 14, textAlign: 'center' },
-  // Modal
+  loanType: { fontSize: 14, fontWeight: '600', marginBottom: 2 },
+  loanBank: { fontSize: 12 },
+  loanHeaderRight: { alignItems: 'flex-end' },
+  loanAmount: { fontSize: 14, fontWeight: 'bold', marginBottom: 2 },
+  loanRemaining: { fontSize: 12 },
+  progressBar: { height: 6, borderRadius: 3, marginHorizontal: 12, marginVertical: 8, overflow: 'hidden' },
+  progressFill: { height: '100%', borderRadius: 3 },
+  loanSummary: { flexDirection: 'row', paddingHorizontal: 12, paddingBottom: 12, alignItems: 'center' },
+  loanSummaryItem: { flex: 1, alignItems: 'center' },
+  loanSummaryLabel: { fontSize: 10, marginBottom: 4 },
+  loanSummaryValue: { fontSize: 13, fontWeight: '600' },
+  loanSummaryDivider: { width: 1, height: 32, marginHorizontal: 8 },
+  expandedDetails: { borderTopWidth: 1, padding: 12, gap: 8 },
+  detailRow: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' },
+  detailLabel: { fontSize: 12 },
+  detailValue: { fontSize: 13, fontWeight: '600' },
+  actionButtons: { flexDirection: 'row', gap: 8, marginTop: 12 },
+  editBtn: { flex: 1, paddingVertical: 10, borderRadius: 8, alignItems: 'center' },
+  editBtnText: { color: '#FFFFFF', fontWeight: '600', fontSize: 14 },
+  deleteBtn: { flex: 1, paddingVertical: 10, borderRadius: 8, alignItems: 'center' },
+  deleteBtnText: { color: '#FFFFFF', fontWeight: '600', fontSize: 14 },
+  emptyState: { borderRadius: 12, borderWidth: 1, padding: 32, alignItems: 'center', marginVertical: 16 },
+  emptyIcon: { fontSize: 48, marginBottom: 12 },
+  emptyText: { fontSize: 16, fontWeight: '600', marginBottom: 4 },
+  emptySubtext: { fontSize: 13, textAlign: 'center' },
   modal: { flex: 1 },
-  modalHeader: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', padding: 20, paddingBottom: 0 },
-  modalTitle: { fontSize: 20, fontWeight: '800' },
-  modalBody: { padding: 20, gap: 4, paddingBottom: 40 },
-  inputLabel: { fontSize: 12, fontWeight: '600', marginBottom: 4, marginTop: 12, textTransform: 'uppercase', letterSpacing: 0.5 },
-  input: { borderWidth: 1, borderRadius: 12, padding: 14, fontSize: 16 },
+  modalHeader: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', paddingHorizontal: 16, paddingVertical: 16, borderBottomWidth: 1, borderBottomColor: 'rgba(0,0,0,0.1)' },
+  modalTitle: { fontSize: 18, fontWeight: 'bold' },
+  modalBody: { paddingHorizontal: 16, paddingVertical: 16, gap: 16 },
+  inputLabel: { fontSize: 12, fontWeight: '600', marginBottom: 6 },
+  input: { borderWidth: 1, borderRadius: 8, paddingHorizontal: 12, paddingVertical: 10, fontSize: 14 },
   inputRow: { flexDirection: 'row', gap: 12 },
-  typeGrid: { flexDirection: 'row', flexWrap: 'wrap', gap: 8 },
-  typeOption: { borderWidth: 1.5, borderRadius: 10, padding: 10, alignItems: 'center', minWidth: '22%', flex: 1 },
-  typeOptionEmoji: { fontSize: 20, marginBottom: 4 },
-  typeOptionText: { fontSize: 10, fontWeight: '600', textAlign: 'center' },
-  secGrid: { flexDirection: 'row', flexWrap: 'wrap', gap: 8 },
-  secOption: { borderWidth: 1.5, borderRadius: 10, padding: 10, alignItems: 'center', flex: 1 },
+  typeGrid: { flexDirection: 'row', flexWrap: 'wrap', gap: 8, marginBottom: 16 },
+  typeOption: { flex: 0.45, borderWidth: 1, borderRadius: 8, padding: 12, alignItems: 'center', gap: 6 },
+  typeOptionEmoji: { fontSize: 24 },
+  typeOptionText: { fontSize: 11, fontWeight: '600', textAlign: 'center' },
+  secGrid: { flexDirection: 'row', flexWrap: 'wrap', gap: 8, marginBottom: 16 },
+  secOption: { flex: 0.45, borderWidth: 1, borderRadius: 8, padding: 12, alignItems: 'center' },
   secOptionText: { fontSize: 11, fontWeight: '600', textAlign: 'center' },
-  saveBtn: { borderRadius: 14, padding: 16, alignItems: 'center', marginTop: 24 },
-  saveBtnText: { color: '#FFFFFF', fontSize: 16, fontWeight: '700' },
+  saveBtn: { paddingVertical: 12, borderRadius: 8, alignItems: 'center', marginTop: 8, marginBottom: 32 },
+  saveBtnText: { color: '#FFFFFF', fontWeight: '600', fontSize: 16 },
 });
