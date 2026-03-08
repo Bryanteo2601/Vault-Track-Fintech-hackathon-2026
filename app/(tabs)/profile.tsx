@@ -1,19 +1,58 @@
 import { useState } from 'react';
 import { useRouter } from 'expo-router';
-import { ScrollView, Text, View, Pressable, Alert, ActivityIndicator } from 'react-native';
+import { ScrollView, Text, View, Pressable, Alert, ActivityIndicator, TextInput } from 'react-native';
 import { ScreenContainer } from '@/components/screen-container';
 import { useFirebaseAuth } from '@/lib/firebase-auth-context';
 import { logOut } from '@/lib/firebase-auth';
 import { useAppColors } from '@/hooks/use-app-colors';
+import { useAppData } from '@/lib/app-data-context';
+import { determineLifeStage, getLifeStageName, getRecommendedGoals, getKeyFocusAreas } from '@/lib/life-stage';
 import { MaterialIcons } from '@expo/vector-icons';
 
 export default function ProfileScreen() {
   const router = useRouter();
   const colors = useAppColors();
   const { user, userData, loading } = useFirebaseAuth();
+  const { data: appData, updateAppData } = useAppData();
   const [loggingOut, setLoggingOut] = useState(false);
   const [billingCycle, setBillingCycle] = useState<'monthly' | 'annual'>('monthly');
   const [expandedPlan, setExpandedPlan] = useState<'pro' | 'premium' | null>(null);
+  const [birthDate, setBirthDate] = useState(appData?.userProfile?.birthDate || '');
+  const [editingBirthDate, setEditingBirthDate] = useState(false);
+
+  const lifeStage = appData?.userProfile ? determineLifeStage(appData.userProfile.birthDate) : null;
+  const stageName = lifeStage ? getLifeStageName(lifeStage) : null;
+  const goals = lifeStage ? getRecommendedGoals(lifeStage) : [];
+  const focusAreas = lifeStage ? getKeyFocusAreas(lifeStage) : [];
+
+  const getStageIcon = (stage: string) => {
+    const icons: Record<string, string> = {
+      fresh_entrant: '🚀',
+      starting_family: '👨‍👩‍👧',
+      supporting_parents: '👴',
+      dual_responsibility: '⚖️',
+      pre_retiree: '⏰',
+      golden_years: '🌟',
+    };
+    return icons[stage] || '💰';
+  };
+
+  const handleSaveBirthDate = async () => {
+    if (birthDate) {
+      try {
+        await updateAppData({
+          userProfile: {
+            ...appData?.userProfile,
+            birthDate,
+          },
+        });
+        setEditingBirthDate(false);
+        Alert.alert('Success', 'Birth date updated successfully');
+      } catch (err) {
+        Alert.alert('Error', 'Failed to update birth date');
+      }
+    }
+  };
 
   const handleLogout = async () => {
     Alert.alert('Sign Out', 'Are you sure you want to sign out?', [
@@ -57,6 +96,92 @@ export default function ProfileScreen() {
           <View className="mb-8">
             <Text className="text-4xl font-bold text-foreground mb-2">Profile</Text>
             <Text className="text-base text-muted">Manage your account</Text>
+          </View>
+
+          {/* Life Stage Card */}
+          {lifeStage && (
+            <View className="bg-surface border border-border rounded-2xl p-4 mb-6">
+              <View className="flex-row items-center gap-3 mb-3">
+                <Text className="text-4xl">{getStageIcon(lifeStage)}</Text>
+                <View className="flex-1">
+                  <Text className="text-xs font-semibold text-muted mb-1">LIFE STAGE</Text>
+                  <Text className="text-lg font-bold text-foreground">{stageName}</Text>
+                </View>
+              </View>
+
+              {/* Key Focus Areas */}
+              <View className="mb-4 border-t border-border pt-3">
+                <Text className="text-xs font-semibold text-muted mb-2">KEY FOCUS AREAS</Text>
+                <View className="gap-1">
+                  {focusAreas.slice(0, 3).map((area, idx) => (
+                    <View key={idx} className="flex-row items-start gap-2">
+                      <Text className="text-primary font-bold">•</Text>
+                      <Text className="text-xs text-muted flex-1">{area}</Text>
+                    </View>
+                  ))}
+                </View>
+              </View>
+
+              {/* Recommended Goals */}
+              <View className="border-t border-border pt-3">
+                <Text className="text-xs font-semibold text-muted mb-2">RECOMMENDED GOALS</Text>
+                <View className="gap-1">
+                  {goals.slice(0, 3).map((goal, idx) => (
+                    <View key={idx} className="flex-row items-start gap-2">
+                      <Text className="text-success font-bold">✓</Text>
+                      <Text className="text-xs text-muted flex-1">{goal}</Text>
+                    </View>
+                  ))}
+                </View>
+              </View>
+            </View>
+          )}
+
+          {/* Birth Date Input Card */}
+          <View className="bg-surface border border-border rounded-2xl p-4 mb-6">
+            <View className="flex-row items-center justify-between mb-2">
+              <Text className="text-sm font-semibold text-foreground">Birth Date</Text>
+              {!editingBirthDate && (
+                <Pressable
+                  onPress={() => setEditingBirthDate(true)}
+                  className="active:opacity-60"
+                >
+                  <MaterialIcons name="edit" size={18} color={colors.primary} />
+                </Pressable>
+              )}
+            </View>
+            {editingBirthDate ? (
+              <View className="gap-2">
+                <TextInput
+                  placeholder="YYYY-MM-DD"
+                  value={birthDate}
+                  onChangeText={setBirthDate}
+                  className="border border-border rounded-lg p-2 text-foreground"
+                  placeholderTextColor={colors.muted}
+                />
+                <View className="flex-row gap-2">
+                  <Pressable
+                    onPress={handleSaveBirthDate}
+                    className="flex-1 bg-primary rounded-lg py-2 active:opacity-80"
+                  >
+                    <Text className="text-center text-xs font-semibold text-background">Save</Text>
+                  </Pressable>
+                  <Pressable
+                    onPress={() => {
+                      setEditingBirthDate(false);
+                      setBirthDate(appData?.userProfile?.birthDate || '');
+                    }}
+                    className="flex-1 bg-surface border border-border rounded-lg py-2 active:opacity-60"
+                  >
+                    <Text className="text-center text-xs font-semibold text-foreground">Cancel</Text>
+                  </Pressable>
+                </View>
+              </View>
+            ) : (
+              <Text className="text-sm text-muted">
+                {birthDate || 'Not set'}
+              </Text>
+            )}
           </View>
 
           {/* User Info Card */}

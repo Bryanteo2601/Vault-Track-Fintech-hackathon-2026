@@ -731,3 +731,18 @@
 - [ ] Create age/birth date input form
 - [ ] Test nudge triggering across all life stages
 - [ ] Test investment recommendations by life stage
+
+- [x] Add birthDate and userProfile fields to AppData
+- [x] Create life-stage.ts with classification functions
+- [x] Create nudge-engine.ts with 30+ nudge rules
+- [x] Create investment-recommendations.ts with allocation targets
+- [x] Create NudgeCard component for displaying nudges
+- [x] Create LifeStageCard component for profile
+- [x] Integrate life stage card into profile screen
+- [x] Add birth date input form to profile
+- [x] Display recommended goals and focus areas
+- [ ] Create NudgesSection component for dashboard
+- [ ] Integrate nudges into dashboard home screen
+- [ ] Add investment recommendations to dashboard
+- [ ] Test nudge triggering across all life stages
+- [ ] Test investment recommendations by life stage
