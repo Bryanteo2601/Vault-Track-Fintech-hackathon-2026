@@ -532,6 +532,18 @@
 - [ ] Save checkpoint
 
 
+## Phase 56: Add Insurance, CPF, and Private Asset Scores to Financial Health
+- [x] Calculate CPF score (0-100) based on total CPF balance
+- [x] Calculate Insurance score (0-100) based on active policies
+- [x] Calculate Private Asset score (0-100) using unified engine
+- [x] Add CPF Health card to Financial Health section
+- [x] Add Insurance card to Financial Health section
+- [x] Add Private Assets card to Financial Health section
+- [x] Implement color logic: green if score >= 80, yellow if >= 60, red otherwise
+- [x] Test all metrics display correctly
+- [x] Verified 305 tests passing
+- [x] Dev server running and compiling
+
 ## Phase 55: Unified Financial Summary Engine
 
 ### Part 1: Create Shared Total Assets Engine

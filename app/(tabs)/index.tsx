@@ -220,6 +220,31 @@ export default function DashboardScreen() {
     }
     return recs.slice(0, 3);
   }, [dta, assetClassCount, liquidityMonths, cbsScore]);
+  
+  // Calculate CPF score (0-100)
+  const cpfScore = useMemo(() => {
+    const cpfTotal = unifiedSummary.assetsBreakdown.cpf;
+    if (cpfTotal === 0) return 40;
+    if (cpfTotal < 50000) return 50;
+    if (cpfTotal < 200000) return 70;
+    if (cpfTotal < 500000) return 85;
+    return 100;
+  }, [unifiedSummary]);
+  
+  // Calculate Insurance score (0-100)
+  const insuranceScore = useMemo(() => {
+    const activePolicies = data.insurancePolicies.filter(p => p.status === 'active').length;
+    if (activePolicies === 0) return 30;
+    if (activePolicies === 1) return 60;
+    if (activePolicies >= 2) return 85;
+    return 50;
+  }, [data.insurancePolicies]);
+  
+  // Calculate Private Asset score (0-100)
+  const privateAssetScore = useMemo(() => {
+    const { calculatePrivateAssetQualityComponent } = require('@/lib/unified-financial-engine');
+    return calculatePrivateAssetQualityComponent(unifiedSummary.privateAssetsSummary);
+  }, [unifiedSummary]);
 
   if (isLoading) {
     return (
@@ -299,6 +324,24 @@ export default function DashboardScreen() {
                 value={cbsScore.score.toString()}
                 subtitle={`Grade ${cbsScore.grade}`}
                 color={cbsScore.score === 0 ? colors.muted : cbsScore.score >= 1825 ? colors.success : cbsScore.score >= 1500 ? colors.warning : colors.error}
+              />
+              <HealthMetricCard
+                label="CPF Health"
+                value={`${cpfScore.toFixed(0)}`}
+                subtitle="Retirement readiness"
+                color={cpfScore >= 80 ? colors.success : cpfScore >= 60 ? colors.warning : colors.error}
+              />
+              <HealthMetricCard
+                label="Insurance"
+                value={`${insuranceScore.toFixed(0)}`}
+                subtitle="Protection coverage"
+                color={insuranceScore >= 80 ? colors.success : insuranceScore >= 60 ? colors.warning : colors.error}
+              />
+              <HealthMetricCard
+                label="Private Assets"
+                value={`${privateAssetScore.toFixed(0)}`}
+                subtitle="Asset quality"
+                color={privateAssetScore >= 75 ? colors.success : privateAssetScore >= 50 ? colors.warning : colors.error}
               />
             </View>
           </ScrollView>
