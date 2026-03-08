@@ -715,3 +715,19 @@
 - [x] Guarantee userAccountStartDate always defaults to 2022-01-01
 - [x] Remove debug logging
 - [x] Verify graph displays all 5 years correctly
+
+
+## Phase 64: Rule-Based Nudge Engine & Age-Specific Insights
+- [ ] Add birthDate and userProfile fields to AppData
+- [ ] Create life-stage.ts with classification functions
+- [ ] Create nudge-engine.ts with 30+ nudge rules
+- [ ] Create investment-recommendations.ts with allocation targets
+- [ ] Create NudgeCard component for displaying nudges
+- [ ] Create LifeStageCard component for profile
+- [ ] Create NudgesSection component for dashboard
+- [ ] Integrate nudges into dashboard home screen
+- [ ] Add life stage section to profile screen
+- [ ] Add investment recommendations to dashboard
+- [ ] Create age/birth date input form
+- [ ] Test nudge triggering across all life stages
+- [ ] Test investment recommendations by life stage

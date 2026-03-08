@@ -136,6 +136,25 @@ export interface PrivateAsset {
   updatedAt: string;
 }
 
+// ─── Life Stage Classification ────────────────────────────────────────────────────
+export type LifeStage = 
+  | 'fresh_entrant'
+  | 'starting_family'
+  | 'supporting_parents'
+  | 'dual_responsibility'
+  | 'pre_retiree'
+  | 'golden_years';
+
+export type AgeRange = '19-29' | '25-34' | '35-59' | '30-59' | '55-64' | '65+';
+
+export interface UserProfile {
+  birthDate?: string; // ISO date string (e.g., "1995-05-15")
+  ageRange?: AgeRange;
+  lifeStage?: LifeStage;
+  hasDependents?: boolean;
+  hasAgedParents?: boolean;
+}
+
 // ─── App State ────────────────────────────────────────────────────────────────────
 export interface AppData {
   bankAccounts: BankAccount[];
@@ -145,4 +164,5 @@ export interface AppData {
   privateAssets: PrivateAsset[];
   creditScore: CreditScoreData;
   userAccountStartDate?: string; // ISO date string (e.g., "2022-01-01")
+  userProfile?: UserProfile; // User age, life stage, and demographic info
 }
