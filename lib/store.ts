@@ -438,7 +438,15 @@ export async function loadAppData(): Promise<AppData> {
     const snapshot = await getDoc(userDataRef);
 
     if (snapshot.exists()) {
-      return snapshot.data() as AppData;
+      const firestoreData = snapshot.data() as AppData;
+      // Merge with defaults to ensure all fields are present (for backward compatibility)
+      const merged = {
+        ...defaultAppData,
+        ...firestoreData,
+        // Ensure userAccountStartDate is always present
+        userAccountStartDate: firestoreData.userAccountStartDate || defaultAppData.userAccountStartDate,
+      };
+      return merged;
     } else {
       // First time user - initialize with default data
       await setDoc(userDataRef, defaultAppData);
