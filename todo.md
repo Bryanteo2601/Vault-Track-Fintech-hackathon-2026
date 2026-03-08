@@ -267,3 +267,14 @@
 - [ ] Bind all UI screens to live computed values
 - [ ] Add comprehensive edge case handling
 - [ ] Test and save checkpoint
+
+## Phase 30: Portfolio Risk Analytics
+- [x] Create portfolio risk analytics calculation engine
+- [x] Implement portfolio return calculation (current_value - cost_basis) / cost_basis
+- [x] Implement portfolio volatility calculation using standard deviation
+- [x] Implement Sharpe ratio calculation with 3% risk-free rate
+- [x] Create risk classification logic (Low/Moderate/Strong)
+- [x] Build portfolio risk analytics UI components
+- [x] Integrate analytics into Investments screen
+- [x] Create comprehensive unit tests for risk calculations (21/21 passing)
+- [x] Test all features and verify compilation

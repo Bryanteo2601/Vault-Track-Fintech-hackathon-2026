@@ -7,6 +7,7 @@ import { useAppColors } from '@/hooks/use-app-colors';
 import { useAppData } from '@/lib/app-data-context';
 import { Holding, AssetClass } from '@/lib/types';
 import { formatCurrency, calcPortfolioByAssetClass } from '@/lib/store';
+import { calculatePortfolioRiskMetrics, getRiskClassificationDetails, formatPortfolioMetrics } from '@/lib/portfolio-risk-analytics';
 import { IconSymbol } from '@/components/ui/icon-symbol';
 import Svg, { G, Path, Circle, Text as SvgText } from 'react-native-svg';
 import { useRouter } from 'expo-router';
@@ -252,6 +253,10 @@ export default function InvestmentsScreen() {
     [portfolioByClass]
   );
 
+  const riskMetrics = useMemo(() => calculatePortfolioRiskMetrics(data.holdings), [data.holdings]);
+  const riskClassDetails = useMemo(() => getRiskClassificationDetails(riskMetrics.riskClassification), [riskMetrics.riskClassification]);
+  const formattedMetrics = useMemo(() => formatPortfolioMetrics(riskMetrics), [riskMetrics]);
+
   const aiSuggestions = useMemo(() => {
     const suggestions = [];
     const classes = Object.keys(portfolioByClass) as AssetClass[];
@@ -335,6 +340,49 @@ export default function InvestmentsScreen() {
               </View>
             </View>
           </View>
+
+          {/* Risk Analytics Section */}
+          {data.holdings.length > 0 && (
+            <View style={[styles.riskCard, { backgroundColor: colors.surface, borderColor: colors.border }]}>
+              <View style={styles.riskHeader}>
+                <Text style={[styles.riskTitle, { color: colors.foreground }]}>Portfolio Risk Analytics</Text>
+                <Text style={[styles.riskClassBadge, { backgroundColor: riskClassDetails.color + '20', color: riskClassDetails.color }]}>
+                  {riskMetrics.riskClassification}
+                </Text>
+              </View>
+              
+              <View style={styles.riskMetricsGrid}>
+                <View style={styles.riskMetricBox}>
+                  <Text style={[styles.riskMetricLabel, { color: colors.muted }]}>Portfolio Return</Text>
+                  <Text style={[styles.riskMetricValue, { color: riskMetrics.portfolioReturn >= 0 ? colors.success : colors.error }]}>
+                    {formattedMetrics.portfolioReturnDisplay}
+                  </Text>
+                </View>
+                
+                <View style={styles.riskMetricBox}>
+                  <Text style={[styles.riskMetricLabel, { color: colors.muted }]}>Volatility</Text>
+                  <Text style={[styles.riskMetricValue, { color: colors.foreground }]}>
+                    {formattedMetrics.volatilityDisplay}
+                  </Text>
+                </View>
+                
+                <View style={styles.riskMetricBox}>
+                  <Text style={[styles.riskMetricLabel, { color: colors.muted }]}>Sharpe Ratio</Text>
+                  <Text style={[styles.riskMetricValue, { color: colors.foreground }]}>
+                    {formattedMetrics.sharpeRatioDisplay}
+                  </Text>
+                </View>
+              </View>
+              
+              <View style={[styles.riskClassificationBox, { backgroundColor: riskClassDetails.color + '10', borderColor: riskClassDetails.color }]}>
+                <Text style={{ fontSize: 20, marginRight: 8 }}>{riskClassDetails.icon}</Text>
+                <View style={{ flex: 1 }}>
+                  <Text style={[styles.riskClassLabel, { color: riskClassDetails.color }]}>{riskClassDetails.label}</Text>
+                  <Text style={[styles.riskClassDesc, { color: colors.muted }]}>{riskClassDetails.description}</Text>
+                </View>
+              </View>
+            </View>
+          )}
 
           {/* Stress Test Button */}
           <Pressable
@@ -510,6 +558,17 @@ const styles = StyleSheet.create({
   aiTitle: { fontSize: 14, fontWeight: '700', marginBottom: 4 },
   aiDesc: { fontSize: 12, lineHeight: 18 },
   stressTestBtn: { flexDirection: 'row', alignItems: 'center', gap: 12, borderRadius: 14, padding: 14, marginBottom: 16 },
+  riskCard: { borderRadius: 16, borderWidth: 1, padding: 16, gap: 12 },
+  riskHeader: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' },
+  riskTitle: { fontSize: 16, fontWeight: '700' },
+  riskClassBadge: { paddingHorizontal: 10, paddingVertical: 4, borderRadius: 8, fontSize: 12, fontWeight: '600' },
+  riskMetricsGrid: { flexDirection: 'row', gap: 12 },
+  riskMetricBox: { flex: 1, alignItems: 'center', paddingVertical: 12 },
+  riskMetricLabel: { fontSize: 11, fontWeight: '500', marginBottom: 4, textTransform: 'uppercase', letterSpacing: 0.3 },
+  riskMetricValue: { fontSize: 18, fontWeight: '700' },
+  riskClassificationBox: { borderRadius: 12, borderWidth: 1, padding: 12, flexDirection: 'row', alignItems: 'center', gap: 10 },
+  riskClassLabel: { fontSize: 14, fontWeight: '700', marginBottom: 2 },
+  riskClassDesc: { fontSize: 12, lineHeight: 16 },
   // Modal
   modal: { flex: 1 },
   modalHeader: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', padding: 20, paddingBottom: 0 },
