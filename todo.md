@@ -328,3 +328,12 @@
 - [ ] Build cashflow forecast UI component with monthly breakdown
 - [ ] Integrate into financial planning screen
 - [ ] Save checkpoint
+
+## Phase 36: Add Test Data to All Features
+- [x] Add sample investment holdings (stocks, bonds, ETFs, crypto)
+- [x] Add sample banking accounts and loan data
+- [x] Add sample insurance and CPF data
+- [x] Add sample credit score data with good standing
+- [x] Verify all features display correctly with test data
+- [x] Create test data initialization script
+- [ ] Save checkpoint with test data
