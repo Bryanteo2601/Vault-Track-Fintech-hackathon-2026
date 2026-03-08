@@ -1,15 +1,28 @@
 import React, { useMemo } from 'react';
-import { View, Text, StyleSheet, Dimensions } from 'react-native';
+import { View, Text, StyleSheet, Dimensions, ScrollView } from 'react-native';
 import { GrowthMetrics, formatCAGR, getGrowthStatus } from '@/lib/private-asset-analytics';
 import { useColors } from '@/hooks/use-colors';
 import { formatCurrency } from '@/lib/store';
+import Svg, { Line, Circle, Text as SvgText, Polyline, Defs, LinearGradient, Stop } from 'react-native-svg';
 
 interface PortfolioGrowthChartProps {
   metrics: GrowthMetrics;
 }
 
+interface ChartPoint {
+  date: string;
+  value: number;
+  type: 'historical' | 'projection';
+  projectionType?: '1Y' | '3Y' | '5Y';
+  fullDate?: string;
+}
+
 export function PortfolioGrowthChart({ metrics }: PortfolioGrowthChartProps) {
   const colors = useColors();
+  const screenWidth = Dimensions.get('window').width;
+  const chartWidth = screenWidth - 48;
+  const chartHeight = 250;
+  const padding = { top: 20, right: 20, bottom: 60, left: 50 };
 
   const growthStatus = getGrowthStatus(metrics.cagr);
   const statusColors = {
@@ -28,20 +41,90 @@ export function PortfolioGrowthChart({ metrics }: PortfolioGrowthChartProps) {
     negative: 'Declining',
   };
 
-  // Calculate simple bar chart visualization
+  // Build chart data with historical points and projections
   const chartData = useMemo(() => {
     if (metrics.timeSeriesData.length === 0) return [];
-    
-    // Use last 6 data points for readability
-    const recentData = metrics.timeSeriesData.slice(-6);
-    const maxValue = Math.max(...recentData.map(d => d.value), 1);
-    
-    return recentData.map(point => ({
-      date: new Date(point.date).toLocaleDateString('en-US', { month: 'short', day: 'numeric' }),
-      value: point.value,
-      height: (point.value / maxValue) * 150,
-    }));
-  }, [metrics.timeSeriesData]);
+
+    const data: ChartPoint[] = [];
+
+    // Add historical data points
+    metrics.timeSeriesData.forEach((point) => {
+      const date = new Date(point.date);
+      const label = date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+      
+      data.push({
+        date: label,
+        value: point.value,
+        type: 'historical',
+        fullDate: point.date,
+      });
+    });
+
+    // Add 1-year projection
+    if (metrics.projections.oneYear > 0) {
+      data.push({
+        date: '1Y',
+        value: metrics.projections.oneYear,
+        type: 'projection',
+        projectionType: '1Y',
+      });
+    }
+
+    // Add 3-year projection
+    if (metrics.projections.threeYear > 0) {
+      data.push({
+        date: '3Y',
+        value: metrics.projections.threeYear,
+        type: 'projection',
+        projectionType: '3Y',
+      });
+    }
+
+    // Add 5-year projection
+    if (metrics.projections.fiveYear > 0) {
+      data.push({
+        date: '5Y',
+        value: metrics.projections.fiveYear,
+        type: 'projection',
+        projectionType: '5Y',
+      });
+    }
+
+    return data;
+  }, [metrics.timeSeriesData, metrics.projections]);
+
+  // Calculate chart dimensions
+  const chartArea = {
+    width: chartWidth - padding.left - padding.right,
+    height: chartHeight - padding.top - padding.bottom,
+  };
+
+  // Calculate Y-axis domain
+  const allValues = chartData.map(d => d.value).filter(v => v > 0);
+  const minValue = Math.min(...allValues);
+  const maxValue = Math.max(...allValues);
+  const yAxisPadding = (maxValue - minValue) * 0.15;
+  const yMin = Math.max(0, minValue - yAxisPadding);
+  const yMax = maxValue + yAxisPadding;
+
+  // Convert data to SVG coordinates
+  const points = chartData.map((point, index) => {
+    const x = padding.left + (index / (chartData.length - 1)) * chartArea.width;
+    const y = padding.top + chartArea.height - ((point.value - yMin) / (yMax - yMin)) * chartArea.height;
+    return { ...point, x, y, index };
+  });
+
+  // Generate line path
+  const linePath = points
+    .map((p, i) => `${i === 0 ? 'M' : 'L'} ${p.x.toFixed(1)} ${p.y.toFixed(1)}`)
+    .join(' ');
+
+  // Y-axis labels (5 ticks)
+  const yTicks = 5;
+  const yTickValues = Array.from({ length: yTicks }, (_, i) => {
+    const ratio = i / (yTicks - 1);
+    return yMin + ratio * (yMax - yMin);
+  });
 
   return (
     <View style={[styles.container, { backgroundColor: colors.surface, borderColor: colors.border }]}>
@@ -55,29 +138,129 @@ export function PortfolioGrowthChart({ metrics }: PortfolioGrowthChartProps) {
         )}
       </View>
 
-      {/* Chart */}
-      {metrics.timeSeriesData.length >= 2 ? (
+      {/* Line Chart */}
+      {chartData.length >= 2 ? (
         <View style={styles.chartContainer}>
-          <View style={styles.chart}>
-            <View style={styles.barsContainer}>
-              {chartData.map((bar, index) => (
-                <View key={index} style={styles.barWrapper}>
-                  <View
-                    style={[
-                      styles.bar,
-                      {
-                        height: bar.height,
-                        backgroundColor: colors.primary,
-                      },
-                    ]}
+          <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.scrollContainer}>
+            <Svg width={chartWidth} height={chartHeight} style={styles.svg}>
+              {/* Grid lines */}
+              {yTickValues.map((value, i) => {
+                const y = padding.top + (chartArea.height * (1 - (value - yMin) / (yMax - yMin)));
+                return (
+                  <Line
+                    key={`grid-${i}`}
+                    x1={padding.left}
+                    y1={y}
+                    x2={padding.left + chartArea.width}
+                    y2={y}
+                    stroke={colors.border}
+                    strokeWidth="1"
+                    strokeDasharray="4,4"
+                    opacity="0.5"
                   />
-                  <Text style={[styles.barLabel, { color: colors.muted }]}>{bar.date}</Text>
-                </View>
-              ))}
+                );
+              })}
+
+              {/* Y-axis */}
+              <Line
+                x1={padding.left}
+                y1={padding.top}
+                x2={padding.left}
+                y2={padding.top + chartArea.height}
+                stroke={colors.muted}
+                strokeWidth="1"
+              />
+
+              {/* X-axis */}
+              <Line
+                x1={padding.left}
+                y1={padding.top + chartArea.height}
+                x2={padding.left + chartArea.width}
+                y2={padding.top + chartArea.height}
+                stroke={colors.muted}
+                strokeWidth="1"
+              />
+
+              {/* Y-axis labels */}
+              {yTickValues.map((value, i) => {
+                const y = padding.top + (chartArea.height * (1 - (value - yMin) / (yMax - yMin)));
+                return (
+                  <SvgText
+                    key={`y-label-${i}`}
+                    x={padding.left - 10}
+                    y={y + 4}
+                    fontSize="11"
+                    fill={colors.muted}
+                    textAnchor="end"
+                  >
+                    ${(value / 1000).toFixed(0)}k
+                  </SvgText>
+                );
+              })}
+
+              {/* Line path */}
+              <Polyline
+                points={points.map(p => `${p.x},${p.y}`).join(' ')}
+                fill="none"
+                stroke={colors.primary}
+                strokeWidth="3"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+              />
+
+              {/* Data points */}
+              {points.map((point, index) => {
+                const isProjection = point.type === 'projection';
+                const dotRadius = isProjection ? 5 : 4;
+                const dotColor = isProjection ? colors.warning : colors.primary;
+
+                return (
+                  <Circle
+                    key={`dot-${index}`}
+                    cx={point.x}
+                    cy={point.y}
+                    r={dotRadius}
+                    fill={dotColor}
+                    stroke={colors.background}
+                    strokeWidth="2"
+                  />
+                );
+              })}
+
+              {/* X-axis labels */}
+              {points.map((point, index) => {
+                const isEveryOther = index % 2 === 0 || point.type === 'projection';
+                if (!isEveryOther && chartData.length > 6) return null;
+
+                return (
+                  <SvgText
+                    key={`x-label-${index}`}
+                    x={point.x}
+                    y={padding.top + chartArea.height + 20}
+                    fontSize="11"
+                    fill={colors.muted}
+                    textAnchor="middle"
+                  >
+                    {point.date}
+                  </SvgText>
+                );
+              })}
+            </Svg>
+          </ScrollView>
+
+          <View style={styles.legendContainer}>
+            <View style={styles.legendItem}>
+              <View style={[styles.legendDot, { backgroundColor: colors.primary }]} />
+              <Text style={[styles.legendText, { color: colors.foreground }]}>Historical</Text>
+            </View>
+            <View style={styles.legendItem}>
+              <View style={[styles.legendDot, { backgroundColor: colors.warning }]} />
+              <Text style={[styles.legendText, { color: colors.foreground }]}>Projection</Text>
             </View>
           </View>
+
           <Text style={[styles.chartNote, { color: colors.muted }]}>
-            Last {chartData.length} valuation points
+            {metrics.timeSeriesData.length} historical points + 3 projections (1Y, 3Y, 5Y)
           </Text>
         </View>
       ) : (
@@ -178,32 +361,31 @@ const styles = StyleSheet.create({
   chartContainer: {
     marginVertical: 12,
   },
-  chart: {
-    height: 180,
-    justifyContent: 'flex-end',
-    paddingHorizontal: 8,
-    paddingVertical: 12,
+  scrollContainer: {
+    marginHorizontal: -16,
+    paddingHorizontal: 16,
   },
-  barsContainer: {
+  svg: {
+    backgroundColor: 'transparent',
+  },
+  legendContainer: {
     flexDirection: 'row',
-    justifyContent: 'space-around',
-    alignItems: 'flex-end',
-    height: 150,
-    gap: 4,
+    justifyContent: 'center',
+    gap: 20,
+    marginVertical: 8,
   },
-  barWrapper: {
-    flex: 1,
+  legendItem: {
+    flexDirection: 'row',
     alignItems: 'center',
-    justifyContent: 'flex-end',
+    gap: 6,
   },
-  bar: {
-    width: '100%',
+  legendDot: {
+    width: 8,
+    height: 8,
     borderRadius: 4,
-    marginBottom: 8,
   },
-  barLabel: {
-    fontSize: 10,
-    textAlign: 'center',
+  legendText: {
+    fontSize: 12,
   },
   chartNote: {
     fontSize: 12,

@@ -468,3 +468,15 @@
 - [x] Test growth chart with sample data
 - [x] Fixed property names and createdAt timestamps
 - [x] Verified TypeScript compilation with 0 errors
+
+
+## Phase 51: Update PortfolioGrowthChart to Line Graph
+- [x] Refactor chart from bar chart to line graph
+- [x] Add historical valuation points to chart
+- [x] Add 1-year projection point
+- [x] Add 3-year projection point
+- [x] Add 5-year projection point
+- [x] Update x-axis labels to show dates and projection periods
+- [x] Improve visual styling for line graph
+- [x] Test with sample data
+- [x] Verified TypeScript compilation with 0 errors
