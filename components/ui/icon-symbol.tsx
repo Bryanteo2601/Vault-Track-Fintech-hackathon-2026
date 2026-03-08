@@ -70,6 +70,7 @@ const MAPPING = {
   "tag.fill": "label",
   "sparkles": "auto-awesome",
   "arrow.clockwise": "refresh",
+  "diamond.fill": "diamond",
 } as IconMapping;
 
 /**
