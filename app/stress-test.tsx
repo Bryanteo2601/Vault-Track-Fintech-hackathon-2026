@@ -11,14 +11,19 @@ import {
   generateStressTestReport,
   type StressTestScenario,
 } from '@/lib/stress-test-types';
+import { runMonteCarloSimulation } from '@/lib/monte-carlo-engine';
+import { MonteCarloResults } from '@/components/monte-carlo-results';
 
 const { width } = Dimensions.get('window');
+
+type StressTestTab = 'scenarios' | 'monte-carlo';
 
 export default function StressTestScreen() {
   const colors = useAppColors();
   const router = useRouter();
   const { data } = useAppData();
   const [selectedScenario, setSelectedScenario] = useState<StressTestScenario | null>(null);
+  const [activeTab, setActiveTab] = useState<StressTestTab>('scenarios');
 
   // Get actual portfolio data from user
   const portfolioByClass = useMemo(() => calcPortfolioByAssetClass(data.holdings), [data.holdings]);
@@ -53,6 +58,11 @@ export default function StressTestScreen() {
   const worstCase = stressReport.worstCaseScenario;
   const bestCase = stressReport.bestCaseScenario;
 
+  // Run Monte Carlo simulation
+  const monteCarloResults = useMemo(() => {
+    return runMonteCarloSimulation(totalValue, portfolioData.assets, 1000, 12);
+  }, [totalValue, portfolioData]);
+
   const getRiskColor = (riskLevel: string) => {
     switch (riskLevel) {
       case 'critical':
@@ -78,6 +88,38 @@ export default function StressTestScreen() {
         <Text style={{ fontSize: 12, color: colors.muted }}>Simulate market scenarios and assess portfolio resilience</Text>
       </View>
 
+      {/* Tab Switcher */}
+      {totalValue > 0 && (
+        <View style={{ flexDirection: 'row', gap: 8, marginBottom: 16 }}>
+          <Pressable
+            onPress={() => setActiveTab('scenarios')}
+            style={({ pressed }) => [
+              styles.tabButton,
+              {
+                backgroundColor: activeTab === 'scenarios' ? colors.primary : colors.surface,
+                opacity: pressed ? 0.8 : 1,
+                borderColor: colors.border,
+              },
+            ]}
+          >
+            <Text style={{ fontSize: 12, fontWeight: '600', color: activeTab === 'scenarios' ? 'white' : colors.foreground }}>Market Scenarios</Text>
+          </Pressable>
+          <Pressable
+            onPress={() => setActiveTab('monte-carlo')}
+            style={({ pressed }) => [
+              styles.tabButton,
+              {
+                backgroundColor: activeTab === 'monte-carlo' ? colors.primary : colors.surface,
+                opacity: pressed ? 0.8 : 1,
+                borderColor: colors.border,
+              },
+            ]}
+          >
+            <Text style={{ fontSize: 12, fontWeight: '600', color: activeTab === 'monte-carlo' ? 'white' : colors.foreground }}>Monte Carlo</Text>
+          </Pressable>
+        </View>
+      )}
+
       <ScrollView style={{ flex: 1 }} contentContainerStyle={{ paddingBottom: 20 }} showsVerticalScrollIndicator={false}>
         {/* Empty State */}
         {totalValue === 0 && (
@@ -88,6 +130,9 @@ export default function StressTestScreen() {
           </View>
         )}
 
+        {/* Scenarios Tab */}
+        {activeTab === 'scenarios' && totalValue > 0 && (
+          <>
         {/* Portfolio Resilience Score */}
         {totalValue > 0 && (
           <View style={[styles.scoreCard, { backgroundColor: colors.surface, borderColor: colors.border }]}>
@@ -229,12 +274,27 @@ export default function StressTestScreen() {
             )}
           </>
         )}
+          </>
+        )}
+
+        {/* Monte Carlo Tab */}
+        {activeTab === 'monte-carlo' && totalValue > 0 && (
+          <MonteCarloResults simulation={monteCarloResults} initialValue={totalValue} />
+        )}
       </ScrollView>
     </ScreenContainer>
   );
 }
 
 const styles = StyleSheet.create({
+  tabButton: {
+    flex: 1,
+    paddingVertical: 10,
+    paddingHorizontal: 12,
+    borderRadius: 8,
+    alignItems: 'center',
+    borderWidth: 1,
+  },
   emptyStateCard: {
     borderRadius: 16,
     padding: 32,

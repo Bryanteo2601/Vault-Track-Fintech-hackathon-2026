@@ -284,3 +284,16 @@
 - [x] Update stress test to use real portfolio data instead of hardcoded values
 - [x] Add empty state card when portfolio is empty
 - [x] Verify all market scenarios display SGD 0 with 0% impact
+
+## Phase 32: Monte Carlo Simulation Engine Upgrade
+- [x] Create Monte Carlo simulation engine with historical volatility calculation
+- [x] Implement 1000-path simulation with normal distribution returns
+- [x] Calculate final portfolio value for each simulation path
+- [x] Calculate maximum drawdown for each path
+- [x] Calculate expected return metrics (mean, median, percentiles)
+- [x] Create distribution histogram visualization
+- [x] Create confidence interval chart visualization
+- [x] Build Monte Carlo results UI component
+- [x] Integrate Monte Carlo into stress testing screen
+- [x] Create comprehensive unit tests for Monte Carlo engine (33/33 passing)
+- [x] Test all features and verify compilation
