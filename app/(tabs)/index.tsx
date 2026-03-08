@@ -336,19 +336,19 @@ export default function DashboardScreen() {
               <HealthMetricCard
                 label="CPF Health"
                 value={`${cpfScore.toFixed(0)}`}
-                subtitle="Retirement readiness"
+                subtitle={cpfStatusLabel}
                 color={cpfScore >= 80 ? colors.success : cpfScore >= 60 ? colors.warning : colors.error}
               />
               <HealthMetricCard
                 label="Insurance"
                 value={`${insuranceScore.toFixed(0)}`}
-                subtitle="Protection coverage"
+                subtitle={insuranceStatusLabel}
                 color={insuranceScore >= 80 ? colors.success : insuranceScore >= 60 ? colors.warning : colors.error}
               />
               <HealthMetricCard
                 label="Private Assets"
                 value={`${privateAssetScore.toFixed(0)}`}
-                subtitle="Asset quality"
+                subtitle={privateAssetStatusLabel}
                 color={privateAssetScore >= 75 ? colors.success : privateAssetScore >= 50 ? colors.warning : colors.error}
               />
             </View>
