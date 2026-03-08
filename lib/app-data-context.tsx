@@ -1,6 +1,6 @@
 import React, { createContext, useContext, useEffect, useState, useCallback } from 'react';
 import { AppData, BankAccount, Loan, Holding, InsurancePolicy, CreditScoreData } from './types';
-import { loadAppData, saveAppData, resetAppData } from './store';
+import { loadAppData, saveAppData, resetAppData, defaultAppData } from './store';
 import { auth } from './firebase-config';
 import { onAuthStateChanged } from 'firebase/auth';
 
@@ -37,13 +37,7 @@ function generateId(): string {
 }
 
 export function AppDataProvider({ children }: { children: React.ReactNode }) {
-  const [data, setData] = useState<AppData>({
-    bankAccounts: [],
-    loans: [],
-    holdings: [],
-    insurancePolicies: [],
-    creditScore: { score: 1825, paymentHistory: 88, amountsOwed: 62, lengthOfCredit: 75, creditMix: 80, newCredit: 70, lastUpdated: '' },
-  });
+  const [data, setData] = useState<AppData>(defaultAppData);
   const [isLoading, setIsLoading] = useState(true);
   const [isAuthenticated, setIsAuthenticated] = useState(false);
 
@@ -71,13 +65,7 @@ export function AppDataProvider({ children }: { children: React.ReactNode }) {
         refreshData();
       } else {
         // User logged out - reset to default data
-        setData({
-          bankAccounts: [],
-          loans: [],
-          holdings: [],
-          insurancePolicies: [],
-          creditScore: { score: 1825, paymentHistory: 88, amountsOwed: 62, lengthOfCredit: 75, creditMix: 80, newCredit: 70, lastUpdated: '' },
-        });
+        setData(defaultAppData);
         setIsLoading(false);
       }
     });

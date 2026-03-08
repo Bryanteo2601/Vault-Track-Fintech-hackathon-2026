@@ -331,7 +331,7 @@ const defaultCreditScore: CreditScoreData = {
   lastUpdated: new Date().toISOString(),
 };
 
-const defaultAppData: AppData = {
+export const defaultAppData: AppData = {
   bankAccounts: defaultBankAccounts,
   loans: defaultLoans,
   holdings: defaultHoldings,
