@@ -38,7 +38,7 @@ export default function NetWorthTimelineScreen() {
 
     // Add historical points (2022, 2023, 2024)
     const baseNetWorth = currentNetWorth * 0.5; // Assume 50% growth over 3 years
-    const annualGrowthRate = Math.pow(currentNetWorth / baseNetWorth, 1/3) - 1;
+    const annualGrowthRate = Math.pow(currentNetWorth / Math.max(1, baseNetWorth), 1/3) - 1;
 
     // 2022
     points.push({
@@ -88,35 +88,38 @@ export default function NetWorthTimelineScreen() {
     return points;
   }, [currentNetWorth]);
 
-  // Calculate metrics
+  // Calculate metrics - simplified
   const metrics = useMemo(() => {
-    if (timelineData.length < 2) {
+    // Current net worth is the 4th point (index 3) - "Now"
+    const currentPoint = timelineData[3];
+    const previousPoint = timelineData[2]; // 2024
+    const projection1Y = timelineData[4];
+    const projection5Y = timelineData[5];
+
+    if (!currentPoint || !previousPoint) {
       return {
-        currentNetWorth: 0,
+        currentNetWorth: currentNetWorth || 0,
         yearlyChange: 0,
         yearlyChangePercent: 0,
         monthlyAvgGrowth: 0,
-        projected1Year: 0,
-        projected5Years: 0,
+        projected1Year: projection1Y?.netWorth || 0,
+        projected5Years: projection5Y?.netWorth || 0,
       };
     }
 
-    const current = timelineData[timelineData.length - 3]; // Current (before projections)
-    const previous = timelineData[timelineData.length - 4]; // Last year
-
-    const yearlyChange = current.netWorth - previous.netWorth;
-    const yearlyChangePercent = previous.netWorth > 0 ? (yearlyChange / previous.netWorth) * 100 : 0;
+    const yearlyChange = currentPoint.netWorth - previousPoint.netWorth;
+    const yearlyChangePercent = previousPoint.netWorth > 0 ? (yearlyChange / previousPoint.netWorth) * 100 : 0;
     const monthlyAvgGrowth = yearlyChangePercent / 12;
 
     return {
-      currentNetWorth: current.netWorth,
+      currentNetWorth: currentPoint.netWorth,
       yearlyChange,
       yearlyChangePercent,
       monthlyAvgGrowth,
-      projected1Year: timelineData[timelineData.length - 2].netWorth,
-      projected5Years: timelineData[timelineData.length - 1].netWorth,
+      projected1Year: projection1Y?.netWorth || 0,
+      projected5Years: projection5Y?.netWorth || 0,
     };
-  }, [timelineData]);
+  }, [timelineData, currentNetWorth]);
 
   // Chart rendering
   const chartHeight = 250;
@@ -238,9 +241,18 @@ export default function NetWorthTimelineScreen() {
             />
 
             {/* Data line */}
-            <G>
-              {pathData && <Line d={pathData} stroke={colors.primary} strokeWidth="2" fill="none" />}
-            </G>
+            {pathData && (
+              <G>
+                <Line
+                  x1={points[0]?.x || 0}
+                  y1={points[0]?.y || 0}
+                  x2={points[points.length - 1]?.x || 0}
+                  y2={points[points.length - 1]?.y || 0}
+                  stroke={colors.primary}
+                  strokeWidth="2"
+                />
+              </G>
+            )}
 
             {/* Data points */}
             {points.map((p, i) => (
