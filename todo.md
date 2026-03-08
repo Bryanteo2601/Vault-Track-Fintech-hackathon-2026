@@ -278,3 +278,9 @@
 - [x] Integrate analytics into Investments screen
 - [x] Create comprehensive unit tests for risk calculations (21/21 passing)
 - [x] Test all features and verify compilation
+
+## Phase 31: Fix Stress Test Empty State
+- [x] Fix Portfolio Stress Test to show SGD 0 for all scenarios when no holdings exist
+- [x] Update stress test to use real portfolio data instead of hardcoded values
+- [x] Add empty state card when portfolio is empty
+- [x] Verify all market scenarios display SGD 0 with 0% impact

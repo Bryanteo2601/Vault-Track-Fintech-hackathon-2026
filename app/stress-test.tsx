@@ -2,8 +2,10 @@ import React, { useMemo, useState } from 'react';
 import { ScrollView, View, Text, StyleSheet, Pressable, Dimensions } from 'react-native';
 import { ScreenContainer } from '@/components/screen-container';
 import { useAppColors } from '@/hooks/use-app-colors';
+import { useAppData } from '@/lib/app-data-context';
 import { useRouter } from 'expo-router';
 import { IconSymbol } from '@/components/ui/icon-symbol';
+import { calcPortfolioByAssetClass } from '@/lib/store';
 import {
   PREDEFINED_SCENARIOS,
   generateStressTestReport,
@@ -15,18 +17,28 @@ const { width } = Dimensions.get('window');
 export default function StressTestScreen() {
   const colors = useAppColors();
   const router = useRouter();
+  const { data } = useAppData();
   const [selectedScenario, setSelectedScenario] = useState<StressTestScenario | null>(null);
 
-  // Sample portfolio data
-  const portfolioData = {
-    totalValue: 500000,
+  // Get actual portfolio data from user
+  const portfolioByClass = useMemo(() => calcPortfolioByAssetClass(data.holdings), [data.holdings]);
+  const totalValue = useMemo(() => {
+    return data.holdings.reduce((sum, h) => sum + h.quantity * h.currentPrice, 0);
+  }, [data.holdings]);
+
+  const portfolioData = useMemo(() => ({
+    totalValue,
     assets: {
-      'Stocks': 250000,
-      'Bonds': 100000,
-      'Crypto': 75000,
-      'Real Estate': 75000,
+      'Stocks': portfolioByClass.stocks || 0,
+      'Bonds': portfolioByClass.bonds || 0,
+      'Crypto': portfolioByClass.crypto || 0,
+      'ETFs': portfolioByClass.etf || 0,
+      'REITs': portfolioByClass.reits || 0,
+      'Commodities': portfolioByClass.commodities || 0,
+      'Options': portfolioByClass.options || 0,
+      'Futures': portfolioByClass.futures || 0,
     },
-  };
+  }), [totalValue, portfolioByClass]);
 
   // Generate stress test report
   const stressReport = useMemo(() => {
@@ -36,7 +48,7 @@ export default function StressTestScreen() {
     })) as StressTestScenario[];
 
     return generateStressTestReport(portfolioData.totalValue, portfolioData.assets, scenarios);
-  }, []);
+  }, [portfolioData]);
 
   const worstCase = stressReport.worstCaseScenario;
   const bestCase = stressReport.bestCaseScenario;
@@ -67,139 +79,154 @@ export default function StressTestScreen() {
       </View>
 
       <ScrollView style={{ flex: 1 }} contentContainerStyle={{ paddingBottom: 20 }} showsVerticalScrollIndicator={false}>
+        {/* Empty State */}
+        {totalValue === 0 && (
+          <View style={[styles.emptyStateCard, { backgroundColor: colors.surface, borderColor: colors.border }]}>
+            <Text style={{ fontSize: 28, marginBottom: 12 }}>📊</Text>
+            <Text style={{ fontSize: 16, fontWeight: '600', color: colors.foreground, marginBottom: 8 }}>No Portfolio Data</Text>
+            <Text style={{ fontSize: 13, color: colors.muted, textAlign: 'center', lineHeight: 20 }}>Add holdings to your investment portfolio to run stress tests and see how your portfolio performs under different market scenarios.</Text>
+          </View>
+        )}
+
         {/* Portfolio Resilience Score */}
-        <View style={[styles.scoreCard, { backgroundColor: colors.surface, borderColor: colors.border }]}>
-          <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginBottom: 12 }}>
-            <Text style={{ fontSize: 14, fontWeight: '600', color: colors.foreground }}>Portfolio Resilience Score</Text>
-            <Text style={{ fontSize: 28, fontWeight: '700', color: colors.primary }}>
-              {stressReport.portfolioResilience.toFixed(0)}/100
+        {totalValue > 0 && (
+          <View style={[styles.scoreCard, { backgroundColor: colors.surface, borderColor: colors.border }]}>
+            <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginBottom: 12 }}>
+              <Text style={{ fontSize: 14, fontWeight: '600', color: colors.foreground }}>Portfolio Resilience Score</Text>
+              <Text style={{ fontSize: 28, fontWeight: '700', color: colors.primary }}>
+                {stressReport.portfolioResilience.toFixed(0)}/100
+              </Text>
+            </View>
+            <View style={{ height: 8, backgroundColor: colors.border, borderRadius: 4, overflow: 'hidden' }}>
+              <View
+                style={{
+                  height: '100%',
+                  width: `${stressReport.portfolioResilience}%`,
+                  backgroundColor: stressReport.portfolioResilience > 70 ? colors.success : colors.warning,
+                }}
+              />
+            </View>
+            <Text style={{ fontSize: 11, color: colors.muted, marginTop: 8 }}>
+              {stressReport.portfolioResilience > 70 ? '✅ Good resilience' : '⚠️ Low resilience to market shocks'}
             </Text>
           </View>
-          <View style={{ height: 8, backgroundColor: colors.border, borderRadius: 4, overflow: 'hidden' }}>
-            <View
-              style={{
-                height: '100%',
-                width: `${stressReport.portfolioResilience}%`,
-                backgroundColor: stressReport.portfolioResilience > 70 ? colors.success : colors.warning,
-              }}
-            />
-          </View>
-          <Text style={{ fontSize: 11, color: colors.muted, marginTop: 8 }}>
-            {stressReport.portfolioResilience > 70 ? '✅ Good resilience' : '⚠️ Low resilience to market shocks'}
-          </Text>
-        </View>
+        )}
 
         {/* Worst vs Best Case */}
-        <Text style={[styles.sectionTitle, { color: colors.foreground }]}>Scenario Impact</Text>
+        {totalValue > 0 && (
+          <>
+            <Text style={[styles.sectionTitle, { color: colors.foreground }]}>Scenario Impact</Text>
 
-        <View style={{ flexDirection: 'row', gap: 12, marginBottom: 16 }}>
-          {/* Worst Case */}
-          <View style={[styles.caseCard, { backgroundColor: colors.surface, borderColor: colors.border, flex: 1 }]}>
-            <Text style={{ fontSize: 12, fontWeight: '600', color: colors.muted, marginBottom: 8 }}>Worst Case</Text>
-            <Text style={{ fontSize: 16, fontWeight: '700', color: colors.error, marginBottom: 4 }}>
-              {worstCase.percentageChange.toFixed(1)}%
-            </Text>
-            <Text style={{ fontSize: 11, color: colors.muted, marginBottom: 8 }}>{worstCase.scenarioName}</Text>
-            <Text style={{ fontSize: 12, fontWeight: '600', color: colors.error }}>
-              SGD {worstCase.dollarChange.toLocaleString()}
-            </Text>
-          </View>
-
-          {/* Best Case */}
-          <View style={[styles.caseCard, { backgroundColor: colors.surface, borderColor: colors.border, flex: 1 }]}>
-            <Text style={{ fontSize: 12, fontWeight: '600', color: colors.muted, marginBottom: 8 }}>Best Case</Text>
-            <Text style={{ fontSize: 16, fontWeight: '700', color: colors.success, marginBottom: 4 }}>
-              {bestCase.percentageChange.toFixed(1)}%
-            </Text>
-            <Text style={{ fontSize: 11, color: colors.muted, marginBottom: 8 }}>{bestCase.scenarioName}</Text>
-            <Text style={{ fontSize: 12, fontWeight: '600', color: colors.success }}>
-              SGD {bestCase.dollarChange.toLocaleString()}
-            </Text>
-          </View>
-        </View>
-
-        {/* Predefined Scenarios */}
-        <Text style={[styles.sectionTitle, { color: colors.foreground }]}>Market Scenarios</Text>
-
-        {stressReport.scenarios.map((result, idx) => (
-          <Pressable
-            key={idx}
-            onPress={() => setSelectedScenario(stressReport.scenarios[idx] as any)}
-            style={({ pressed }) => [
-              styles.scenarioCard,
-              {
-                backgroundColor: colors.surface,
-                borderColor: getRiskColor(result.riskLevel),
-                borderLeftWidth: 4,
-                opacity: pressed ? 0.7 : 1,
-              },
-            ]}
-          >
-            <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'flex-start' }}>
-              <View style={{ flex: 1 }}>
-                <Text style={{ fontSize: 14, fontWeight: '600', color: colors.foreground, marginBottom: 4 }}>
-                  {result.scenarioName}
+            <View style={{ flexDirection: 'row', gap: 12, marginBottom: 16 }}>
+              {/* Worst Case */}
+              <View style={[styles.caseCard, { backgroundColor: colors.surface, borderColor: colors.border, flex: 1 }]}>
+                <Text style={{ fontSize: 12, fontWeight: '600', color: colors.muted, marginBottom: 8 }}>Worst Case</Text>
+                <Text style={{ fontSize: 16, fontWeight: '700', color: colors.error, marginBottom: 4 }}>
+                  {worstCase.percentageChange.toFixed(1)}%
                 </Text>
-                <Text style={{ fontSize: 11, color: colors.muted, marginBottom: 8 }}>
-                  Probability: {(PREDEFINED_SCENARIOS[result.scenarioId as StressTestScenario['scenario']]?.probability || 0) * 100}%
+                <Text style={{ fontSize: 11, color: colors.muted, marginBottom: 8 }}>{worstCase.scenarioName}</Text>
+                <Text style={{ fontSize: 12, fontWeight: '600', color: colors.error }}>
+                  SGD {worstCase.dollarChange.toLocaleString()}
                 </Text>
-                <View style={{ flexDirection: 'row', gap: 12 }}>
-                  <View>
-                    <Text style={{ fontSize: 10, color: colors.muted }}>Impact</Text>
-                    <Text style={{ fontSize: 14, fontWeight: '700', color: getRiskColor(result.riskLevel) }}>
-                      {result.percentageChange.toFixed(1)}%
+              </View>
+
+              {/* Best Case */}
+              <View style={[styles.caseCard, { backgroundColor: colors.surface, borderColor: colors.border, flex: 1 }]}>
+                <Text style={{ fontSize: 12, fontWeight: '600', color: colors.muted, marginBottom: 8 }}>Best Case</Text>
+                <Text style={{ fontSize: 16, fontWeight: '700', color: colors.success, marginBottom: 4 }}>
+                  {bestCase.percentageChange.toFixed(1)}%
+                </Text>
+                <Text style={{ fontSize: 11, color: colors.muted, marginBottom: 8 }}>{bestCase.scenarioName}</Text>
+                <Text style={{ fontSize: 12, fontWeight: '600', color: colors.success }}>
+                  SGD {bestCase.dollarChange.toLocaleString()}
+                </Text>
+              </View>
+            </View>
+
+            {/* Predefined Scenarios */}
+            <Text style={[styles.sectionTitle, { color: colors.foreground }]}>Market Scenarios</Text>
+
+            {stressReport.scenarios.map((result, idx) => (
+              <Pressable
+                key={idx}
+                onPress={() => setSelectedScenario(stressReport.scenarios[idx] as any)}
+                style={({ pressed }) => [
+                  styles.scenarioCard,
+                  {
+                    backgroundColor: colors.surface,
+                    borderColor: getRiskColor(result.riskLevel),
+                    borderLeftWidth: 4,
+                    opacity: pressed ? 0.7 : 1,
+                  },
+                ]}
+              >
+                <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'flex-start' }}>
+                  <View style={{ flex: 1 }}>
+                    <Text style={{ fontSize: 14, fontWeight: '600', color: colors.foreground, marginBottom: 4 }}>
+                      {result.scenarioName}
                     </Text>
+                    <Text style={{ fontSize: 11, color: colors.muted, marginBottom: 8 }}>
+                      Probability: {(PREDEFINED_SCENARIOS[result.scenarioId as StressTestScenario['scenario']]?.probability || 0) * 100}%
+                    </Text>
+                    <View style={{ flexDirection: 'row', gap: 12 }}>
+                      <View>
+                        <Text style={{ fontSize: 10, color: colors.muted }}>Impact</Text>
+                        <Text style={{ fontSize: 14, fontWeight: '700', color: getRiskColor(result.riskLevel) }}>
+                          {result.percentageChange.toFixed(1)}%
+                        </Text>
+                      </View>
+                      <View>
+                        <Text style={{ fontSize: 10, color: colors.muted }}>Amount</Text>
+                        <Text style={{ fontSize: 14, fontWeight: '700', color: getRiskColor(result.riskLevel) }}>
+                          SGD {result.dollarChange.toLocaleString()}
+                        </Text>
+                      </View>
+                      <View>
+                        <Text style={{ fontSize: 10, color: colors.muted }}>Recovery</Text>
+                        <Text style={{ fontSize: 14, fontWeight: '700', color: colors.foreground }}>
+                          {result.timeToRecover}mo
+                        </Text>
+                      </View>
+                    </View>
                   </View>
-                  <View>
-                    <Text style={{ fontSize: 10, color: colors.muted }}>Amount</Text>
-                    <Text style={{ fontSize: 14, fontWeight: '700', color: getRiskColor(result.riskLevel) }}>
-                      SGD {result.dollarChange.toLocaleString()}
+                  <View style={{ alignItems: 'center' }}>
+                    <Text style={{ fontSize: 20, marginBottom: 4 }}>
+                      {result.riskLevel === 'critical' ? '🔴' : result.riskLevel === 'high' ? '🟠' : result.riskLevel === 'medium' ? '🟡' : '🟢'}
                     </Text>
-                  </View>
-                  <View>
-                    <Text style={{ fontSize: 10, color: colors.muted }}>Recovery</Text>
-                    <Text style={{ fontSize: 14, fontWeight: '700', color: colors.foreground }}>
-                      {result.timeToRecover}mo
-                    </Text>
+                    <Text style={{ fontSize: 10, color: colors.muted, textAlign: 'center' }}>{result.riskLevel}</Text>
                   </View>
                 </View>
-              </View>
-              <View style={{ alignItems: 'center' }}>
-                <Text style={{ fontSize: 20, marginBottom: 4 }}>
-                  {result.riskLevel === 'critical' ? '🔴' : result.riskLevel === 'high' ? '🟠' : result.riskLevel === 'medium' ? '🟡' : '🟢'}
-                </Text>
-                <Text style={{ fontSize: 10, color: colors.muted, textAlign: 'center' }}>{result.riskLevel}</Text>
-              </View>
-            </View>
-          </Pressable>
-        ))}
+              </Pressable>
+            ))}
 
-        {/* AI Chat Button */}
-        <Pressable
-          onPress={() => router.push('/stress-test-ai-chat' as any)}
-          style={({ pressed }) => [
-            styles.aiButton,
-            {
-              backgroundColor: colors.primary,
-              opacity: pressed ? 0.8 : 1,
-            },
-          ]}
-        >
-          <Text style={{ fontSize: 16, color: 'white', marginRight: 8 }}>💬</Text>
-          <Text style={{ fontSize: 16, fontWeight: '600', color: 'white' }}>Ask AI About Stress Tests</Text>
-        </Pressable>
+            {/* AI Chat Button */}
+            <Pressable
+              onPress={() => router.push('/stress-test-ai-chat' as any)}
+              style={({ pressed }) => [
+                styles.aiButton,
+                {
+                  backgroundColor: colors.primary,
+                  opacity: pressed ? 0.8 : 1,
+                },
+              ]}
+            >
+              <Text style={{ fontSize: 16, color: 'white', marginRight: 8 }}>💬</Text>
+              <Text style={{ fontSize: 16, fontWeight: '600', color: 'white' }}>Ask AI About Stress Tests</Text>
+            </Pressable>
 
-        {/* Recommendations */}
-        {stressReport.recommendations.length > 0 && (
-          <>
-            <Text style={[styles.sectionTitle, { color: colors.foreground }]}>Recommendations</Text>
-            <View style={[styles.recommendationCard, { backgroundColor: colors.surface, borderColor: colors.border }]}>
-              {stressReport.recommendations.map((rec, idx) => (
-                <Text key={idx} style={{ fontSize: 12, color: colors.muted, marginBottom: 8, lineHeight: 18 }}>
-                  • {rec}
-                </Text>
-              ))}
-            </View>
+            {/* Recommendations */}
+            {stressReport.recommendations.length > 0 && (
+              <>
+                <Text style={[styles.sectionTitle, { color: colors.foreground }]}>Recommendations</Text>
+                <View style={[styles.recommendationCard, { backgroundColor: colors.surface, borderColor: colors.border }]}>
+                  {stressReport.recommendations.map((rec, idx) => (
+                    <Text key={idx} style={{ fontSize: 12, color: colors.muted, marginBottom: 8, lineHeight: 18 }}>
+                      • {rec}
+                    </Text>
+                  ))}
+                </View>
+              </>
+            )}
           </>
         )}
       </ScrollView>
@@ -208,6 +235,14 @@ export default function StressTestScreen() {
 }
 
 const styles = StyleSheet.create({
+  emptyStateCard: {
+    borderRadius: 16,
+    padding: 32,
+    borderWidth: 1,
+    alignItems: 'center',
+    gap: 12,
+    marginBottom: 20,
+  },
   scoreCard: {
     borderRadius: 12,
     padding: 16,
