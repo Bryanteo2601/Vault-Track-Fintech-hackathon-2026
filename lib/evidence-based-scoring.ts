@@ -138,8 +138,10 @@ export function calculateCPFRetirementScore(inputs: CPFInputs): {
     retirementSumScore = 70;
   } else if (retirementRelevantBalance >= 0.25 * frsTarget) {
     retirementSumScore = 50;
-  } else {
+  } else if (retirementRelevantBalance > 0) {
     retirementSumScore = 30;
+  } else {
+    retirementSumScore = 40; // Base score for no CPF data
   }
 
   // B. CPF LIFE payout adequacy score (25%)
