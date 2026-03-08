@@ -25,6 +25,7 @@ const mockData: AppData = {
   insurancePolicies: [
     { id: 'ip1', insurer: 'Prudential', policyNumber: 'PRU-001', policyType: 'life', coverageAmount: 500000, annualPremium: 3600, startDate: '2021-01-01', endDate: '2051-01-01', currency: 'SGD' },
   ],
+  privateAssets: [],
   creditScore: { score: 1850, paymentHistory: 90, amountsOwed: 60, lengthOfCredit: 75, creditMix: 80, newCredit: 70, lastUpdated: '2025-05-01' },
 };
 

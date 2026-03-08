@@ -9,6 +9,7 @@ function createMockAppData(overrides?: Partial<AppData>): AppData {
     loans: [],
     holdings: [],
     insurancePolicies: [],
+    privateAssets: [],
     creditScore: {
       score: 0,
       paymentHistory: 0,

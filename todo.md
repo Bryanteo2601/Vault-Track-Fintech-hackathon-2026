@@ -345,3 +345,17 @@
 - [x] Update Financial Health metrics from square grid to horizontal cards
 - [x] Fix dashboard layout and styling
 - [x] Verify all changes compile successfully
+
+## Phase 38: Private Assets Feature Implementation
+- [ ] Create Private Assets data model with flexible asset types
+- [ ] Implement historical valuations tracking
+- [ ] Build Private Assets list and detail screens
+- [ ] Create add/edit asset forms with optional custom attributes
+- [ ] Implement profit/loss calculations
+- [ ] Create time series analysis and CAGR calculations
+- [ ] Build AI-powered contextual valuation assistant
+- [ ] Integrate Private Assets into net worth calculations
+- [ ] Add Private Assets to dashboard and asset allocation
+- [ ] Create Private Asset insights and analytics
+- [ ] Create comprehensive unit tests for all calculations
+- [ ] Test and save checkpoint

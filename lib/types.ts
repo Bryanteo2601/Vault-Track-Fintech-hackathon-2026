@@ -106,11 +106,42 @@ export interface AggregatedBalance {
   exempted: number;
 }
 
+// ─── Private Assets ──────────────────────────────────────────────────────────
+export interface HistoricalValuation {
+  date: string;
+  estimatedValue: number;
+  source: string;
+  note?: string;
+}
+
+export type ConfidenceLevel = 'Very High' | 'High' | 'Medium' | 'Low' | 'Very Low';
+
+export interface PrivateAsset {
+  id: string;
+  assetName: string;
+  assetType: string;
+  description: string;
+  purchasePrice: number;
+  currentEstimatedValue: number;
+  purchaseDate: string;
+  currency: string;
+  quantity?: number;
+  valuationNotes?: string;
+  valuationSource?: string;
+  confidenceLevel?: ConfidenceLevel;
+  historicalValuations: HistoricalValuation[];
+  customAttributes: Record<string, string | number | boolean>;
+  inferredCategory?: string;
+  createdAt: string;
+  updatedAt: string;
+}
+
 // ─── App State ────────────────────────────────────────────────────────────────
 export interface AppData {
   bankAccounts: BankAccount[];
   loans: Loan[];
   holdings: Holding[];
   insurancePolicies: InsurancePolicy[];
+  privateAssets: PrivateAsset[];
   creditScore: CreditScoreData;
 }

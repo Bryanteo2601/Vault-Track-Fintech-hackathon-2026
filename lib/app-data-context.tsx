@@ -1,5 +1,5 @@
 import React, { createContext, useContext, useEffect, useState, useCallback } from 'react';
-import { AppData, BankAccount, Loan, Holding, InsurancePolicy, CreditScoreData } from './types';
+import { AppData, BankAccount, Loan, Holding, InsurancePolicy, CreditScoreData, PrivateAsset } from './types';
 import { loadAppData, saveAppData, resetAppData, defaultAppData } from './store';
 import { auth } from './firebase-config';
 import { onAuthStateChanged } from 'firebase/auth';

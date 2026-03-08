@@ -12,6 +12,7 @@ const emptyPortfolio: AppData = {
   holdings: [],
   loans: [],
   insurancePolicies: [],
+  privateAssets: [],
   creditScore: {
     score: 0,
     paymentHistory: 0,
@@ -24,6 +25,7 @@ const emptyPortfolio: AppData = {
 };
 
 const basicPortfolio: AppData = {
+  privateAssets: [],
   bankAccounts: [
     {
       id: '1',
@@ -90,6 +92,7 @@ const basicPortfolio: AppData = {
 };
 
 const concentratedPortfolio: AppData = {
+  privateAssets: [],
   bankAccounts: [
     {
       id: '1',

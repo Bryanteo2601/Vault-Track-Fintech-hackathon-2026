@@ -6,6 +6,7 @@ import {
   InsurancePolicy,
   CreditScoreData,
   AggregatedBalance,
+  PrivateAsset,
 } from './types';
 import { db, auth } from './firebase-config';
 import { doc, getDoc, setDoc, collection, getDocs, query, where } from 'firebase/firestore';
@@ -336,6 +337,7 @@ export const defaultAppData: AppData = {
   loans: defaultLoans,
   holdings: defaultHoldings,
   insurancePolicies: defaultInsurancePolicies,
+  privateAssets: [],
   creditScore: defaultCreditScore,
 };
 

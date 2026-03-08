@@ -181,6 +181,7 @@ export const testAppData: AppData = {
   loans: testLoans,
   holdings: testHoldings,
   insurancePolicies: testInsurancePolicies,
+  privateAssets: [],
   creditScore: testCreditScore,
 };
 
