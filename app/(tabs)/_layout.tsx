@@ -76,6 +76,13 @@ export default function TabLayout() {
         }}
       />
       <Tabs.Screen
+        name="private-assets"
+        options={{
+          title: "Assets",
+          tabBarIcon: ({ color }) => <IconSymbol size={26} name="diamond.fill" color={color} />,
+        }}
+      />
+      <Tabs.Screen
         name="profile"
         options={{
           title: "Profile",
