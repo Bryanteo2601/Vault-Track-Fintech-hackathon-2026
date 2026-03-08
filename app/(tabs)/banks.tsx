@@ -7,7 +7,8 @@ import { ScreenContainer } from '@/components/screen-container';
 import { useAppColors } from '@/hooks/use-app-colors';
 import { useAppData } from '@/lib/app-data-context';
 import { BankAccount, AccountType, Loan } from '@/lib/types';
-import { getCreditScoreDetails, formatCurrency } from '@/lib/store';
+import { formatCurrency } from '@/lib/store';
+import { calculateCBSScore } from '@/lib/cbs-score-calculator';
 import { IconSymbol } from '@/components/ui/icon-symbol';
 import Svg, { Circle, G, Path } from 'react-native-svg';
 
@@ -201,15 +202,28 @@ function AccountModal({ visible, account, onClose, onSave }: {
   );
 }
 
-// ─── Main Banks Screen ────────────────────────────────────────────────────────
+//// ─── Helper: Get grade color ──────────────────────────────────────────────────
+function getGradeColor(grade: string, colors: any): string {
+  switch (grade) {
+    case 'A': return colors.success;
+    case 'B+':
+    case 'B': return '#10B981';
+    case 'B-': return colors.warning;
+    case 'C': return colors.warning;
+    default: return colors.error;
+  }
+}
+
+// ─── Main Banks Screen ────────────────────────────────────────────────────
 export default function BanksScreen() {
   const colors = useAppColors();
   const { data, addBankAccount, updateBankAccount, deleteBankAccount } = useAppData();
   const [modalVisible, setModalVisible] = useState(false);
   const [editingAccount, setEditingAccount] = useState<BankAccount | undefined>();
 
-  const cbsScore = useMemo(() => getCreditScoreDetails(data.creditScore), [data.creditScore]);
-  const maxLoan = useMemo(() => 500000, []);
+  const monthlyIncome = 5000; // TODO: Get from user profile
+  const cbsScore = useMemo(() => calculateCBSScore(data, monthlyIncome), [data, monthlyIncome]);
+  const maxLoan = useMemo(() => cbsScore.estimatedMaxLoan, [cbsScore]);
 
   const totalBalance = useMemo(
     () => data.bankAccounts.filter(a => a.balance > 0).reduce((s, a) => s + a.balance, 0),
@@ -296,7 +310,7 @@ export default function BanksScreen() {
 
           {/* Credit Score Section */}
           <Text style={[styles.sectionTitle, { color: colors.foreground }]}>Credit Bureau Singapore</Text>
-          {data.creditScore.score === 0 ? (
+          {data.loans.length === 0 && data.bankAccounts.length === 0 ? (
             <View style={[styles.emptyState, { backgroundColor: colors.surface, borderColor: colors.border }]}>
               <Text style={styles.emptyIcon}>📊</Text>
               <Text style={[styles.emptyText, { color: colors.muted }]}>No credit score data yet. Add bank accounts and loans to build your credit history.</Text>
@@ -304,27 +318,35 @@ export default function BanksScreen() {
           ) : (
             <View style={[styles.creditCard, { backgroundColor: colors.surface, borderColor: colors.border }]}>
               <View style={styles.creditTop}>
-                <CreditScoreGauge score={cbsScore.score} grade={cbsScore.grade} color={cbsScore.color} />
+                <CreditScoreGauge score={cbsScore.score} grade={cbsScore.grade} color={getGradeColor(cbsScore.grade, colors)} />
                 <View style={styles.creditRight}>
                   <Text style={[styles.creditTitle, { color: colors.foreground }]}>CBS Credit Score</Text>
                   <Text style={[styles.creditSub, { color: colors.muted }]}>Scale: 1000–2000</Text>
-                  <View style={[styles.gradeBadge, { backgroundColor: cbsScore.color + '20' }]}>
-                    <Text style={[styles.gradeBadgeText, { color: cbsScore.color }]}>Grade {cbsScore.grade}</Text>
+                  <View style={[styles.gradeBadge, { backgroundColor: getGradeColor(cbsScore.grade, colors) + '20' }]}>
+                    <Text style={[styles.gradeBadgeText, { color: getGradeColor(cbsScore.grade, colors) }]}>Grade {cbsScore.grade}</Text>
                   </View>
                   <Text style={[styles.maxLoanLabel, { color: colors.muted }]}>Estimated Max Loan</Text>
                   <Text style={[styles.maxLoanValue, { color: colors.primary }]}>{formatCurrency(maxLoan)}</Text>
                   <Text style={[styles.maxLoanNote, { color: colors.muted }]}>Based on 55% TDSR</Text>
+                  <Text style={[styles.lastUpdated, { color: colors.muted }]}>Updated: {cbsScore.lastUpdated.toLocaleDateString()}</Text>
                 </View>
               </View>
 
               {/* CBS Factor Breakdown */}
               <View style={[styles.factorDivider, { backgroundColor: colors.border }]} />
               <Text style={[styles.factorTitle, { color: colors.foreground }]}>Score Breakdown</Text>
-              <CreditFactorBar label="Payment History" value={data.creditScore.paymentHistory} weight="35%" color={data.creditScore.paymentHistory >= 80 ? colors.success : colors.warning} />
-              <CreditFactorBar label="Amounts Owed" value={data.creditScore.amountsOwed} weight="30%" color={data.creditScore.amountsOwed <= 50 ? colors.success : colors.warning} />
-              <CreditFactorBar label="Length of Credit" value={data.creditScore.lengthOfCredit} weight="15%" color={data.creditScore.lengthOfCredit >= 70 ? colors.success : colors.warning} />
-              <CreditFactorBar label="Credit Mix" value={data.creditScore.creditMix} weight="10%" color={data.creditScore.creditMix >= 60 ? colors.success : colors.warning} />
-              <CreditFactorBar label="New Credit" value={data.creditScore.newCredit} weight="10%" color={data.creditScore.newCredit >= 60 ? colors.success : colors.warning} />
+              <CreditFactorBar label="Payment History" value={cbsScore.paymentHistoryScore} weight="35%" color={cbsScore.paymentHistoryScore >= 80 ? colors.success : colors.warning} />
+              <CreditFactorBar label="Amounts Owed" value={cbsScore.amountsOwedScore} weight="30%" color={cbsScore.amountsOwedScore <= 50 ? colors.success : colors.warning} />
+              <CreditFactorBar label="Length of Credit" value={cbsScore.lengthOfCreditScore} weight="15%" color={cbsScore.lengthOfCreditScore >= 70 ? colors.success : colors.warning} />
+              <CreditFactorBar label="Credit Mix" value={cbsScore.creditMixScore} weight="10%" color={cbsScore.creditMixScore >= 60 ? colors.success : colors.warning} />
+              <CreditFactorBar label="New Credit" value={cbsScore.newCreditScore} weight="10%" color={cbsScore.newCreditScore >= 60 ? colors.success : colors.warning} />
+              {cbsScore.warnings.length > 0 && (
+                <View style={[styles.warningsBox, { backgroundColor: colors.warning + '10', borderColor: colors.warning }]}>
+                  {cbsScore.warnings.map((warning, idx) => (
+                    <Text key={idx} style={[styles.warningText, { color: colors.warning }]}>• {warning}</Text>
+                  ))}
+                </View>
+              )}
             </View>
           )}
 
@@ -415,6 +437,7 @@ const styles = StyleSheet.create({
   maxLoanLabel: { fontSize: 11, marginTop: 8 },
   maxLoanValue: { fontSize: 18, fontWeight: '800', letterSpacing: -0.5 },
   maxLoanNote: { fontSize: 10 },
+  lastUpdated: { fontSize: 9, marginTop: 6 },
   factorDivider: { height: 1, marginVertical: 12 },
   factorTitle: { fontSize: 14, fontWeight: '700', marginBottom: 12 },
   factorRow: { marginBottom: 10 },
@@ -424,6 +447,8 @@ const styles = StyleSheet.create({
   factorValue: { fontSize: 12, fontWeight: '700', width: 36, textAlign: 'right' },
   factorTrack: { height: 6, borderRadius: 3, overflow: 'hidden' },
   factorFill: { height: 6, borderRadius: 3 },
+  warningsBox: { borderRadius: 12, padding: 12, marginTop: 12, borderWidth: 1 },
+  warningText: { fontSize: 12, marginBottom: 6, lineHeight: 18 },
   bankLoanCard: { borderRadius: 14, padding: 14, borderWidth: 1 },
   bankLoanHeader: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginBottom: 10 },
   bankLoanName: { fontSize: 15, fontWeight: '700' },

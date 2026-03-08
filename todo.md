@@ -233,3 +233,19 @@
 - [x] Create 40+ comprehensive unit tests for all five scoring factors
 - [x] Algorithm tested with sample data and grades (A-F) verified
 - [x] Dev server compiling with 0 errors
+
+## Phase 27: Dynamic CBS Credit Score Calculation Engine
+- [x] Create CBS score calculation utility with five weighted factors
+- [x] Implement Payment History factor (35% weight)
+- [x] Implement Amounts Owed factor (30% weight)
+- [x] Implement Length of Credit factor (15% weight)
+- [x] Implement Credit Mix factor (10% weight)
+- [x] Implement New Credit factor (10% weight)
+- [x] Calculate estimated max loan using TDSR logic
+- [x] Integrate CBS calculation into Banks screen
+- [x] Update Banks screen to display dynamic scores and factors
+- [x] Add edge case handling (no loans, missing income, zero assets)
+- [x] Created 30+ comprehensive unit tests for CBS calculation
+- [x] All TypeScript errors resolved
+- [x] Dev server compiling successfully with 0 errors
+- [x] CBS score now calculates dynamically from user financial data
