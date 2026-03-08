@@ -530,3 +530,70 @@
 - [ ] Validate asset allocation includes CPF correctly
 - [ ] Confirm insurance cash value only counted if applicable
 - [ ] Save checkpoint
+
+
+## Phase 55: Unified Financial Summary Engine
+
+### Part 1: Create Shared Total Assets Engine
+- [x] Create calculateUnifiedFinancialSummary(appData) function
+- [x] Implement bankAssets calculation
+- [x] Implement investmentAssets calculation
+- [x] Implement cpfAssets calculation
+- [x] Implement insuranceCashValue calculation (not coverage amount)
+- [x] Implement privateAssetsValue calculation with currentEstimatedValue
+- [x] Implement otherAssets calculation
+- [x] Calculate totalAssets = sum of all asset classes
+- [x] Calculate totalLiabilities from loans
+- [x] Calculate netWorth = totalAssets - totalLiabilities
+
+### Part 2: Private Assets Value Calculation
+- [x] Calculate privateAssetsValue = sum of currentEstimatedValue
+- [x] Handle quantity multiplier if present
+- [x] Calculate privateAssetsCostBasis
+- [x] Calculate privateAssetsUnrealisedPnL
+- [x] Calculate privateAssetsReturnPct
+- [x] Handle missing/invalid values gracefully
+
+### Part 3: Private Asset Quality Component (0-100)
+- [x] Base score: no assets=40, no valuations=45, with valuations=60
+- [x] +10 if positive unrealised gain
+- [x] +10 if more than 1 private asset
+- [x] +10 if average confidence is medium/high
+- [x] +10 if valuation history exists
+- [x] -15 if >70% concentration in one asset
+- [x] -10 if valuations stale >12 months
+- [x] -10 if confidence mostly low
+- [x] Clamp between 0-100
+
+### Part 4: 8-Factor Wellness Score
+- [x] Update weights: Credit 18%, Liquidity 18%, Diversification 15%, Growth 10%, Debt 10%, CPF 12%, Insurance 8%, PrivateAssets 9%
+- [x] Verify weights sum to 1.00 (0.18+0.18+0.15+0.10+0.10+0.12+0.08+0.09=1.00)
+- [x] Integrate private asset quality component
+- [x] Update net worth growth to include private asset appreciation
+- [x] Update debt ratio to use corrected total assets
+- [x] Update diversification to include private assets
+
+### Part 5: Asset Allocation Update
+- [ ] Include private assets as separate class
+- [ ] Calculate allocation percentages from unified totalAssets
+- [ ] Verify percentages reconcile to 100%
+- [ ] Exclude insurance if no cash value
+
+### Part 6: Dashboard Integration
+- [ ] Update dashboard to use unified engine
+- [ ] Show corrected net worth
+- [ ] Show corrected total assets
+- [ ] Include private assets in allocation chart
+- [ ] Update wellness score calculation
+- [ ] Add private asset insights
+
+### Part 7: Validation
+- [ ] Test adding private asset updates totals
+- [ ] Test net worth updates correctly
+- [ ] Test debt ratio updates
+- [ ] Test asset allocation includes private assets
+- [ ] Test wellness score updates after edit
+- [ ] Test CPF included properly
+- [ ] Test insurance cash value included only when relevant
+- [ ] Test no NaN or Infinity values
+- [ ] Verify all screens use same calculations
