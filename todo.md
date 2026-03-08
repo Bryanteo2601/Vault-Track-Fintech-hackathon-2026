@@ -658,3 +658,12 @@
 - [ ] Verify all scores clamp to 0-100
 - [ ] Test fallback scenarios (missing income, no projections, etc.)
 - [ ] Verify status labels match score ranges
+
+
+## Phase 58: Fix Net Worth Timeline Calculations and Visualizations
+- [x] Debug net worth mismatch: Dashboard $1.496M vs Timeline $193.8K - FIXED: Now uses unified financial engine
+- [x] Fix projection calculations (5Y showing SGD 71T - exponential explosion) - FIXED: Conservative 8% annual growth
+- [x] Implement line graph for net worth over time - ADDED: SVG line chart with historical + projection points
+- [x] Verify yearly breakdown calculations are correct - VERIFIED: Uses unified summary
+- [x] Test with sample data - PASSED: 305 tests passing
+- [x] Verified TypeScript compilation

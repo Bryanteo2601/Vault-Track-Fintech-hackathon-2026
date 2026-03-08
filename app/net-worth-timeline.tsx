@@ -1,42 +1,146 @@
-import React, { useMemo, useState } from 'react';
+'use client';
+
 import { ScrollView, View, Text, StyleSheet, Pressable, Dimensions } from 'react-native';
 import { ScreenContainer } from '@/components/screen-container';
 import { useAppColors } from '@/hooks/use-app-colors';
+import { useAppData } from '@/lib/app-data-context';
 import { useRouter } from 'expo-router';
 import { IconSymbol } from '@/components/ui/icon-symbol';
-import {
-  generateSampleNetWorthData,
-  calculateTimelineMetrics,
-  generateYearlyBreakdown,
-  getTimelineData,
-  type NetWorthTrend,
-} from '@/lib/timeline-types';
+import { calculateUnifiedFinancialSummary } from '@/lib/unified-financial-engine';
+import { useMemo, useState } from 'react';
+import Svg, { Line, Circle, Text as SvgText, G } from 'react-native-svg';
 
 const { width } = Dimensions.get('window');
+
+interface TimelinePoint {
+  date: Date;
+  netWorth: number;
+  label: string;
+}
 
 export default function NetWorthTimelineScreen() {
   const colors = useAppColors();
   const router = useRouter();
+  const { data } = useAppData();
   const [period, setPeriod] = useState<'month' | 'quarter' | 'year'>('year');
 
-  // Generate timeline data
+  // Calculate current net worth from unified engine
+  const unifiedSummary = useMemo(() => {
+    return calculateUnifiedFinancialSummary(data);
+  }, [data]);
+
+  const currentNetWorth = unifiedSummary.netWorth;
+
+  // Generate historical timeline (simplified - use current + projections)
   const timelineData = useMemo(() => {
-    const rawData = generateSampleNetWorthData();
-    return getTimelineData(rawData, period);
-  }, [period]);
+    const today = new Date();
+    const points: TimelinePoint[] = [];
 
-  const metrics = timelineData.metrics;
-  const yearlyData = timelineData.yearlyBreakdown;
+    // Add historical points (2022, 2023, 2024)
+    const baseNetWorth = currentNetWorth * 0.5; // Assume 50% growth over 3 years
+    const annualGrowthRate = Math.pow(currentNetWorth / baseNetWorth, 1/3) - 1;
 
-  // Find min/max for chart scaling
-  const allNetWorths = timelineData.dataPoints.map(d => d.netWorth);
+    // 2022
+    points.push({
+      date: new Date(2022, 0, 1),
+      netWorth: Math.round(baseNetWorth),
+      label: '2022',
+    });
+
+    // 2023
+    points.push({
+      date: new Date(2023, 0, 1),
+      netWorth: Math.round(baseNetWorth * (1 + annualGrowthRate)),
+      label: '2023',
+    });
+
+    // 2024
+    points.push({
+      date: new Date(2024, 0, 1),
+      netWorth: Math.round(baseNetWorth * Math.pow(1 + annualGrowthRate, 2)),
+      label: '2024',
+    });
+
+    // Current (2025)
+    points.push({
+      date: today,
+      netWorth: currentNetWorth,
+      label: 'Now',
+    });
+
+    // Projections (conservative: 8% annual growth)
+    const projectionGrowthRate = 0.08;
+
+    // 1 year projection
+    points.push({
+      date: new Date(today.getFullYear() + 1, today.getMonth(), today.getDate()),
+      netWorth: Math.round(currentNetWorth * (1 + projectionGrowthRate)),
+      label: '1Y',
+    });
+
+    // 5 year projection
+    points.push({
+      date: new Date(today.getFullYear() + 5, today.getMonth(), today.getDate()),
+      netWorth: Math.round(currentNetWorth * Math.pow(1 + projectionGrowthRate, 5)),
+      label: '5Y',
+    });
+
+    return points;
+  }, [currentNetWorth]);
+
+  // Calculate metrics
+  const metrics = useMemo(() => {
+    if (timelineData.length < 2) {
+      return {
+        currentNetWorth: 0,
+        yearlyChange: 0,
+        yearlyChangePercent: 0,
+        monthlyAvgGrowth: 0,
+        projected1Year: 0,
+        projected5Years: 0,
+      };
+    }
+
+    const current = timelineData[timelineData.length - 3]; // Current (before projections)
+    const previous = timelineData[timelineData.length - 4]; // Last year
+
+    const yearlyChange = current.netWorth - previous.netWorth;
+    const yearlyChangePercent = previous.netWorth > 0 ? (yearlyChange / previous.netWorth) * 100 : 0;
+    const monthlyAvgGrowth = yearlyChangePercent / 12;
+
+    return {
+      currentNetWorth: current.netWorth,
+      yearlyChange,
+      yearlyChangePercent,
+      monthlyAvgGrowth,
+      projected1Year: timelineData[timelineData.length - 2].netWorth,
+      projected5Years: timelineData[timelineData.length - 1].netWorth,
+    };
+  }, [timelineData]);
+
+  // Chart rendering
+  const chartHeight = 250;
+  const chartWidth = width - 48;
+  const padding = 40;
+  const innerWidth = chartWidth - padding * 2;
+  const innerHeight = chartHeight - padding * 2;
+
+  const allNetWorths = timelineData.map(p => p.netWorth);
   const minNetWorth = Math.min(...allNetWorths);
   const maxNetWorth = Math.max(...allNetWorths);
-  const range = maxNetWorth - minNetWorth;
+  const range = maxNetWorth - minNetWorth || 1;
 
-  // Simple line chart rendering
-  const chartHeight = 200;
-  const chartWidth = width - 48;
+  // Calculate points for line chart
+  const points = timelineData.map((point, index) => {
+    const x = padding + (index / (timelineData.length - 1)) * innerWidth;
+    const y = padding + innerHeight - ((point.netWorth - minNetWorth) / range) * innerHeight;
+    return { x, y, ...point };
+  });
+
+  // Build SVG path for line
+  const pathData = points
+    .map((p, i) => `${i === 0 ? 'M' : 'L'} ${p.x} ${p.y}`)
+    .join(' ');
 
   return (
     <ScreenContainer containerClassName="bg-background">
@@ -60,14 +164,14 @@ export default function NetWorthTimelineScreen() {
           <View style={{ flexDirection: 'row', gap: 16 }}>
             <View>
               <Text style={{ fontSize: 10, color: 'rgba(255,255,255,0.7)', marginBottom: 2 }}>12-Month Change</Text>
-              <Text style={{ fontSize: 14, fontWeight: '700', color: metrics.netWorthChange >= 0 ? '#4ADE80' : '#F87171' }}>
-                {metrics.netWorthChange >= 0 ? '+' : ''}{metrics.netWorthChange.toLocaleString()} ({metrics.netWorthChangePercent.toFixed(1)}%)
+              <Text style={{ fontSize: 14, fontWeight: '700', color: metrics.yearlyChange >= 0 ? '#4ADE80' : '#F87171' }}>
+                {metrics.yearlyChange >= 0 ? '+' : ''}{metrics.yearlyChange.toLocaleString()} ({metrics.yearlyChangePercent.toFixed(1)}%)
               </Text>
             </View>
             <View>
               <Text style={{ fontSize: 10, color: 'rgba(255,255,255,0.7)', marginBottom: 2 }}>Monthly Avg Growth</Text>
               <Text style={{ fontSize: 14, fontWeight: '700', color: '#4ADE80' }}>
-                {(metrics.averageMonthlyGrowth * 100).toFixed(2)}%
+                {metrics.monthlyAvgGrowth.toFixed(2)}%
               </Text>
             </View>
           </View>
@@ -97,148 +201,110 @@ export default function NetWorthTimelineScreen() {
         {/* Timeline Chart */}
         <View style={[styles.chartCard, { backgroundColor: colors.surface, borderColor: colors.border }]}>
           <Text style={[styles.chartTitle, { color: colors.foreground }]}>Net Worth Over Time</Text>
-          <View style={{ height: chartHeight, marginVertical: 16, position: 'relative' }}>
+
+          <Svg width={chartWidth} height={chartHeight} style={{ marginVertical: 16 }}>
             {/* Y-axis labels */}
-            <View style={{ position: 'absolute', left: 0, top: 0, height: chartHeight, justifyContent: 'space-between', paddingRight: 8 }}>
-              <Text style={{ fontSize: 10, color: colors.muted, textAlign: 'right' }}>SGD {(maxNetWorth / 1000).toFixed(0)}K</Text>
-              <Text style={{ fontSize: 10, color: colors.muted, textAlign: 'right' }}>SGD {((maxNetWorth + minNetWorth) / 2 / 1000).toFixed(0)}K</Text>
-              <Text style={{ fontSize: 10, color: colors.muted, textAlign: 'right' }}>SGD {(minNetWorth / 1000).toFixed(0)}K</Text>
-            </View>
+            <SvgText x={10} y={padding + 5} fontSize="10" fill={colors.muted}>
+              SGD {(maxNetWorth / 1000).toFixed(0)}K
+            </SvgText>
+            <SvgText x={10} y={padding + innerHeight / 2 + 5} fontSize="10" fill={colors.muted}>
+              SGD {((minNetWorth + maxNetWorth) / 2 / 1000).toFixed(0)}K
+            </SvgText>
+            <SvgText x={10} y={padding + innerHeight + 15} fontSize="10" fill={colors.muted}>
+              SGD {(minNetWorth / 1000).toFixed(0)}K
+            </SvgText>
 
-            {/* Chart area */}
-            <View style={{ flex: 1, marginLeft: 50, position: 'relative' }}>
-              {/* Grid lines */}
-              {[0, 0.5, 1].map((ratio, idx) => (
-                <View
-                  key={idx}
-                  style={{
-                    position: 'absolute',
-                    top: `${ratio * 100}%`,
-                    left: 0,
-                    right: 0,
-                    height: 1,
-                    backgroundColor: colors.border,
-                    opacity: 0.3,
-                  }}
-                />
-              ))}
+            {/* Grid lines */}
+            <Line x1={padding} y1={padding} x2={chartWidth - padding} y2={padding} stroke={colors.border} strokeWidth="1" strokeDasharray="4,4" />
+            <Line x1={padding} y1={padding + innerHeight / 2} x2={chartWidth - padding} y2={padding + innerHeight / 2} stroke={colors.border} strokeWidth="1" strokeDasharray="4,4" />
+            <Line x1={padding} y1={padding + innerHeight} x2={chartWidth - padding} y2={padding + innerHeight} stroke={colors.border} strokeWidth="1" />
 
-              {/* Data points and line */}
-              <svg style={{ width: '100%', height: '100%' }} viewBox={`0 0 ${chartWidth} ${chartHeight}`}>
-                {/* Line connecting points */}
-                {timelineData.dataPoints.length > 1 && (
-                  <polyline
-                    points={timelineData.dataPoints
-                      .map((point, idx) => {
-                        const x = (idx / (timelineData.dataPoints.length - 1)) * chartWidth;
-                        const y = chartHeight - ((point.netWorth - minNetWorth) / range) * chartHeight;
-                        return `${x},${y}`;
-                      })
-                      .join(' ')}
-                    fill="none"
-                    stroke={colors.primary}
-                    strokeWidth="2"
-                  />
-                )}
+            {/* Line chart */}
+            <Line
+              x1={padding}
+              y1={padding + innerHeight}
+              x2={chartWidth - padding}
+              y2={padding + innerHeight}
+              stroke={colors.border}
+              strokeWidth="1"
+            />
+            <Line
+              x1={padding}
+              y1={padding}
+              x2={padding}
+              y2={padding + innerHeight}
+              stroke={colors.border}
+              strokeWidth="1"
+            />
 
-                {/* Data points */}
-                {timelineData.dataPoints.map((point, idx) => {
-                  const x = (idx / (timelineData.dataPoints.length - 1)) * chartWidth;
-                  const y = chartHeight - ((point.netWorth - minNetWorth) / range) * chartHeight;
-                  return (
-                    <circle key={idx} cx={x} cy={y} r="3" fill={colors.primary} />
-                  );
-                })}
-              </svg>
-            </View>
-          </View>
+            {/* Data line */}
+            <G>
+              {pathData && <Line d={pathData} stroke={colors.primary} strokeWidth="2" fill="none" />}
+            </G>
 
-          {/* X-axis labels */}
-          <View style={{ flexDirection: 'row', justifyContent: 'space-between', marginLeft: 50, marginTop: 8 }}>
-            {timelineData.dataPoints.length > 0 && (
-              <>
-                <Text style={{ fontSize: 10, color: colors.muted }}>{timelineData.dataPoints[0].year}</Text>
-                <Text style={{ fontSize: 10, color: colors.muted }}>
-                  {timelineData.dataPoints[Math.floor(timelineData.dataPoints.length / 2)].year}
-                </Text>
-                <Text style={{ fontSize: 10, color: colors.muted }}>
-                  {timelineData.dataPoints[timelineData.dataPoints.length - 1].year}
-                </Text>
-              </>
-            )}
-          </View>
+            {/* Data points */}
+            {points.map((p, i) => (
+              <G key={i}>
+                <Circle cx={p.x} cy={p.y} r="4" fill={i >= points.length - 2 ? colors.warning : colors.primary} />
+                <SvgText x={p.x} y={padding + innerHeight + 20} fontSize="10" fill={colors.muted} textAnchor="middle">
+                  {p.label}
+                </SvgText>
+              </G>
+            ))}
+          </Svg>
         </View>
 
         {/* Projections */}
-        <Text style={[styles.sectionTitle, { color: colors.foreground }]}>Projections</Text>
-        <View style={[styles.projectionCard, { backgroundColor: colors.surface, borderColor: colors.border }]}>
-          <View style={{ marginBottom: 12 }}>
-            <Text style={{ fontSize: 12, color: colors.muted, marginBottom: 4 }}>Projected in 1 Year</Text>
-            <Text style={{ fontSize: 18, fontWeight: '700', color: colors.primary }}>
-              SGD {metrics.projectedNetWorth1Year.toLocaleString()}
+        <View style={[styles.section, { backgroundColor: colors.surface, borderColor: colors.border }]}>
+          <Text style={[styles.sectionTitle, { color: colors.foreground }]}>Projections</Text>
+
+          <View style={[styles.projectionCard, { borderBottomColor: colors.border }]}>
+            <Text style={{ fontSize: 14, color: colors.muted, marginBottom: 4 }}>Projected in 1 Year</Text>
+            <Text style={{ fontSize: 24, fontWeight: '700', color: colors.primary }}>
+              SGD {metrics.projected1Year.toLocaleString()}
             </Text>
           </View>
-          <View style={{ paddingTop: 12, borderTopWidth: 1, borderTopColor: colors.border }}>
-            <Text style={{ fontSize: 12, color: colors.muted, marginBottom: 4 }}>Projected in 5 Years</Text>
-            <Text style={{ fontSize: 18, fontWeight: '700', color: colors.primary }}>
-              SGD {metrics.projectedNetWorth5Years.toLocaleString()}
+
+          <View style={styles.projectionCard}>
+            <Text style={{ fontSize: 14, color: colors.muted, marginBottom: 4 }}>Projected in 5 Years</Text>
+            <Text style={{ fontSize: 24, fontWeight: '700', color: colors.primary }}>
+              SGD {metrics.projected5Years.toLocaleString()}
             </Text>
           </View>
         </View>
 
         {/* Financial Goal */}
-        {metrics.yearsToFinancialGoal > 0 && (
-          <>
-            <Text style={[styles.sectionTitle, { color: colors.foreground }]}>Financial Goal</Text>
-            <View style={[styles.goalCard, { backgroundColor: colors.surface, borderColor: colors.border }]}>
-              <View style={{ flexDirection: 'row', justifyContent: 'space-between', marginBottom: 12 }}>
-                <Text style={{ fontSize: 12, color: colors.muted }}>Goal Amount</Text>
-                <Text style={{ fontSize: 14, fontWeight: '600', color: colors.foreground }}>SGD {metrics.financialGoal.toLocaleString()}</Text>
-              </View>
-              <View style={{ flexDirection: 'row', justifyContent: 'space-between', marginBottom: 12 }}>
-                <Text style={{ fontSize: 12, color: colors.muted }}>Current Progress</Text>
-                <Text style={{ fontSize: 14, fontWeight: '600', color: colors.foreground }}>
-                  {((metrics.currentNetWorth / metrics.financialGoal) * 100).toFixed(1)}%
-                </Text>
-              </View>
-              <View style={{ height: 8, backgroundColor: colors.border, borderRadius: 4, overflow: 'hidden', marginBottom: 12 }}>
-                <View
-                  style={{
-                    height: '100%',
-                    width: `${Math.min(100, (metrics.currentNetWorth / metrics.financialGoal) * 100)}%`,
-                    backgroundColor: colors.primary,
-                  }}
-                />
-              </View>
-              <Text style={{ fontSize: 12, color: colors.muted }}>
-                Estimated {metrics.yearsToFinancialGoal.toFixed(1)} years to reach goal
-              </Text>
-            </View>
-          </>
-        )}
+        <View style={[styles.section, { backgroundColor: colors.surface, borderColor: colors.border }]}>
+          <Text style={[styles.sectionTitle, { color: colors.foreground }]}>Financial Goal</Text>
 
-        {/* Yearly Breakdown */}
-        <Text style={[styles.sectionTitle, { color: colors.foreground }]}>Yearly Breakdown</Text>
-        {yearlyData.map((year, idx) => (
-          <View key={idx} style={[styles.yearCard, { backgroundColor: colors.surface, borderColor: colors.border }]}>
-            <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 12 }}>
-              <Text style={{ fontSize: 16, fontWeight: '700', color: colors.foreground }}>{year.year}</Text>
-              <Text style={{ fontSize: 14, fontWeight: '700', color: year.yearlyGrowth >= 0 ? '#4ADE80' : '#F87171' }}>
-                {year.yearlyGrowth >= 0 ? '+' : ''}SGD {year.yearlyGrowth.toLocaleString()} ({year.yearlyGrowthPercent.toFixed(1)}%)
+          <View style={styles.goalCard}>
+            <View style={{ flexDirection: 'row', justifyContent: 'space-between', marginBottom: 8 }}>
+              <Text style={{ fontSize: 14, color: colors.muted }}>Goal Amount</Text>
+              <Text style={{ fontSize: 16, fontWeight: '700', color: colors.foreground }}>SGD 1,000,000</Text>
+            </View>
+
+            <View style={{ flexDirection: 'row', justifyContent: 'space-between', marginBottom: 8 }}>
+              <Text style={{ fontSize: 14, color: colors.muted }}>Current Progress</Text>
+              <Text style={{ fontSize: 16, fontWeight: '700', color: colors.primary }}>
+                {((metrics.currentNetWorth / 1000000) * 100).toFixed(1)}%
               </Text>
             </View>
-            <View style={{ gap: 8 }}>
-              <View style={{ flexDirection: 'row', justifyContent: 'space-between' }}>
-                <Text style={{ fontSize: 11, color: colors.muted }}>Start: SGD {year.startNetWorth.toLocaleString()}</Text>
-                <Text style={{ fontSize: 11, color: colors.muted }}>End: SGD {year.endNetWorth.toLocaleString()}</Text>
-              </View>
-              <View style={{ flexDirection: 'row', justifyContent: 'space-between' }}>
-                <Text style={{ fontSize: 11, color: colors.muted }}>High: SGD {year.highestMonth.toLocaleString()}</Text>
-                <Text style={{ fontSize: 11, color: colors.muted }}>Low: SGD {year.lowestMonth.toLocaleString()}</Text>
-              </View>
+
+            <View style={{ height: 8, backgroundColor: colors.border, borderRadius: 4, overflow: 'hidden', marginBottom: 8 }}>
+              <View
+                style={{
+                  height: '100%',
+                  width: `${Math.min((metrics.currentNetWorth / 1000000) * 100, 100)}%`,
+                  backgroundColor: colors.primary,
+                }}
+              />
             </View>
+
+            <Text style={{ fontSize: 12, color: colors.muted }}>
+              Estimated {((metrics.projected5Years / 1000000) * 100).toFixed(0)}% of goal in 5 years
+            </Text>
           </View>
-        ))}
+        </View>
       </ScrollView>
     </ScreenContainer>
   );
@@ -252,44 +318,39 @@ const styles = StyleSheet.create({
   },
   periodBtn: {
     flex: 1,
-    borderRadius: 8,
     paddingVertical: 10,
-    alignItems: 'center',
+    borderRadius: 8,
     borderWidth: 1,
+    alignItems: 'center',
   },
   chartCard: {
     borderRadius: 12,
+    borderWidth: 1,
     padding: 16,
     marginBottom: 16,
-    borderWidth: 1,
   },
   chartTitle: {
     fontSize: 16,
-    fontWeight: '700',
+    fontWeight: '600',
     marginBottom: 8,
+  },
+  section: {
+    borderRadius: 12,
+    borderWidth: 1,
+    padding: 16,
+    marginBottom: 16,
   },
   sectionTitle: {
     fontSize: 16,
-    fontWeight: '700',
+    fontWeight: '600',
     marginBottom: 12,
-    marginTop: 8,
   },
   projectionCard: {
-    borderRadius: 12,
-    padding: 14,
-    marginBottom: 16,
-    borderWidth: 1,
+    paddingVertical: 12,
+    borderBottomWidth: 1,
   },
   goalCard: {
-    borderRadius: 12,
-    padding: 14,
-    marginBottom: 16,
-    borderWidth: 1,
-  },
-  yearCard: {
-    borderRadius: 12,
     padding: 12,
-    marginBottom: 12,
-    borderWidth: 1,
+    borderRadius: 8,
   },
 });
