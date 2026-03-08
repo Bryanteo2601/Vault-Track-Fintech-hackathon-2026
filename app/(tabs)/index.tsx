@@ -230,29 +230,57 @@ export default function DashboardScreen() {
   }, [dta, assetClassCount, liquidityMonths, cbsScore]);
   
   // Calculate CPF score (0-100)
-  const cpfScore = useMemo(() => {
-    const cpfTotal = unifiedSummary.assetsBreakdown.cpf;
-    if (cpfTotal === 0) return 40;
-    if (cpfTotal < 50000) return 50;
-    if (cpfTotal < 200000) return 70;
-    if (cpfTotal < 500000) return 85;
-    return 100;
-  }, [unifiedSummary]);
+  // Calculate CPF score using evidence-based formula
+  const cpfScoreResult = useMemo(() => {
+    return calculateCPFRetirementScore({
+      oa: data.cpf?.oa || 0,
+      sa: data.cpf?.sa || 0,
+      ma: data.cpf?.ma || 0,
+      ra: data.cpf?.ra || 0,
+      cpfLifeBalance: data.cpf?.cpfLifeBalance || 0,
+      estimatedMonthlyPayout: data.cpf?.estimatedMonthlyPayout,
+      projectedRetirementBalance: data.cpf?.projectedRetirementBalance,
+      currentYearFRS: 220400,
+    });
+  }, [data.cpf]);
+  const cpfScore = cpfScoreResult.score;
+  const cpfStatusLabel = getCPFStatusLabel(cpfScore);
   
-  // Calculate Insurance score (0-100)
-  const insuranceScore = useMemo(() => {
-    const activePolicies = data.insurancePolicies.filter(p => p.status === 'active').length;
-    if (activePolicies === 0) return 30;
-    if (activePolicies === 1) return 60;
-    if (activePolicies >= 2) return 85;
-    return 50;
+  // Calculate Insurance score using evidence-based formula
+  const insuranceScoreResult = useMemo(() => {
+    const monthlyIncome = 5000;
+    const annualIncome = monthlyIncome * 12;
+    const deathOrTPDCover = data.insurancePolicies
+      .filter((p: any) => p.status === 'active' && ['life', 'term_life', 'tpd', 'disability'].includes(p.type))
+      .reduce((sum: number, p: any) => sum + (p.coverageAmount || 0), 0);
+    const criticalIllnessCover = data.insurancePolicies
+      .filter((p: any) => p.status === 'active' && p.type === 'critical_illness')
+      .reduce((sum: number, p: any) => sum + (p.coverageAmount || 0), 0);
+    const annualPremiums = data.insurancePolicies
+      .filter((p: any) => p.status === 'active')
+      .reduce((sum: number, p: any) => sum + (p.annualPremium || 0), 0);
+    const activePolicyTypes = Array.from(
+      new Set(data.insurancePolicies.filter((p: any) => p.status === 'active').map((p: any) => p.type))
+    );
+    const expiredKeyPolicies = data.insurancePolicies.filter((p: any) => p.status === 'expired').length;
+    return calculateInsuranceProtectionScore({
+      annualIncome,
+      deathOrTPDCover,
+      criticalIllnessCover,
+      annualPremiums,
+      activePolicyTypes: activePolicyTypes as string[],
+      expiredKeyPolicies,
+    });
   }, [data.insurancePolicies]);
+  const insuranceScore = insuranceScoreResult.score;
+  const insuranceStatusLabel = getInsuranceStatusLabel(insuranceScore);
   
-  // Calculate Private Asset score (0-100)
-  const privateAssetScore = useMemo(() => {
-    const { calculatePrivateAssetQualityComponent } = require('@/lib/unified-financial-engine');
-    return calculatePrivateAssetQualityComponent(unifiedSummary.privateAssetsSummary);
-  }, [unifiedSummary]);
+  // Calculate Private Asset score using evidence-based formula
+  const privateAssetScoreResult = useMemo(() => {
+    return calculatePrivateAssetQualityScore(data.privateAssets || []);
+  }, [data.privateAssets]);
+  const privateAssetScore = privateAssetScoreResult.score;
+  const privateAssetStatusLabel = getPrivateAssetStatusLabel(privateAssetScore);
 
   if (isLoading) {
     return (
