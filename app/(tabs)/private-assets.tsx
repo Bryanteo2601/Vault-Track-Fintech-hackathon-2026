@@ -6,6 +6,8 @@ import { useAppData } from '@/lib/app-data-context';
 import { useColors } from '@/hooks/use-colors';
 import { formatCurrency } from '@/lib/store';
 import { PrivateAsset } from '@/lib/types';
+import { PortfolioGrowthChart } from '@/components/portfolio-growth-chart';
+import { calculatePrivateAssetMetrics } from '@/lib/private-asset-analytics';
 
 export default function PrivateAssetsScreen() {
   const router = useRouter();
@@ -13,6 +15,11 @@ export default function PrivateAssetsScreen() {
   const { data } = useAppData();
   const [sortBy, setSortBy] = useState<'name' | 'value' | 'date'>('name');
   const [filterType, setFilterType] = useState<string | null>(null);
+
+  // Calculate growth metrics
+  const growthMetrics = useMemo(() => {
+    return calculatePrivateAssetMetrics(data.privateAssets);
+  }, [data.privateAssets]);
 
   // Get unique asset types
   const assetTypes = useMemo(() => {
@@ -57,15 +64,15 @@ export default function PrivateAssetsScreen() {
   }, [data.privateAssets]);
 
   const handleAddAsset = () => {
-    console.log('Add asset');
+    router.push('/private-asset-form');
   };
 
   const handleEditAsset = (asset: PrivateAsset) => {
-    console.log('Edit asset:', asset.id);
+    router.push({ pathname: '/private-asset-form', params: { id: asset.id } });
   };
 
   const handleViewDetail = (asset: PrivateAsset) => {
-    console.log('View detail:', asset.id);
+    router.push({ pathname: '/private-asset-detail', params: { id: asset.id } });
   };
 
   const renderAssetCard = ({ item }: { item: PrivateAsset }) => {
@@ -156,7 +163,7 @@ export default function PrivateAssetsScreen() {
           <View style={styles.emptyState}>
             <Text style={[styles.emptyTitle, { color: colors.foreground }]}>No Private Assets Yet</Text>
             <Text style={[styles.emptyText, { color: colors.muted }]}>
-              Start tracking your jewelry, property, art, and collectibles
+              Track any valuable asset you own — jewellery, watches, property, art, collectibles, or anything else.
             </Text>
             <TouchableOpacity
               style={[styles.emptyButton, { backgroundColor: colors.primary }]}
@@ -182,6 +189,9 @@ export default function PrivateAssetsScreen() {
                 </Text>
               </View>
             </View>
+
+            {/* Growth Analytics Chart */}
+            <PortfolioGrowthChart metrics={growthMetrics} />
 
             {/* Filters and Sort */}
             <View style={styles.controlsSection}>

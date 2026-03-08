@@ -431,3 +431,29 @@
 - [ ] Verify net worth integration
 - [ ] Test historical tracking
 - [ ] Comprehensive end-to-end testing
+
+
+## Phase 48: Fix Private Assets Feature
+- [ ] Fix navigation: wire up "+ Add Asset" button to form screen
+- [ ] Fix navigation: wire up "Add Your First Asset" button to form screen
+- [ ] Implement asset creation form with required/optional fields
+- [ ] Add form validation and error handling
+- [ ] Create profit/loss calculation engine
+- [ ] Build asset card component with gain/loss display
+- [ ] Implement historical valuation tracking
+- [ ] Create value history chart and CAGR analysis
+- [ ] Integrate private assets into net worth calculations
+- [ ] Add AI valuation assistant button and logic
+- [ ] Improve empty state message
+- [ ] Handle edge cases (zero purchase price, missing values, NaN)
+- [ ] Test all functionality and save checkpoint
+
+
+## Phase 49: Time Series Analytics for Private Assets
+- [x] Create time series analytics calculation engine
+- [x] Implement CAGR calculation from historical valuations
+- [x] Calculate 1Y, 3Y, 5Y projections
+- [x] Build portfolio growth chart component
+- [x] Create insights display with growth metrics
+- [x] Integrate chart into Private Assets screen under Total Gain/Loss
+- [x] Test and save checkpoint
