@@ -752,3 +752,19 @@
 - [x] Show rebalancing suggestions when needed
 - [x] Integrate widget into dashboard
 - [x] Display life stage-specific allocation targets
+
+
+## Phase 65: Age-Dynamic Financial Advice Engine
+- [x] Create age-based financial engine with 5 life stages (18-25, 26-35, 36-45, 46-55, 56+)
+- [x] Build age-based investment strategy module with allocation targets
+- [x] Create financial education module with MoneySense-aligned guidance
+- [x] Create age-dynamic advisor integration module with personalized insights
+- [x] Create life stage widget component for dashboard display
+- [x] Integrate life stage widget into dashboard home screen
+- [x] Create educational content card component for profile
+- [x] Add educational content section to profile screen
+- [x] Display life stage, age, and key financial priorities on dashboard
+- [x] Show recommended educational topics based on life stage
+- [x] Real-time age calculation from birthdate
+- [x] Dynamic investment allocation targets by age
+- [x] Personalized financial advisor insights

@@ -26,6 +26,7 @@ import { IconSymbol } from '@/components/ui/icon-symbol';
 import Svg, { Circle, G } from 'react-native-svg';
 import { useScoringCalculations } from './dashboard-scoring';
 import { InvestmentRecommendationsWidget } from '@/components/investment-recommendations-widget';
+import { LifeStageWidget } from '@/components/life-stage-widget';
 import { determineLifeStage } from '@/lib/life-stage';
 
 // ─── Wellness Gauge ───────────────────────────────────────────────────────────
@@ -338,6 +339,9 @@ export default function DashboardScreen() {
             </View>
           </ScrollView>
           </View>
+
+          {/* Life Stage Widget */}
+          <LifeStageWidget />
 
           {/* Investment Recommendations Widget */}
           {lifeStage && (
