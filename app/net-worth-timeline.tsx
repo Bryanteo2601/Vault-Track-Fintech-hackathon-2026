@@ -82,21 +82,25 @@ export default function NetWorthTimelineScreen() {
   }, [historicalData]);
 
   // Chart rendering
-  const chartHeight = 250;
+  const chartHeight = 280;
   const chartWidth = width - 48;
-  const padding = 40;
+  const padding = 50;
   const innerWidth = chartWidth - padding * 2;
-  const innerHeight = chartHeight - padding * 2;
+  const innerHeight = chartHeight - padding * 2 - 20; // Extra space for labels
 
   const allNetWorths = timelineData.map((p) => p.netWorth);
   const minNetWorth = allNetWorths.length > 0 ? Math.min(...allNetWorths) : 0;
   const maxNetWorth = allNetWorths.length > 0 ? Math.max(...allNetWorths) : 1;
-  const range = maxNetWorth - minNetWorth || 1;
+  // Add 10% padding to the range for better visualization
+  const range = (maxNetWorth - minNetWorth) * 1.1 || 1;
+  const adjustedMin = Math.max(0, minNetWorth - (maxNetWorth - minNetWorth) * 0.05);
 
-  // Calculate points for line chart
+  // Calculate points for line chart with better spacing
   const points = timelineData.map((point, index) => {
-    const x = padding + (index / Math.max(1, timelineData.length - 1)) * innerWidth;
-    const y = padding + innerHeight - ((point.netWorth - minNetWorth) / range) * innerHeight;
+    const totalPoints = Math.max(1, timelineData.length - 1);
+    const x = padding + (index / totalPoints) * innerWidth;
+    const normalizedValue = (point.netWorth - adjustedMin) / range;
+    const y = padding + innerHeight - normalizedValue * innerHeight;
     return { x, y, ...point };
   });
 
@@ -170,14 +174,14 @@ export default function NetWorthTimelineScreen() {
 
           <Svg width={chartWidth} height={chartHeight} style={{ marginVertical: 16 }}>
             {/* Y-axis labels */}
-            <SvgText x={10} y={padding + 5} fontSize="10" fill={colors.muted}>
+            <SvgText x={5} y={padding + 8} fontSize="9" fill={colors.muted} textAnchor="end">
               SGD {(maxNetWorth / 1000000).toFixed(1)}M
             </SvgText>
-            <SvgText x={10} y={padding + innerHeight / 2 + 5} fontSize="10" fill={colors.muted}>
-              SGD {((minNetWorth + maxNetWorth) / 2 / 1000000).toFixed(1)}M
+            <SvgText x={5} y={padding + innerHeight / 2 + 3} fontSize="9" fill={colors.muted} textAnchor="end">
+              SGD {((adjustedMin + maxNetWorth) / 2 / 1000000).toFixed(1)}M
             </SvgText>
-            <SvgText x={10} y={padding + innerHeight + 15} fontSize="10" fill={colors.muted}>
-              SGD {(minNetWorth / 1000000).toFixed(1)}M
+            <SvgText x={5} y={padding + innerHeight + 8} fontSize="9" fill={colors.muted} textAnchor="end">
+              SGD {(adjustedMin / 1000000).toFixed(1)}M
             </SvgText>
 
             {/* Grid lines */}
@@ -204,7 +208,7 @@ export default function NetWorthTimelineScreen() {
             {points.map((p, i) => (
               <G key={i}>
                 <Circle cx={p.x} cy={p.y} r="4" fill={colors.primary} />
-                <SvgText x={p.x} y={padding + innerHeight + 20} fontSize="10" fill={colors.muted} textAnchor="middle">
+                <SvgText x={p.x} y={padding + innerHeight + 25} fontSize="9" fill={colors.muted} textAnchor="middle">
                   {p.label}
                 </SvgText>
               </G>

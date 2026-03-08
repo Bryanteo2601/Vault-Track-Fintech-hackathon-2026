@@ -687,3 +687,11 @@
 - [x] Show proper start/end values for each year
 - [x] Calculate growth from start year through current year
 - [x] Dev server running and compiling
+
+## Phase 61: Fix Net Worth Graph Accuracy
+- [x] Improve chart rendering with better spacing and padding
+- [x] Fix Y-axis labels to use adjusted min/max values
+- [x] Improve year label positioning and sizing
+- [x] Add range padding for better visualization
+- [x] Verify all years display correctly on graph
+- [x] Ensure data points are accurately positioned
