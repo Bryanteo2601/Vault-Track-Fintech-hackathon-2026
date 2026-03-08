@@ -98,26 +98,28 @@ export default function NetWorthTimelineScreen() {
 
     if (!currentPoint || !previousPoint) {
       return {
-        currentNetWorth: currentNetWorth || 0,
+        currentNetWorth: Number(currentNetWorth) || 0,
         yearlyChange: 0,
         yearlyChangePercent: 0,
         monthlyAvgGrowth: 0,
-        projected1Year: projection1Y?.netWorth || 0,
-        projected5Years: projection5Y?.netWorth || 0,
+        projected1Year: Number(projection1Y?.netWorth) || 0,
+        projected5Years: Number(projection5Y?.netWorth) || 0,
       };
     }
 
-    const yearlyChange = currentPoint.netWorth - previousPoint.netWorth;
-    const yearlyChangePercent = previousPoint.netWorth > 0 ? (yearlyChange / previousPoint.netWorth) * 100 : 0;
+    const currentNW = Number(currentPoint.netWorth) || 0;
+    const previousNW = Number(previousPoint.netWorth) || 0;
+    const yearlyChange = currentNW - previousNW;
+    const yearlyChangePercent = previousNW > 0 ? (yearlyChange / previousNW) * 100 : 0;
     const monthlyAvgGrowth = yearlyChangePercent / 12;
 
     return {
-      currentNetWorth: currentPoint.netWorth,
+      currentNetWorth: currentNW,
       yearlyChange,
       yearlyChangePercent,
       monthlyAvgGrowth,
-      projected1Year: projection1Y?.netWorth || 0,
-      projected5Years: projection5Y?.netWorth || 0,
+      projected1Year: Number(projection1Y?.netWorth) || 0,
+      projected5Years: Number(projection5Y?.netWorth) || 0,
     };
   }, [timelineData, currentNetWorth]);
 
