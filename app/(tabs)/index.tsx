@@ -9,10 +9,10 @@ import {
   calcTotalAssets,
   calcTotalLiabilities,
   calcWellnessScore,
-  getCreditScoreDetails,
   formatCurrency,
   calcPortfolioByAssetClass,
 } from '@/lib/store';
+import { calculateCBSScore } from '@/lib/cbs-score-calculator';
 import { IconSymbol } from '@/components/ui/icon-symbol';
 import Svg, { Circle, G } from 'react-native-svg';
 
@@ -130,7 +130,8 @@ export default function DashboardScreen() {
   const totalAssets = useMemo(() => calcTotalAssets(data), [data]);
   const totalLiabilities = useMemo(() => calcTotalLiabilities(data), [data]);
   const wellnessScore = useMemo(() => calcWellnessScore(data), [data]);
-  const cbsScore = useMemo(() => getCreditScoreDetails(data.creditScore), [data.creditScore]);
+  const monthlyIncome = 5000; // TODO: Get from user profile
+  const cbsScore = useMemo(() => calculateCBSScore(data, monthlyIncome), [data, monthlyIncome]);
   const portfolioByClass = useMemo(() => calcPortfolioByAssetClass(data.holdings), [data.holdings]);
 
   const bankBalance = useMemo(
@@ -177,7 +178,7 @@ export default function DashboardScreen() {
     if (liquidityMonths < 6) {
       recs.push({ icon: '💧', title: 'Build Emergency Fund', description: `Your liquid assets cover ${liquidityMonths} months of debt payments. Aim for 6 months to protect against income disruptions.`, type: 'warning' as const });
     }
-    if (cbsScore.score >= 1825) {
+    if (cbsScore.score > 0 && cbsScore.score >= 1825) {
       recs.push({ icon: '🏆', title: 'Excellent Credit Standing', description: `Your CBS score of ${cbsScore.score} (${cbsScore.grade}) qualifies you for preferential loan rates. Consider refinancing existing loans.`, type: 'info' as const });
     }
     if (recs.length === 0) {
@@ -262,7 +263,7 @@ export default function DashboardScreen() {
                 label="Credit Score"
                 value={cbsScore.score.toString()}
                 subtitle={`Grade ${cbsScore.grade}`}
-                color={cbsScore.color}
+                color={cbsScore.score === 0 ? colors.muted : cbsScore.score >= 1825 ? colors.success : cbsScore.score >= 1500 ? colors.warning : colors.error}
               />
             </View>
           </ScrollView>

@@ -254,6 +254,9 @@
 - [x] Fix CBS credit score display to show 0 and Grade "-" when no data exists
 - [x] Update Banks screen credit score card to reflect empty state properly
 - [x] Ensure all factor scores show 0 when insufficient data
+- [x] Update Dashboard to use dynamic CBS score calculation instead of stored credit score
+- [x] Fix Dashboard credit score color calculation for empty state
+- [x] All 17 CBS calculator unit tests passing
 
 ## Phase 29: Refactor to Shared Financial Analytics Engine
 - [ ] Create unified financialEngine.ts with shared analysis logic
