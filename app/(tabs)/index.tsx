@@ -25,6 +25,8 @@ import {
 import { IconSymbol } from '@/components/ui/icon-symbol';
 import Svg, { Circle, G } from 'react-native-svg';
 import { useScoringCalculations } from './dashboard-scoring';
+import { InvestmentRecommendationsWidget } from '@/components/investment-recommendations-widget';
+import { determineLifeStage } from '@/lib/life-stage';
 
 // ─── Wellness Gauge ───────────────────────────────────────────────────────────
 function WellnessGauge({ score }: { score: number }) {
@@ -233,6 +235,9 @@ export default function DashboardScreen() {
   // Use the scoring calculations hook
   const { cpfScore, cpfStatusLabel, insuranceScore, insuranceStatusLabel, privateAssetScore, privateAssetStatusLabel } = useScoringCalculations(data, unifiedSummary);
 
+  // Determine life stage for investment recommendations
+  const lifeStage = data?.userProfile ? determineLifeStage(data.userProfile.birthDate) : 'fresh_entrant';
+
   if (isLoading) {
     return (
       <ScreenContainer>
@@ -333,6 +338,11 @@ export default function DashboardScreen() {
             </View>
           </ScrollView>
           </View>
+
+          {/* Investment Recommendations Widget */}
+          {lifeStage && (
+            <InvestmentRecommendationsWidget lifeStage={lifeStage} holdings={data?.holdings || []} />
+          )}
 
           {/* AI Recommendations */}
           <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginBottom: 12 }}>

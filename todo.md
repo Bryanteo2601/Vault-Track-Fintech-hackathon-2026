@@ -746,3 +746,9 @@
 - [ ] Add investment recommendations to dashboard
 - [ ] Test nudge triggering across all life stages
 - [ ] Test investment recommendations by life stage
+
+- [x] Create InvestmentRecommendationsWidget component
+- [x] Display current vs. recommended asset allocation
+- [x] Show rebalancing suggestions when needed
+- [x] Integrate widget into dashboard
+- [x] Display life stage-specific allocation targets
