@@ -7,6 +7,7 @@ import { useAppData } from '@/lib/app-data-context';
 import { useRouter } from 'expo-router';
 import { IconSymbol } from '@/components/ui/icon-symbol';
 import { calculateUnifiedFinancialSummary } from '@/lib/unified-financial-engine';
+import { generateHistoricalNetWorthData } from '@/lib/historical-net-worth';
 import { useMemo, useState } from 'react';
 import Svg, { Line, Circle, Text as SvgText, G } from 'react-native-svg';
 
@@ -27,99 +28,58 @@ export default function NetWorthTimelineScreen() {
   const [isEditingGoal, setIsEditingGoal] = useState(false);
   const [goalInput, setGoalInput] = useState(goalAmount.toString());
 
-  // Calculate current net worth from unified engine
-  const unifiedSummary = useMemo(() => {
-    if (!data) return { netWorth: 0, totalAssets: 0, totalLiabilities: 0 };
+  // Generate historical net worth data from account start year
+  const historicalData = useMemo(() => {
+    if (!data) return null;
     try {
-      return calculateUnifiedFinancialSummary(data);
+      return generateHistoricalNetWorthData(data);
     } catch (e) {
-      console.error('Error calculating unified summary:', e);
-      return { netWorth: 0, totalAssets: 0, totalLiabilities: 0 };
+      console.error('Error generating historical net worth:', e);
+      return null;
     }
   }, [data]);
 
-  const currentNetWorth = Math.max(0, Number(unifiedSummary?.netWorth) || 0);
+  const currentNetWorth = historicalData?.currentNetWorth || 1496600;
 
-  // Generate historical timeline from app start date (2022-01-01)
+  // Create timeline points from historical yearly data
   const timelineData = useMemo(() => {
-    const points: TimelinePoint[] = [];
-    const appStartDate = new Date(2022, 0, 1); // App started 2022-01-01
-    const today = new Date();
+    if (!historicalData) return [];
 
-    // Use current net worth, default to 1,496,600 if not available
-    const displayNetWorth = currentNetWorth > 0 ? currentNetWorth : 1496600;
-
-    // Calculate approximate growth rate based on current net worth
-    // Assume starting net worth was ~50% of current
-    const startingNetWorth = Math.max(displayNetWorth * 0.5, 100000);
-    const totalYears = (today.getFullYear() - appStartDate.getFullYear()) + 
-                       (today.getMonth() - appStartDate.getMonth()) / 12;
-    const annualGrowthRate = Math.pow(displayNetWorth / Math.max(1, startingNetWorth), 1 / Math.max(0.1, totalYears)) - 1;
-
-    // Add yearly points from start date to today
-    let currentDate = new Date(appStartDate);
-    let pointIndex = 0;
-
-    while (currentDate <= today) {
-      const yearsSinceStart = (currentDate.getFullYear() - appStartDate.getFullYear()) +
-                             (currentDate.getMonth() - appStartDate.getMonth()) / 12;
-      const netWorth = Math.round(startingNetWorth * Math.pow(1 + annualGrowthRate, yearsSinceStart));
-
-      points.push({
-        date: new Date(currentDate),
-        netWorth: Math.min(netWorth, currentNetWorth), // Don't exceed current net worth
-        label: currentDate.getFullYear().toString(),
-      });
-
-      currentDate.setFullYear(currentDate.getFullYear() + 1);
-      pointIndex++;
-    }
-
-    // Ensure last point is today with current net worth
-    const finalNetWorth = currentNetWorth > 0 ? currentNetWorth : 1496600;
-    if (points.length === 0 || points[points.length - 1].date < today) {
-      points.push({
-        date: today,
-        netWorth: finalNetWorth,
-        label: 'Today',
-      });
-    } else {
-      points[points.length - 1] = {
-        date: today,
-        netWorth: finalNetWorth,
-        label: 'Today',
-      };
-    }
-
-    return points;
-  }, [currentNetWorth]);
+    return historicalData.yearlyData.map((yearData) => ({
+      date: new Date(yearData.year, 11, 31), // End of year
+      netWorth: yearData.endNetWorth,
+      label: yearData.year.toString(),
+    }));
+  }, [historicalData]);
 
   // Calculate metrics
   const metrics = useMemo(() => {
-    if (timelineData.length < 2) {
-      const displayNW = currentNetWorth > 0 ? currentNetWorth : 1496600;
+    if (!historicalData || historicalData.yearlyData.length === 0) {
       return {
-        currentNetWorth: displayNW,
+        currentNetWorth: 1496600,
         yearlyChange: 0,
         yearlyChangePercent: 0,
         monthlyAvgGrowth: 0,
       };
     }
 
-    const current = timelineData[timelineData.length - 1];
-    const previousYear = timelineData[Math.max(0, timelineData.length - 2)];
+    const currentYearData = historicalData.yearlyData[historicalData.yearlyData.length - 1];
+    const previousYearData =
+      historicalData.yearlyData.length > 1
+        ? historicalData.yearlyData[historicalData.yearlyData.length - 2]
+        : null;
 
-    const yearlyChange = current.netWorth - previousYear.netWorth;
-    const yearlyChangePercent = previousYear.netWorth > 0 ? (yearlyChange / previousYear.netWorth) * 100 : 0;
+    const yearlyChange = currentYearData.yearlyGain;
+    const yearlyChangePercent = currentYearData.yearlyGainPercent;
     const monthlyAvgGrowth = yearlyChangePercent / 12;
 
     return {
-      currentNetWorth: Math.max(Number(current.netWorth) || 0, currentNetWorth > 0 ? currentNetWorth : 1496600),
-      yearlyChange: Number(yearlyChange) || 0,
-      yearlyChangePercent: Number(yearlyChangePercent) || 0,
-      monthlyAvgGrowth: Number(monthlyAvgGrowth) || 0,
+      currentNetWorth: currentYearData.endNetWorth,
+      yearlyChange,
+      yearlyChangePercent,
+      monthlyAvgGrowth,
     };
-  }, [timelineData, currentNetWorth]);
+  }, [historicalData]);
 
   // Chart rendering
   const chartHeight = 250;
@@ -128,9 +88,9 @@ export default function NetWorthTimelineScreen() {
   const innerWidth = chartWidth - padding * 2;
   const innerHeight = chartHeight - padding * 2;
 
-  const allNetWorths = timelineData.map(p => p.netWorth);
-  const minNetWorth = Math.min(...allNetWorths);
-  const maxNetWorth = Math.max(...allNetWorths);
+  const allNetWorths = timelineData.map((p) => p.netWorth);
+  const minNetWorth = allNetWorths.length > 0 ? Math.min(...allNetWorths) : 0;
+  const maxNetWorth = allNetWorths.length > 0 ? Math.max(...allNetWorths) : 1;
   const range = maxNetWorth - minNetWorth || 1;
 
   // Calculate points for line chart
@@ -185,7 +145,7 @@ export default function NetWorthTimelineScreen() {
 
         {/* Period Selector */}
         <View style={{ flexDirection: 'row', gap: 8, marginBottom: 16, marginTop: 16 }}>
-          {(['month', 'quarter', 'year'] as const).map(p => (
+          {(['month', 'quarter', 'year'] as const).map((p) => (
             <Pressable
               key={p}
               onPress={() => setPeriod(p)}
@@ -235,9 +195,7 @@ export default function NetWorthTimelineScreen() {
                 {points.map((p, i) => {
                   if (i === 0) return null;
                   const prev = points[i - 1];
-                  return (
-                    <Line key={`line-${i}`} x1={prev.x} y1={prev.y} x2={p.x} y2={p.y} stroke={colors.primary} strokeWidth="2" />
-                  );
+                  return <Line key={`line-${i}`} x1={prev.x} y1={prev.y} x2={p.x} y2={p.y} stroke={colors.primary} strokeWidth="2" />;
                 })}
               </G>
             )}
@@ -298,27 +256,20 @@ export default function NetWorthTimelineScreen() {
         <View style={[styles.section, { backgroundColor: colors.surface, borderColor: colors.border }]}>
           <Text style={[styles.sectionTitle, { color: colors.foreground }]}>Yearly Breakdown</Text>
 
-          {timelineData.map((point, index) => {
-            if (index === 0) return null;
-            const prevPoint = timelineData[index - 1];
-            const yearlyGain = point.netWorth - prevPoint.netWorth;
-            const yearlyGainPercent = prevPoint.netWorth > 0 ? (yearlyGain / prevPoint.netWorth) * 100 : 0;
-
-            return (
-              <View key={index} style={[styles.yearCard, { borderBottomColor: colors.border }]}>
-                <View style={{ flexDirection: 'row', justifyContent: 'space-between', marginBottom: 8 }}>
-                  <Text style={{ fontSize: 14, fontWeight: '700', color: colors.foreground }}>{point.label}</Text>
-                  <Text style={{ fontSize: 14, fontWeight: '700', color: yearlyGain >= 0 ? '#4ADE80' : '#F87171' }}>
-                    {yearlyGain >= 0 ? '+' : ''}SGD {yearlyGain.toLocaleString()} ({yearlyGainPercent.toFixed(1)}%)
-                  </Text>
-                </View>
-                <View style={{ flexDirection: 'row', justifyContent: 'space-between' }}>
-                  <Text style={{ fontSize: 12, color: colors.muted }}>Start: SGD {prevPoint.netWorth.toLocaleString()}</Text>
-                  <Text style={{ fontSize: 12, color: colors.muted }}>End: SGD {point.netWorth.toLocaleString()}</Text>
-                </View>
+          {historicalData?.yearlyData.map((yearData, index) => (
+            <View key={yearData.year} style={[styles.yearCard, { borderBottomColor: colors.border }]}>
+              <View style={{ flexDirection: 'row', justifyContent: 'space-between', marginBottom: 8 }}>
+                <Text style={{ fontSize: 14, fontWeight: '700', color: colors.foreground }}>{yearData.year}</Text>
+                <Text style={{ fontSize: 14, fontWeight: '700', color: yearData.yearlyGain >= 0 ? '#4ADE80' : '#F87171' }}>
+                  {yearData.yearlyGain >= 0 ? '+' : ''}SGD {yearData.yearlyGain.toLocaleString()} ({yearData.yearlyGainPercent.toFixed(1)}%)
+                </Text>
               </View>
-            );
-          })}
+              <View style={{ flexDirection: 'row', justifyContent: 'space-between' }}>
+                <Text style={{ fontSize: 12, color: colors.muted }}>Start: SGD {yearData.startNetWorth.toLocaleString()}</Text>
+                <Text style={{ fontSize: 12, color: colors.muted }}>End: SGD {yearData.endNetWorth.toLocaleString()}</Text>
+              </View>
+            </View>
+          ))}
         </View>
       </ScrollView>
 
@@ -406,24 +357,22 @@ const styles = StyleSheet.create({
     borderBottomWidth: 1,
   },
   goalCard: {
-    padding: 12,
-    borderRadius: 8,
+    paddingVertical: 8,
   },
   modal: {
     borderRadius: 12,
     padding: 20,
     width: '80%',
-    maxWidth: 300,
+    maxWidth: 400,
   },
   input: {
     borderWidth: 1,
     borderRadius: 8,
-    paddingHorizontal: 12,
-    paddingVertical: 10,
+    padding: 12,
     fontSize: 14,
   },
   modalBtn: {
-    paddingVertical: 10,
+    paddingVertical: 12,
     borderRadius: 8,
     alignItems: 'center',
   },

@@ -136,7 +136,7 @@ export interface PrivateAsset {
   updatedAt: string;
 }
 
-// ─── App State ────────────────────────────────────────────────────────────────
+// ─── App State ────────────────────────────────────────────────────────────────────
 export interface AppData {
   bankAccounts: BankAccount[];
   loans: Loan[];
@@ -144,4 +144,5 @@ export interface AppData {
   insurancePolicies: InsurancePolicy[];
   privateAssets: PrivateAsset[];
   creditScore: CreditScoreData;
+  userAccountStartDate?: string; // ISO date string (e.g., "2022-01-01")
 }

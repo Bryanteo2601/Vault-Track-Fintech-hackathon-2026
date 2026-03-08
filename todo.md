@@ -674,3 +674,16 @@
 - [x] Assets tab now displays diamond icon above "Assets" label
 - [x] Icon matches other navigation tabs styling
 - [x] Dev server running and compiling
+
+
+## Phase 60: Yearly Net Worth Breakdown from Account Start Date
+- [x] Add userAccountStartDate to AppData interface
+- [x] Set default account start date to 2022-01-01
+- [x] Create generateHistoricalNetWorthData function in lib/historical-net-worth.ts
+- [x] Generate realistic yearly net worth data from account start year to present
+- [x] Calculate yearly gains, percentages, and changes from start year
+- [x] Update net-worth-timeline.tsx to use historical data
+- [x] Display yearly breakdown starting from 2022 (account start year)
+- [x] Show proper start/end values for each year
+- [x] Calculate growth from start year through current year
+- [x] Dev server running and compiling

@@ -427,6 +427,7 @@ export const defaultAppData: AppData = {
   insurancePolicies: defaultInsurancePolicies,
   privateAssets: defaultPrivateAssets,
   creditScore: defaultCreditScore,
+  userAccountStartDate: '2022-01-01', // User account creation date
 };
 
 // ─── Load App Data from Firestore ─────────────────────────────────────────────
