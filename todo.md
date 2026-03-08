@@ -502,3 +502,31 @@
 - [x] Remove "Slow Growth" status label
 - [x] Verified TypeScript compilation with 0 errors
 - [x] Chart displays correctly with new color logic
+
+
+## Phase 54: Integrate CPF and Insurance into Financial Health
+
+### Backend Refactoring
+- [x] Create CPF score component (0-100) based on balances and projections
+- [x] Create Insurance Protection Score (0-100) based on active policies and coverage
+- [x] Update asset allocation to include CPF as separate class
+- [x] Update asset allocation to include Insurance Cash Value only if applicable
+- [x] Refactor wellness score to 7-factor model with correct weights
+- [x] Implement structured output for financial health metrics
+- [x] Add fallback logic for incomplete CPF/Insurance data
+- [x] Created financial-health-analytics.ts with all required functions
+- [x] Verified TypeScript compilation with 0 errors
+
+### UI Updates (In Progress)
+- [ ] Update Financial Health section to show 4 cards (Diversification, Liquidity, Retirement Security, Protection Coverage)
+- [ ] Add CPF/Retirement Readiness card with status
+- [ ] Add Insurance Protection card with status
+- [ ] Update asset allocation chart to include CPF
+- [ ] Ensure wellness score displays new 7-factor calculation
+
+### Validation
+- [ ] Verify 7-factor weights sum to 1.00 (DONE: 0.20+0.20+0.15+0.10+0.10+0.15+0.10 = 1.00)
+- [ ] Test with sample CPF and Insurance data
+- [ ] Validate asset allocation includes CPF correctly
+- [ ] Confirm insurance cash value only counted if applicable
+- [ ] Save checkpoint
