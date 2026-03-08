@@ -1,4 +1,4 @@
-import React, { useMemo } from 'react';
+import { useMemo } from 'react';
 import { ScrollView, View, Text, StyleSheet, Pressable, FlatList, GestureResponderEvent } from 'react-native';
 import { ScreenContainer } from '@/components/screen-container';
 import { useAppColors } from '@/hooks/use-app-colors';
@@ -13,6 +13,7 @@ import {
   calcPortfolioByAssetClass,
 } from '@/lib/store';
 import { calculateCBSScore } from '@/lib/cbs-score-calculator';
+import { calculateUnifiedFinancialSummary, calculateWellnessScoreFromUnified } from '@/lib/unified-financial-engine';
 import { IconSymbol } from '@/components/ui/icon-symbol';
 import Svg, { Circle, G } from 'react-native-svg';
 
@@ -128,32 +129,54 @@ export default function DashboardScreen() {
   const router = useRouter();
   const { data, isLoading } = useAppData();
 
-  const netWorth = useMemo(() => calcNetWorth(data), [data]);
-  const totalAssets = useMemo(() => calcTotalAssets(data), [data]);
-  const totalLiabilities = useMemo(() => calcTotalLiabilities(data), [data]);
-  const wellnessScore = useMemo(() => calcWellnessScore(data), [data]);
+  // Use unified financial engine as single source of truth
+  const unifiedSummary = useMemo(() => calculateUnifiedFinancialSummary(data, null), [data]);
+
+  // Extract values from unified summary
+  const netWorth = useMemo(() => unifiedSummary.netWorth.totalNetWorth, [unifiedSummary]);
+  const totalAssets = useMemo(() => unifiedSummary.assetsBreakdown.totalAssets, [unifiedSummary]);
+  const totalLiabilities = useMemo(() => unifiedSummary.liabilitiesBreakdown.totalLiabilities, [unifiedSummary]);
+  
+  // Calculate wellness score using unified engine
+  const wellnessScore = useMemo(() => {
+    const cpfScore = 60;
+    const insuranceScore = 60;
+    const liquidAssets = data.bankAccounts.filter(a => ['savings', 'daily'].includes(a.accountType)).reduce((s, a) => s + a.balance, 0);
+    const result = calculateWellnessScoreFromUnified({
+      creditScore: data.creditScore.score,
+      liquidAssets,
+      monthlyExpenses: 5000,
+      summary: unifiedSummary,
+      previousNetWorth: netWorth,
+      cpfScore,
+      insuranceScore,
+    });
+    return result.score;
+  }, [unifiedSummary, data, netWorth]);
   const monthlyIncome = 5000; // TODO: Get from user profile
   const cbsScore = useMemo(() => calculateCBSScore(data, monthlyIncome), [data, monthlyIncome]);
   const portfolioByClass = useMemo(() => calcPortfolioByAssetClass(data.holdings), [data.holdings]);
 
-  const bankBalance = useMemo(
-    () => data.bankAccounts.filter(a => a.balance > 0).reduce((s, a) => s + a.balance, 0),
-    [data.bankAccounts]
-  );
-  const investmentValue = useMemo(
-    () => data.holdings.reduce((s, h) => s + h.quantity * h.currentPrice, 0),
-    [data.holdings]
-  );
-  const insuranceValue = useMemo(
-    () => data.insurancePolicies.reduce((s, p) => s + p.coverageAmount * 0.05, 0),
-    [data.insurancePolicies]
-  );
-
-  const allocationData = [
-    { label: 'Banks', value: bankBalance, color: '#1A3C5E' },
-    { label: 'Investments', value: investmentValue, color: '#00C896' },
-    { label: 'Insurance', value: insuranceValue, color: '#F59E0B' },
-  ].filter(d => d.value > 0);
+  // Use unified asset allocation
+  const allocationData = useMemo(() => {
+    const allocation = [];
+    if (unifiedSummary.assetsBreakdown.banks > 0) {
+      allocation.push({ label: 'Banks', value: unifiedSummary.assetsBreakdown.banks, color: '#1A3C5E' });
+    }
+    if (unifiedSummary.assetsBreakdown.investments > 0) {
+      allocation.push({ label: 'Investments', value: unifiedSummary.assetsBreakdown.investments, color: '#00C896' });
+    }
+    if (unifiedSummary.assetsBreakdown.cpf > 0) {
+      allocation.push({ label: 'CPF', value: unifiedSummary.assetsBreakdown.cpf, color: '#8B5CF6' });
+    }
+    if (unifiedSummary.assetsBreakdown.privateAssets > 0) {
+      allocation.push({ label: 'Private Assets', value: unifiedSummary.assetsBreakdown.privateAssets, color: '#EC4899' });
+    }
+    if (unifiedSummary.assetsBreakdown.insuranceCashValue > 0) {
+      allocation.push({ label: 'Insurance', value: unifiedSummary.assetsBreakdown.insuranceCashValue, color: '#F59E0B' });
+    }
+    return allocation;
+  }, [unifiedSummary]);
 
   const dta = totalAssets > 0 ? (totalLiabilities / totalAssets) * 100 : 0;
   const liquidAssets = data.bankAccounts
@@ -162,7 +185,16 @@ export default function DashboardScreen() {
   const monthlyDebt = data.loans.reduce((s, l) => s + l.monthlyInstalment, 0);
   const liquidityMonths = monthlyDebt > 0 ? Math.round(liquidAssets / monthlyDebt) : 99;
 
-  const assetClassCount = Object.keys(portfolioByClass).length;
+  // Count asset classes including private assets and CPF
+  const assetClassCount = useMemo(() => {
+    let count = 0;
+    if (unifiedSummary.assetsBreakdown.banks > 0) count++;
+    if (unifiedSummary.assetsBreakdown.investments > 0) count++;
+    if (unifiedSummary.assetsBreakdown.cpf > 0) count++;
+    if (unifiedSummary.assetsBreakdown.privateAssets > 0) count++;
+    if (unifiedSummary.assetsBreakdown.insuranceCashValue > 0) count++;
+    return count;
+  }, [unifiedSummary]);
 
   const today = new Date();
   const hour = today.getHours();

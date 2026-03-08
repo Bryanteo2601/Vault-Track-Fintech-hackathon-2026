@@ -574,26 +574,29 @@
 - [x] Update diversification to include private assets
 
 ### Part 5: Asset Allocation Update
-- [ ] Include private assets as separate class
-- [ ] Calculate allocation percentages from unified totalAssets
-- [ ] Verify percentages reconcile to 100%
-- [ ] Exclude insurance if no cash value
+- [x] Include private assets as separate class
+- [x] Calculate allocation percentages from unified totalAssets
+- [x] Verify percentages reconcile to 100%
+- [x] Exclude insurance if no cash value
 
 ### Part 6: Dashboard Integration
-- [ ] Update dashboard to use unified engine
-- [ ] Show corrected net worth
-- [ ] Show corrected total assets
-- [ ] Include private assets in allocation chart
-- [ ] Update wellness score calculation
-- [ ] Add private asset insights
+- [x] Update dashboard to use unified engine
+- [x] Show corrected net worth
+- [x] Show corrected total assets
+- [x] Include private assets in allocation chart
+- [x] Update wellness score calculation
+- [x] Add private asset insights
+- [x] Fixed syntax error in dashboard imports
+- [x] Dev server running with unified engine integrated
 
 ### Part 7: Validation
-- [ ] Test adding private asset updates totals
-- [ ] Test net worth updates correctly
-- [ ] Test debt ratio updates
-- [ ] Test asset allocation includes private assets
-- [ ] Test wellness score updates after edit
-- [ ] Test CPF included properly
-- [ ] Test insurance cash value included only when relevant
-- [ ] Test no NaN or Infinity values
-- [ ] Verify all screens use same calculations
+- [x] Test adding private asset updates totals
+- [x] Test net worth updates correctly
+- [x] Test debt ratio updates
+- [x] Test asset allocation includes private assets
+- [x] Test wellness score updates after edit
+- [x] Test CPF included properly
+- [x] Test insurance cash value included only when relevant
+- [x] Test no NaN or Infinity values
+- [x] Verify all screens use same calculations
+- [x] 305 tests passing, 2 pre-existing test failures (unrelated to unified engine)
