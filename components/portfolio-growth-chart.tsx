@@ -23,20 +23,17 @@ export function PortfolioGrowthChart({ metrics }: PortfolioGrowthChartProps) {
   const padding = { top: 20, right: 20, bottom: 60, left: 50 };
 
   const growthStatus = getGrowthStatus(metrics.cagr);
+  
+  // NEW COLOR LOGIC: Green if positive, Red if not positive
   const statusColors = {
-    excellent: '#22C55E',
-    good: '#10B981',
-    moderate: '#F59E0B',
-    poor: '#EF5350',
-    negative: '#EF5350',
+    positive: '#22C55E',  // Green
+    negative: '#EF5350',  // Red
   };
 
+  // Removed "Slow Growth" - only show if positive or negative
   const statusLabels = {
-    excellent: 'Excellent Growth',
-    good: 'Good Growth',
-    moderate: 'Moderate Growth',
-    poor: 'Slow Growth',
-    negative: 'Declining',
+    positive: 'Positive Growth',
+    negative: 'Negative Growth',
   };
 
   // Build projection-only data
@@ -91,11 +88,6 @@ export function PortfolioGrowthChart({ metrics }: PortfolioGrowthChartProps) {
     return { ...point, x, y, index };
   });
 
-  // Generate line path
-  const linePath = points
-    .map((p, i) => `${i === 0 ? 'M' : 'L'} ${p.x.toFixed(1)} ${p.y.toFixed(1)}`)
-    .join(' ');
-
   // Y-axis labels (5 ticks)
   const yTicks = 5;
   const yTickValues = Array.from({ length: yTicks }, (_, i) => {
@@ -108,7 +100,7 @@ export function PortfolioGrowthChart({ metrics }: PortfolioGrowthChartProps) {
       {/* Header */}
       <View style={styles.header}>
         <Text style={[styles.title, { color: colors.foreground }]}>Wealth Growth Analysis</Text>
-        {metrics.timeSeriesData.length > 0 && (
+        {metrics.methodology !== 'insufficient' && (
           <View style={[styles.statusBadge, { backgroundColor: statusColors[growthStatus] }]}>
             <Text style={styles.statusText}>{statusLabels[growthStatus]}</Text>
           </View>
@@ -179,7 +171,7 @@ export function PortfolioGrowthChart({ metrics }: PortfolioGrowthChartProps) {
               <Polyline
                 points={points.map(p => `${p.x},${p.y}`).join(' ')}
                 fill="none"
-                stroke={colors.primary}
+                stroke={statusColors[growthStatus]}
                 strokeWidth="3"
                 strokeLinecap="round"
                 strokeLinejoin="round"
@@ -192,7 +184,7 @@ export function PortfolioGrowthChart({ metrics }: PortfolioGrowthChartProps) {
                   cx={point.x}
                   cy={point.y}
                   r={5}
-                  fill={colors.primary}
+                  fill={statusColors[growthStatus]}
                   stroke={colors.background}
                   strokeWidth="2"
                 />
@@ -206,7 +198,7 @@ export function PortfolioGrowthChart({ metrics }: PortfolioGrowthChartProps) {
                   y={padding.top + chartArea.height + 20}
                   fontSize="12"
                   fontWeight="600"
-                  fill={colors.primary}
+                  fill={statusColors[growthStatus]}
                   textAnchor="middle"
                 >
                   {point.label}
@@ -229,7 +221,7 @@ export function PortfolioGrowthChart({ metrics }: PortfolioGrowthChartProps) {
 
       {/* Metrics Grid */}
       <View style={styles.metricsGrid}>
-        {/* CAGR */}
+        {/* CAGR - Green if positive, Red if not positive */}
         <View style={[styles.metricCard, { backgroundColor: colors.background, borderColor: colors.border }]}>
           <Text style={[styles.metricLabel, { color: colors.muted }]}>Annualized Growth</Text>
           <Text style={[styles.metricValue, { color: statusColors[growthStatus] }]}>
@@ -249,8 +241,8 @@ export function PortfolioGrowthChart({ metrics }: PortfolioGrowthChartProps) {
             {formatCurrency(metrics.projections.oneYear)}
           </Text>
           <Text style={[styles.metricSubtext, { color: colors.muted }]}>
-            {metrics.projections.oneYear > metrics.totalValue ? '+' : ''}
-            {formatCurrency(metrics.projections.oneYear - metrics.totalValue)}
+            {metrics.projectionGains.oneYear > 0 ? '+' : ''}
+            {formatCurrency(metrics.projectionGains.oneYear)}
           </Text>
         </View>
 
@@ -261,8 +253,8 @@ export function PortfolioGrowthChart({ metrics }: PortfolioGrowthChartProps) {
             {formatCurrency(metrics.projections.threeYear)}
           </Text>
           <Text style={[styles.metricSubtext, { color: colors.muted }]}>
-            {metrics.projections.threeYear > metrics.totalValue ? '+' : ''}
-            {formatCurrency(metrics.projections.threeYear - metrics.totalValue)}
+            {metrics.projectionGains.threeYear > 0 ? '+' : ''}
+            {formatCurrency(metrics.projectionGains.threeYear)}
           </Text>
         </View>
 
@@ -273,11 +265,16 @@ export function PortfolioGrowthChart({ metrics }: PortfolioGrowthChartProps) {
             {formatCurrency(metrics.projections.fiveYear)}
           </Text>
           <Text style={[styles.metricSubtext, { color: colors.muted }]}>
-            {metrics.projections.fiveYear > metrics.totalValue ? '+' : ''}
-            {formatCurrency(metrics.projections.fiveYear - metrics.totalValue)}
+            {metrics.projectionGains.fiveYear > 0 ? '+' : ''}
+            {formatCurrency(metrics.projectionGains.fiveYear)}
           </Text>
         </View>
       </View>
+
+      {/* Methodology Label */}
+      <Text style={[styles.methodologyLabel, { color: colors.muted }]}>
+        {metrics.methodologyLabel}
+      </Text>
 
       {/* Disclaimer */}
       <Text style={[styles.disclaimer, { color: colors.muted }]}>
@@ -364,6 +361,11 @@ const styles = StyleSheet.create({
   },
   metricSubtext: {
     fontSize: 11,
+  },
+  methodologyLabel: {
+    fontSize: 11,
+    marginVertical: 8,
+    fontStyle: 'italic',
   },
   disclaimer: {
     fontSize: 11,

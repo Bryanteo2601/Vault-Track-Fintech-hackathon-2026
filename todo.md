@@ -489,3 +489,16 @@
 - [x] Simplify line to connect projection points only
 - [x] Test and verify chart displays correctly
 - [x] Verified TypeScript compilation with 0 errors
+
+
+## Phase 53: Fix Backend Growth Calculations
+- [x] Refactor calculatePortfolioGrowthMetrics to use correct CAGR formula
+- [x] Implement consistent base value (currentPrivateAssetsValue)
+- [x] Add fallback calculation using cost basis if history insufficient
+- [x] Ensure all projections use same annual growth rate
+- [x] Add confidence and methodology labels
+- [x] Validate 1Y/3Y/5Y projections reconcile exactly
+- [x] Fix color logic: green if positive, red if not positive
+- [x] Remove "Slow Growth" status label
+- [x] Verified TypeScript compilation with 0 errors
+- [x] Chart displays correctly with new color logic
