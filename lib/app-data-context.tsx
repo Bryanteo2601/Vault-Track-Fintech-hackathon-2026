@@ -25,6 +25,10 @@ interface AppDataContextValue {
   deleteInsurancePolicy: (id: string) => Promise<void>;
   // Credit score
   updateCreditScore: (score: Partial<CreditScoreData>) => Promise<void>;
+  // Private Assets
+  addPrivateAsset: (asset: Omit<PrivateAsset, 'id' | 'createdAt' | 'updatedAt'>) => Promise<void>;
+  updatePrivateAsset: (id: string, updates: Partial<PrivateAsset>) => Promise<void>;
+  deletePrivateAsset: (id: string) => Promise<void>;
   // Utility
   refreshData: () => Promise<void>;
   resetData: () => Promise<void>;
@@ -138,6 +142,25 @@ export function AppDataProvider({ children }: { children: React.ReactNode }) {
     await persist({ ...data, creditScore: { ...data.creditScore, ...score } });
   }, [data, persist]);
 
+  // Private Assets
+  const addPrivateAsset = useCallback(async (asset: Omit<PrivateAsset, 'id' | 'createdAt' | 'updatedAt'>) => {
+    const now = new Date().toISOString().split('T')[0];
+    const newAsset: PrivateAsset = { ...asset, id: generateId(), createdAt: now, updatedAt: now };
+    await persist({ ...data, privateAssets: [...data.privateAssets, newAsset] });
+  }, [data, persist]);
+
+  const updatePrivateAsset = useCallback(async (id: string, updates: Partial<PrivateAsset>) => {
+    const now = new Date().toISOString().split('T')[0];
+    await persist({
+      ...data,
+      privateAssets: data.privateAssets.map(a => a.id === id ? { ...a, ...updates, updatedAt: now } : a),
+    });
+  }, [data, persist]);
+
+  const deletePrivateAsset = useCallback(async (id: string) => {
+    await persist({ ...data, privateAssets: data.privateAssets.filter(a => a.id !== id) });
+  }, [data, persist]);
+
   const resetData = useCallback(async () => {
     await resetAppData();
     const fresh = await loadAppData();
@@ -152,6 +175,7 @@ export function AppDataProvider({ children }: { children: React.ReactNode }) {
       addHolding, updateHolding, deleteHolding,
       addInsurancePolicy, updateInsurancePolicy, deleteInsurancePolicy,
       updateCreditScore,
+      addPrivateAsset, updatePrivateAsset, deletePrivateAsset,
       refreshData, resetData,
     }}>
       {children}

@@ -368,3 +368,66 @@
 - [ ] Add navigation between screens
 - [ ] Create comprehensive unit tests for UI components
 - [ ] Test all features and save checkpoint
+
+## Phase 39: Complete Private Assets UI Screens
+- [x] Build Private Assets detail screen with valuation history
+- [x] Create add/edit form with flexible asset fields
+- [x] Implement asset type detection and custom attributes
+- [x] Add historical value tracking UI
+- [ ] Create time series chart visualization
+
+## Phase 40: Private Assets CRUD Operations
+- [x] Implement addPrivateAsset context method
+- [x] Implement updatePrivateAsset context method
+- [x] Implement deletePrivateAsset context method
+- [x] Add historical valuation update logic
+- [x] Persist changes to Firestore
+
+## Phase 41: Profit/Loss & Historical Tracking
+- [ ] Calculate unrealised PnL for each asset
+- [ ] Calculate percentage return
+- [ ] Support quantity-based calculations
+- [ ] Build historical valuations tracking
+- [ ] Create value trend analysis
+
+## Phase 42: Time Series Analysis Engine
+- [ ] Calculate CAGR from historical data
+- [ ] Generate 1Y, 3Y, 5Y projections
+- [ ] Implement annualized growth rate
+- [ ] Handle limited history fallback
+- [ ] Create projection confidence levels
+
+## Phase 43: AI Valuation Assistant
+- [ ] Create contextual AI valuation engine
+- [ ] Implement asset type detection
+- [ ] Build structured valuation response format
+- [ ] Add confidence level assessment
+- [ ] Create safe valuation disclaimers
+
+## Phase 44: AI Valuation Workflow
+- [ ] Create "Estimate with AI" button
+- [ ] Build contextual valuation flow
+- [ ] Implement missing field detection
+- [ ] Create asset-specific question flows
+- [ ] Add valuation acceptance/editing UI
+
+## Phase 45: Net Worth Integration
+- [ ] Add privateAssetsTotal to net worth calculation
+- [ ] Update asset allocation charts
+- [ ] Include in dashboard summary
+- [ ] Add toggle for inclusion/exclusion
+- [ ] Update all financial metrics
+
+## Phase 46: Private Asset Insights
+- [ ] Generate appreciation insights
+- [ ] Identify best/worst performers
+- [ ] Flag low confidence valuations
+- [ ] Detect stale valuations
+- [ ] Analyze concentration risk
+
+## Phase 47: Testing & Refinement
+- [ ] Create unit tests for all calculations
+- [ ] Test AI valuation flows
+- [ ] Verify net worth integration
+- [ ] Test historical tracking
+- [ ] Comprehensive end-to-end testing
