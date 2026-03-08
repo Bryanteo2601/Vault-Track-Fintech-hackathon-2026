@@ -695,3 +695,13 @@
 - [x] Add range padding for better visualization
 - [x] Verify all years display correctly on graph
 - [x] Ensure data points are accurately positioned
+
+## Phase 62: Debug and Fix Historical Data Generation
+- [x] Identify root cause: Firestore Timestamp parsing issue
+- [x] Harden date parsing to handle Firestore Timestamps
+- [x] Add support for string dates, Date objects, and Firestore Timestamps
+- [x] Sort yearly data by year to ensure correct order
+- [x] Validate date parsing with fallback to 2022-01-01
+- [x] Remove debug console logs
+- [x] Verify all 5 years (2022-2026) generate correctly
+- [x] Fix year label ordering on graph

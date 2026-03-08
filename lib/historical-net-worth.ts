@@ -28,11 +28,39 @@ export interface HistoricalNetWorthData {
  */
 export function generateHistoricalNetWorthData(appData: AppData): HistoricalNetWorthData {
   // Get account start date (default to 2022-01-01 if not set)
-  const accountStartDate = appData.userAccountStartDate || '2022-01-01';
-  const startDate = new Date(accountStartDate);
+  // Handle both string dates and Firestore Timestamp objects
+  let accountStartDateInput = appData.userAccountStartDate || '2022-01-01';
+  let startDate: Date;
+  let accountStartDate: string;
+
+  // Parse the date from various formats
+  if (typeof accountStartDateInput === 'string') {
+    startDate = new Date(accountStartDateInput);
+    accountStartDate = accountStartDateInput;
+  } else if (accountStartDateInput && typeof accountStartDateInput === 'object' && 'toDate' in accountStartDateInput) {
+    // Firestore Timestamp
+    startDate = (accountStartDateInput as any).toDate();
+    accountStartDate = startDate.toISOString().split('T')[0];
+  } else if (accountStartDateInput && typeof (accountStartDateInput as any).getTime === 'function') {
+    startDate = accountStartDateInput as any;
+    accountStartDate = startDate.toISOString().split('T')[0];
+  } else {
+    // Fallback to default
+    startDate = new Date('2022-01-01');
+    accountStartDate = '2022-01-01';
+  }
+
+  // Validate the date
+  if (isNaN(startDate.getTime())) {
+    startDate = new Date('2022-01-01');
+    accountStartDate = '2022-01-01';
+  }
+
   const accountStartYear = startDate.getFullYear();
   const today = new Date();
   const currentYear = today.getFullYear();
+
+
 
   // Calculate current net worth using unified engine
   const unifiedSummary = calculateUnifiedFinancialSummary(appData);
@@ -56,12 +84,16 @@ export function generateHistoricalNetWorthData(appData: AppData): HistoricalNetW
   const yearlyData: YearlyNetWorth[] = [];
   let previousYearNetWorth = startYearNetWorth;
 
+
+
   for (let year = accountStartYear; year <= currentYear; year++) {
     const yearsSinceStart = year - accountStartYear;
     const yearEndNetWorth =
       year === currentYear
         ? displayNetWorth // Use actual current net worth for current year
         : Math.round(startYearNetWorth * Math.pow(1 + annualGrowthRate, yearsSinceStart + 1));
+
+
 
     const yearlyGain = yearEndNetWorth - previousYearNetWorth;
     const yearlyGainPercent =
@@ -84,9 +116,14 @@ export function generateHistoricalNetWorthData(appData: AppData): HistoricalNetW
     previousYearNetWorth = yearEndNetWorth;
   }
 
+  // Sort by year to ensure correct order
+  yearlyData.sort((a, b) => a.year - b.year);
+
   const totalGain = displayNetWorth - startYearNetWorth;
   const totalGainPercent =
     startYearNetWorth > 0 ? (totalGain / startYearNetWorth) * 100 : 0;
+
+
 
   return {
     accountStartDate,
