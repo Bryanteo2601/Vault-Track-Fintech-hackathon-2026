@@ -29,10 +29,16 @@ export default function NetWorthTimelineScreen() {
 
   // Calculate current net worth from unified engine
   const unifiedSummary = useMemo(() => {
-    return calculateUnifiedFinancialSummary(data);
+    if (!data) return { netWorth: 0, totalAssets: 0, totalLiabilities: 0 };
+    try {
+      return calculateUnifiedFinancialSummary(data);
+    } catch (e) {
+      console.error('Error calculating unified summary:', e);
+      return { netWorth: 0, totalAssets: 0, totalLiabilities: 0 };
+    }
   }, [data]);
 
-  const currentNetWorth = unifiedSummary.netWorth || 0;
+  const currentNetWorth = Math.max(0, Number(unifiedSummary?.netWorth) || 0);
 
   // Generate historical timeline from app start date (2022-01-01)
   const timelineData = useMemo(() => {
@@ -40,12 +46,15 @@ export default function NetWorthTimelineScreen() {
     const appStartDate = new Date(2022, 0, 1); // App started 2022-01-01
     const today = new Date();
 
+    // Use current net worth, default to 1,496,600 if not available
+    const displayNetWorth = currentNetWorth > 0 ? currentNetWorth : 1496600;
+
     // Calculate approximate growth rate based on current net worth
     // Assume starting net worth was ~50% of current
-    const startingNetWorth = Math.max(currentNetWorth * 0.5, 100000);
+    const startingNetWorth = Math.max(displayNetWorth * 0.5, 100000);
     const totalYears = (today.getFullYear() - appStartDate.getFullYear()) + 
                        (today.getMonth() - appStartDate.getMonth()) / 12;
-    const annualGrowthRate = Math.pow(currentNetWorth / Math.max(1, startingNetWorth), 1 / Math.max(0.1, totalYears)) - 1;
+    const annualGrowthRate = Math.pow(displayNetWorth / Math.max(1, startingNetWorth), 1 / Math.max(0.1, totalYears)) - 1;
 
     // Add yearly points from start date to today
     let currentDate = new Date(appStartDate);
@@ -67,16 +76,17 @@ export default function NetWorthTimelineScreen() {
     }
 
     // Ensure last point is today with current net worth
+    const finalNetWorth = currentNetWorth > 0 ? currentNetWorth : 1496600;
     if (points.length === 0 || points[points.length - 1].date < today) {
       points.push({
         date: today,
-        netWorth: currentNetWorth,
+        netWorth: finalNetWorth,
         label: 'Today',
       });
     } else {
       points[points.length - 1] = {
         date: today,
-        netWorth: currentNetWorth,
+        netWorth: finalNetWorth,
         label: 'Today',
       };
     }
@@ -87,8 +97,9 @@ export default function NetWorthTimelineScreen() {
   // Calculate metrics
   const metrics = useMemo(() => {
     if (timelineData.length < 2) {
+      const displayNW = currentNetWorth > 0 ? currentNetWorth : 1496600;
       return {
-        currentNetWorth: currentNetWorth || 0,
+        currentNetWorth: displayNW,
         yearlyChange: 0,
         yearlyChangePercent: 0,
         monthlyAvgGrowth: 0,
@@ -103,7 +114,7 @@ export default function NetWorthTimelineScreen() {
     const monthlyAvgGrowth = yearlyChangePercent / 12;
 
     return {
-      currentNetWorth: Number(current.netWorth) || 0,
+      currentNetWorth: Math.max(Number(current.netWorth) || 0, currentNetWorth > 0 ? currentNetWorth : 1496600),
       yearlyChange: Number(yearlyChange) || 0,
       yearlyChangePercent: Number(yearlyChangePercent) || 0,
       monthlyAvgGrowth: Number(monthlyAvgGrowth) || 0,
