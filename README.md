@@ -1,67 +1,22 @@
-# Wealth Wellness Hub
+# VaultTrack (Wealth wellness hub)
 
 **Your complete financial health, in one place.**
 
-Wealth Wellness Hub is a comprehensive React Native mobile application built with Expo that helps users track, analyze, and optimize their complete financial portfolio. The app provides a unified view of bank accounts, investments, loans, insurance policies, and CPF (Singapore) accounts, with AI-powered insights and recommendations.
 
-## 🎯 Overview
+## Core Features
 
-Wealth Wellness Hub consolidates all financial data into a single dashboard, providing users with:
-- **Wealth Wellness Score**: A comprehensive 0-100 score indicating overall financial health
-- **Net Worth Tracking**: Real-time calculation and historical timeline visualization
-- **Financial Health Metrics**: Diversification, liquidity, debt-to-asset ratios, and credit score analysis
-- **AI-Powered Insights**: Personalized recommendations and financial analysis using Google Gemini AI
-- **Portfolio Stress Testing**: Scenario analysis for market crashes, interest rate changes, and economic downturns
+| Features | What It Does |
+|------|--------------|
+| **Dashboard** | Displays the **Wealth Wellness Score gauge**, net worth overview, asset allocation bar chart, four financial health cards (diversification, liquidity, debt-to-asset ratio, credit score), and AI-generated financial recommendations. |
+| **Banks** | Tracks savings, daily accounts, credit accounts, and fixed deposits. Includes a **CBS-style credit score breakdown (A–D grade)**, **TDSR-based loan capacity calculator**, and **monthly interest summary**. |
+| **Investments** | Provides **portfolio P&L tracking across 8 asset classes** (stocks, crypto, ETFs, bonds, futures, options, REITs, commodities), with pie chart visualization and AI-driven portfolio insights and suggestions. |
+| **Loans** | Loan management module with **CBS-format aggregated outstanding balances**, **6-month liability trend charts**, **security type classification**, and **amortization schedules**. |
+| **Insurance** | Policy tracking with **expiry status badges (Active / Expiring Soon / Expired)**, coverage breakdown, and **PDF document import for policy storage**. |
+| **CPF (Singapore-specific)** | Tracks **CPF OA / SA / MA accounts**, contribution history, **CPF LIFE payout estimator**, retirement milestone timeline (BRS / FRS / ERS), and withdrawal simulations. |
+| **AI Chat** | Interactive AI financial advisor that performs a **structured 5-point financial analysis**: Snapshot → Observations → Risks → Opportunities → Questions. |
+| **Stress Testing** | Scenario simulations for **market crashes, interest rate changes, and economic downturns**, generating AI-driven financial recommendations. |
+| **Profile & Subscriptions** | User profile management, **subscription tier comparison**, plan upgrades, and billing cycle toggle (monthly / annual). |
 
-## ✨ Key Features
-
-### 📊 Dashboard
-- Wealth Wellness Score gauge with color-coded indicators
-- Total Net Worth display with trend analysis
-- Asset allocation summary (Banks, Investments, Insurance, CPF, Other)
-- Financial health metric cards with drill-down analysis
-- AI-generated recommendations
-- Net worth timeline visualization (2022-2025)
-
-### 🏦 Banks Module
-- Bank account management (savings, daily, credit, fixed deposits)
-- Credit score breakdown (CBS-style with grade calculation)
-- Loan capacity calculator (TDSR-based)
-- Monthly interest earned summary
-- Linked loans per bank account
-
-### 📈 Investments Module
-- Portfolio overview with profit/loss tracking
-- Asset class breakdown (Stocks, Crypto, ETFs, Bonds, Futures, Options, REITs, Commodities)
-- Interactive pie chart visualization
-- Holdings management (add/edit/delete)
-- AI portfolio suggestions
-- Portfolio stress testing with scenario analysis
-
-### 💳 Loans Module
-- Loan tracking and management
-- Aggregated outstanding balances table (CBS format)
-- 6-month historical trend charts
-- Loan classification (Secured, Unsecured Interest-Bearing, Unsecured Non-Interest-Bearing, Exempted)
-- Amortization schedules and progress tracking
-
-### 🛡️ Insurance Module
-- Insurance policy management
-- Coverage breakdown by type
-- Policy expiry tracking with status badges (Active, Expiring Soon, Expired)
-- PDF document import and storage
-
-### 🇸🇬 CPF Support (Singapore)
-- CPF account tracking (Ordinary Account, Special Account, Medisave Account)
-- Contribution tracking
-- Withdrawal simulation calculator
-- Integration with net worth calculations
-
-### 🤖 AI Features
-- **Financial Recommendations**: Personalized insights based on portfolio composition
-- **AI Chat Assistant**: Interactive financial advisor powered by Google Gemini
-- **Stress Test Analysis**: AI-powered scenario analysis and recommendations
-- **Metric Insights**: Deep-dive analysis for financial health metrics
 
 ## 🛠️ Technology Stack
 
@@ -91,7 +46,34 @@ Wealth Wellness Hub consolidates all financial data into a single dashboard, pro
 - **Prettier** for code formatting
 - **Drizzle Kit** for database migrations
 
-## 📁 Project Structure
+## 📁 Project Architecture
+┌──────────────────────────────────────────────────────┐
+│              React Native (Expo) Frontend             │
+│  ┌────────────┐  ┌───────────┐  ┌─────────────────┐ │
+│  │ Expo Router │  │ NativeWind│  │ React Query +   │ │
+│  │ (file-based)│  │ (Tailwind)│  │ tRPC Client     │ │
+│  └────────────┘  └───────────┘  └─────────────────┘ │
+├──────────────────────────────────────────────────────┤
+│              State & Data Layer                       │
+│  ┌────────────────┐  ┌────────────────────────────┐  │
+│  │ AsyncStorage    │  │ Firebase Firestore         │  │
+│  │ (offline-first) │  │ (cloud sync, per-user      │  │
+│  │                 │  │  security rules)            │  │
+│  └────────────────┘  └────────────────────────────┘  │
+├──────────────────────────────────────────────────────┤
+│              Backend (Express + tRPC)                 │
+│  ┌────────────┐  ┌───────────┐  ┌─────────────────┐ │
+│  │ tRPC Server│  │ Drizzle   │  │ Firebase Admin  │ │
+│  │ (type-safe)│  │ ORM+MySQL │  │ Auth            │ │
+│  └────────────┘  └───────────┘  └─────────────────┘ │
+├──────────────────────────────────────────────────────┤
+│              AI & Analytics Engine                    │
+│  ┌────────────────────┐  ┌─────────────────────────┐ │
+│  │ Gemini AI Service  │  │ Metric Insight Engine   │ │
+│  │ (structured 5-pt   │  │ (debt, liquidity,       │ │
+│  │  portfolio analysis)│  │  diversification)       │ │
+│  └────────────────────┘  └─────────────────────────┘ │
+└──────────────────────────────────────────────────────┘
 
 ```
 wealth-wellness-hub/
@@ -150,7 +132,7 @@ wealth-wellness-hub/
 1. **Clone the repository**
    ```bash
    git clone <repository-url>
-   cd wealth-wellness-hub
+   cd Vault-Track-Fintech-hackathon-2026-
    ```
 
 2. **Install dependencies**
@@ -339,10 +321,7 @@ The project includes unit tests for:
 3. Write/update tests
 4. Run linting and type checking: `pnpm check && pnpm lint`
 5. Submit a pull request
-
-## 📄 License
-
-[Add your license information here]
+   
 
 ## 🙏 Acknowledgments
 
@@ -356,4 +335,4 @@ Built with:
 
 ---
 
-**Wealth Wellness Hub** - Your complete financial health, in one place. 💰✨
+**VaultTrack** - Understand, optimize, and grow your wealth all in one place. 💰✨
