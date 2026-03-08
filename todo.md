@@ -307,3 +307,24 @@
 - [x] Integrate into portfolio/investments screens
 - [x] Create comprehensive unit tests for HHI engine (40/40 passing)
 - [x] Test all features and verify compilation
+
+## Phase 34: Goal-Based Financial Planning Tool
+- [x] Create financial goal planning engine with FV calculations
+- [x] Implement goal achievement probability calculation
+- [x] Implement required monthly savings calculation
+- [x] Create goal progress tracking and completion year projection
+- [x] Create comprehensive unit tests for goal planning engine (31/31 passing)
+- [x] Test all features and verify compilation
+- [ ] Build goal planning UI component with progress bar
+- [ ] Integrate into financial planning screen
+
+## Phase 35: 12-Month Cashflow Forecasting
+- [x] Create cashflow forecasting engine with monthly balance projections
+- [x] Implement liquidity warning system with safety threshold
+- [x] Calculate minimum balance projection across forecast period
+- [x] Identify months with critical liquidity issues
+- [x] Create comprehensive unit tests for cashflow engine (34/34 passing)
+- [x] Test all features and verify compilation
+- [ ] Build cashflow forecast UI component with monthly breakdown
+- [ ] Integrate into financial planning screen
+- [ ] Save checkpoint
