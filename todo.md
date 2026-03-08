@@ -612,3 +612,49 @@
 - [x] Test no NaN or Infinity values
 - [x] Verify all screens use same calculations
 - [x] 305 tests passing, 2 pre-existing test failures (unrelated to unified engine)
+
+
+## Phase 57: Implement Evidence-Based Scoring Formulas
+
+### Part 1: Insurance Protection Score (40% Death/TPD + 25% CI + 20% Breadth + 15% Status)
+- [ ] Calculate deathAdequacyScore = clamp((deathCoverageRatio / 9) * 100, 0, 100)
+- [ ] Calculate ciAdequacyScore = clamp((ciCoverageRatio / 4) * 100, 0, 100)
+- [ ] Calculate breadthScore = min(activeProtectionTypes / 4, 1) * 100
+- [ ] Calculate premiumAffordabilityScore based on premiumBurdenRatio tiers
+- [ ] Calculate statusAffordabilityScore with expiryPenalty
+- [ ] Combine into final insuranceProtectionScore = 0.40*death + 0.25*ci + 0.20*breadth + 0.15*status
+- [ ] Implement fallback when income missing (0.50*breadth + 0.50*status)
+- [ ] Add confidence level tracking
+
+### Part 2: CPF Retirement Score (60% Sum + 25% Payout + 15% Progress)
+- [ ] Calculate retirementRelevantBalance (RA or OA+SA)
+- [ ] Calculate retirementSumScore against FRS target (220,400 for 2026)
+- [ ] Calculate monthlyPayoutScore if payout available
+- [ ] Calculate progressScore from projectedRetirementBalance / frsTarget
+- [ ] Combine into final cpfRetirementScore = 0.60*sum + 0.25*payout + 0.15*progress
+- [ ] Implement fallback formula when projections unavailable
+- [ ] Make FRS/BRS/ERS targets configurable by year
+
+### Part 3: Private Asset Quality Score (25% Coverage + 25% Confidence + 20% Freshness + 20% Concentration + 10% Tracking)
+- [ ] Calculate coverageScore = (valuedAssetsCount / totalAssetsCount) * 100
+- [ ] Calculate confidenceScore = average of confidence levels (High=100, Medium=70, Low=40, Unknown=50)
+- [ ] Calculate freshnessScore based on daysOld thresholds (90/180/365/730 days)
+- [ ] Calculate concentrationScore = (1 - HHI) * 100 where HHI = sum(weight_i^2)
+- [ ] Calculate trackingDepthScore = (assetsWithHistory / totalAssets) * 100
+- [ ] Combine into final score = 0.25*coverage + 0.25*confidence + 0.20*freshness + 0.20*concentration + 0.10*tracking
+- [ ] Add optional appreciationBonus (5 if gain>0, 10 if gain>20%)
+
+### Part 4: Dashboard Integration
+- [ ] Update dashboard to call new scoring functions
+- [ ] Update Insurance card to show new score and status label
+- [ ] Update CPF card to show new score and status label
+- [ ] Update Private Assets card to show new score and status label
+- [ ] Update wellness score calculation to use new component scores
+
+### Part 5: Validation
+- [ ] Test Insurance score with sample policies
+- [ ] Test CPF score with sample balances
+- [ ] Test Private Assets score with sample valuations
+- [ ] Verify all scores clamp to 0-100
+- [ ] Test fallback scenarios (missing income, no projections, etc.)
+- [ ] Verify status labels match score ranges

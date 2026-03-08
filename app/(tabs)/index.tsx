@@ -14,6 +14,14 @@ import {
 } from '@/lib/store';
 import { calculateCBSScore } from '@/lib/cbs-score-calculator';
 import { calculateUnifiedFinancialSummary, calculateWellnessScoreFromUnified } from '@/lib/unified-financial-engine';
+import {
+  calculateInsuranceProtectionScore,
+  calculateCPFRetirementScore,
+  calculatePrivateAssetQualityScore,
+  getInsuranceStatusLabel,
+  getCPFStatusLabel,
+  getPrivateAssetStatusLabel,
+} from '@/lib/evidence-based-scoring';
 import { IconSymbol } from '@/components/ui/icon-symbol';
 import Svg, { Circle, G } from 'react-native-svg';
 
