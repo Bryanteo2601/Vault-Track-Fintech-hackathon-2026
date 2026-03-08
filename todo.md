@@ -249,3 +249,18 @@
 - [x] All TypeScript errors resolved
 - [x] Dev server compiling successfully with 0 errors
 - [x] CBS score now calculates dynamically from user financial data
+
+## Phase 28: Fix CBS Credit Score Display for Empty Data
+- [x] Fix CBS credit score display to show 0 and Grade "-" when no data exists
+- [x] Update Banks screen credit score card to reflect empty state properly
+- [x] Ensure all factor scores show 0 when insufficient data
+
+## Phase 29: Refactor to Shared Financial Analytics Engine
+- [ ] Create unified financialEngine.ts with shared analysis logic
+- [ ] Implement normalized data aggregation from all financial data
+- [ ] Refactor Wealth Wellness Score to use shared engine
+- [ ] Refactor CBS Credit Score to use shared engine
+- [ ] Create shared insights generation system
+- [ ] Bind all UI screens to live computed values
+- [ ] Add comprehensive edge case handling
+- [ ] Test and save checkpoint

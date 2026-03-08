@@ -210,6 +210,7 @@ function getGradeColor(grade: string, colors: any): string {
     case 'B': return '#10B981';
     case 'B-': return colors.warning;
     case 'C': return colors.warning;
+    case '-': return colors.muted;
     default: return colors.error;
   }
 }
@@ -310,7 +311,7 @@ export default function BanksScreen() {
 
           {/* Credit Score Section */}
           <Text style={[styles.sectionTitle, { color: colors.foreground }]}>Credit Bureau Singapore</Text>
-          {data.loans.length === 0 && data.bankAccounts.length === 0 ? (
+          {cbsScore.score === 0 ? (
             <View style={[styles.emptyState, { backgroundColor: colors.surface, borderColor: colors.border }]}>
               <Text style={styles.emptyIcon}>📊</Text>
               <Text style={[styles.emptyText, { color: colors.muted }]}>No credit score data yet. Add bank accounts and loans to build your credit history.</Text>

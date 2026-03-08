@@ -238,6 +238,28 @@ function calculateEstimatedMaxLoan(appData: AppData, monthlyIncome: number): num
 export function calculateCBSScore(appData: AppData, monthlyIncome: number = 0): CBSScoreResult {
   const warnings: string[] = [];
 
+  // Check if user has any financial data
+  const hasAnyData = (appData.bankAccounts && appData.bankAccounts.length > 0) ||
+                     (appData.loans && appData.loans.length > 0) ||
+                     (appData.holdings && appData.holdings.length > 0) ||
+                     (appData.insurancePolicies && appData.insurancePolicies.length > 0);
+
+  // If no data exists, return empty state (score 0, grade "-")
+  if (!hasAnyData) {
+    return {
+      score: 0,
+      grade: '-',
+      paymentHistoryScore: 0,
+      amountsOwedScore: 0,
+      lengthOfCreditScore: 0,
+      creditMixScore: 0,
+      newCreditScore: 0,
+      estimatedMaxLoan: 0,
+      lastUpdated: new Date(),
+      warnings: ['Add financial accounts to calculate credit score'],
+    };
+  }
+
   // Calculate individual factors
   const paymentHistoryScore = calculatePaymentHistory(appData);
   const amountsOwedScore = calculateAmountsOwed(appData);
@@ -270,7 +292,7 @@ export function calculateCBSScore(appData: AppData, monthlyIncome: number = 0): 
 
   // Add warnings for edge cases
   if (!appData.loans || appData.loans.length === 0) {
-    warnings.push('Limited credit history');
+    warnings.push('Limited credit history - add loans to improve score');
   }
   if (!monthlyIncome || monthlyIncome <= 0) {
     warnings.push('Add monthly income to calculate estimated max loan');
