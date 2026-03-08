@@ -3,18 +3,16 @@ import { View, Text, StyleSheet, Dimensions, ScrollView } from 'react-native';
 import { GrowthMetrics, formatCAGR, getGrowthStatus } from '@/lib/private-asset-analytics';
 import { useColors } from '@/hooks/use-colors';
 import { formatCurrency } from '@/lib/store';
-import Svg, { Line, Circle, Text as SvgText, Polyline, Defs, LinearGradient, Stop } from 'react-native-svg';
+import Svg, { Line, Circle, Text as SvgText, Polyline } from 'react-native-svg';
 
 interface PortfolioGrowthChartProps {
   metrics: GrowthMetrics;
 }
 
-interface ChartPoint {
-  date: string;
+interface ProjectionPoint {
+  label: string;
   value: number;
-  type: 'historical' | 'projection';
-  projectionType?: '1Y' | '3Y' | '5Y';
-  fullDate?: string;
+  period: '1Y' | '3Y' | '5Y';
 }
 
 export function PortfolioGrowthChart({ metrics }: PortfolioGrowthChartProps) {
@@ -41,57 +39,36 @@ export function PortfolioGrowthChart({ metrics }: PortfolioGrowthChartProps) {
     negative: 'Declining',
   };
 
-  // Build chart data with historical points and projections
-  const chartData = useMemo(() => {
-    if (metrics.timeSeriesData.length === 0) return [];
+  // Build projection-only data
+  const projectionData = useMemo(() => {
+    const data: ProjectionPoint[] = [];
 
-    const data: ChartPoint[] = [];
-
-    // Add historical data points
-    metrics.timeSeriesData.forEach((point) => {
-      const date = new Date(point.date);
-      const label = date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
-      
-      data.push({
-        date: label,
-        value: point.value,
-        type: 'historical',
-        fullDate: point.date,
-      });
-    });
-
-    // Add 1-year projection
     if (metrics.projections.oneYear > 0) {
       data.push({
-        date: '1Y',
+        label: '1Y',
         value: metrics.projections.oneYear,
-        type: 'projection',
-        projectionType: '1Y',
+        period: '1Y',
       });
     }
 
-    // Add 3-year projection
     if (metrics.projections.threeYear > 0) {
       data.push({
-        date: '3Y',
+        label: '3Y',
         value: metrics.projections.threeYear,
-        type: 'projection',
-        projectionType: '3Y',
+        period: '3Y',
       });
     }
 
-    // Add 5-year projection
     if (metrics.projections.fiveYear > 0) {
       data.push({
-        date: '5Y',
+        label: '5Y',
         value: metrics.projections.fiveYear,
-        type: 'projection',
-        projectionType: '5Y',
+        period: '5Y',
       });
     }
 
     return data;
-  }, [metrics.timeSeriesData, metrics.projections]);
+  }, [metrics.projections]);
 
   // Calculate chart dimensions
   const chartArea = {
@@ -100,16 +77,16 @@ export function PortfolioGrowthChart({ metrics }: PortfolioGrowthChartProps) {
   };
 
   // Calculate Y-axis domain
-  const allValues = chartData.map(d => d.value).filter(v => v > 0);
-  const minValue = Math.min(...allValues);
+  const allValues = projectionData.map(d => d.value).filter(v => v > 0);
+  const minValue = metrics.totalValue; // Start from current value
   const maxValue = Math.max(...allValues);
   const yAxisPadding = (maxValue - minValue) * 0.15;
   const yMin = Math.max(0, minValue - yAxisPadding);
   const yMax = maxValue + yAxisPadding;
 
   // Convert data to SVG coordinates
-  const points = chartData.map((point, index) => {
-    const x = padding.left + (index / (chartData.length - 1)) * chartArea.width;
+  const points = projectionData.map((point, index) => {
+    const x = padding.left + (index / (projectionData.length - 1)) * chartArea.width;
     const y = padding.top + chartArea.height - ((point.value - yMin) / (yMax - yMin)) * chartArea.height;
     return { ...point, x, y, index };
   });
@@ -138,8 +115,8 @@ export function PortfolioGrowthChart({ metrics }: PortfolioGrowthChartProps) {
         )}
       </View>
 
-      {/* Line Chart */}
-      {chartData.length >= 2 ? (
+      {/* Line Chart - Projections Only */}
+      {projectionData.length >= 2 ? (
         <View style={styles.chartContainer}>
           <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.scrollContainer}>
             <Svg width={chartWidth} height={chartHeight} style={styles.svg}>
@@ -198,7 +175,7 @@ export function PortfolioGrowthChart({ metrics }: PortfolioGrowthChartProps) {
                 );
               })}
 
-              {/* Line path */}
+              {/* Line path connecting projections */}
               <Polyline
                 points={points.map(p => `${p.x},${p.y}`).join(' ')}
                 fill="none"
@@ -208,65 +185,44 @@ export function PortfolioGrowthChart({ metrics }: PortfolioGrowthChartProps) {
                 strokeLinejoin="round"
               />
 
-              {/* Data points */}
-              {points.map((point, index) => {
-                const isProjection = point.type === 'projection';
-                const dotRadius = isProjection ? 5 : 4;
-                const dotColor = isProjection ? colors.warning : colors.primary;
+              {/* Projection points */}
+              {points.map((point, index) => (
+                <Circle
+                  key={`dot-${index}`}
+                  cx={point.x}
+                  cy={point.y}
+                  r={5}
+                  fill={colors.primary}
+                  stroke={colors.background}
+                  strokeWidth="2"
+                />
+              ))}
 
-                return (
-                  <Circle
-                    key={`dot-${index}`}
-                    cx={point.x}
-                    cy={point.y}
-                    r={dotRadius}
-                    fill={dotColor}
-                    stroke={colors.background}
-                    strokeWidth="2"
-                  />
-                );
-              })}
-
-              {/* X-axis labels */}
-              {points.map((point, index) => {
-                const isEveryOther = index % 2 === 0 || point.type === 'projection';
-                if (!isEveryOther && chartData.length > 6) return null;
-
-                return (
-                  <SvgText
-                    key={`x-label-${index}`}
-                    x={point.x}
-                    y={padding.top + chartArea.height + 20}
-                    fontSize="11"
-                    fill={colors.muted}
-                    textAnchor="middle"
-                  >
-                    {point.date}
-                  </SvgText>
-                );
-              })}
+              {/* X-axis labels - Projection periods */}
+              {points.map((point, index) => (
+                <SvgText
+                  key={`x-label-${index}`}
+                  x={point.x}
+                  y={padding.top + chartArea.height + 20}
+                  fontSize="12"
+                  fontWeight="600"
+                  fill={colors.primary}
+                  textAnchor="middle"
+                >
+                  {point.label}
+                </SvgText>
+              ))}
             </Svg>
           </ScrollView>
 
-          <View style={styles.legendContainer}>
-            <View style={styles.legendItem}>
-              <View style={[styles.legendDot, { backgroundColor: colors.primary }]} />
-              <Text style={[styles.legendText, { color: colors.foreground }]}>Historical</Text>
-            </View>
-            <View style={styles.legendItem}>
-              <View style={[styles.legendDot, { backgroundColor: colors.warning }]} />
-              <Text style={[styles.legendText, { color: colors.foreground }]}>Projection</Text>
-            </View>
-          </View>
-
           <Text style={[styles.chartNote, { color: colors.muted }]}>
-            {metrics.timeSeriesData.length} historical points + 3 projections (1Y, 3Y, 5Y)
+            Projected wealth growth over 1, 3, and 5 years
           </Text>
         </View>
       ) : (
         <View style={[styles.emptyChart, { backgroundColor: colors.background }]}>
           <Text style={[styles.emptyText, { color: colors.muted }]}>
-            Add more valuations to see growth chart
+            Insufficient data for projections
           </Text>
         </View>
       )}
@@ -367,25 +323,6 @@ const styles = StyleSheet.create({
   },
   svg: {
     backgroundColor: 'transparent',
-  },
-  legendContainer: {
-    flexDirection: 'row',
-    justifyContent: 'center',
-    gap: 20,
-    marginVertical: 8,
-  },
-  legendItem: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 6,
-  },
-  legendDot: {
-    width: 8,
-    height: 8,
-    borderRadius: 4,
-  },
-  legendText: {
-    fontSize: 12,
   },
   chartNote: {
     fontSize: 12,

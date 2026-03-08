@@ -480,3 +480,12 @@
 - [x] Improve visual styling for line graph
 - [x] Test with sample data
 - [x] Verified TypeScript compilation with 0 errors
+
+
+## Phase 52: Simplify Chart to Show Only Projections
+- [x] Remove historical valuation points from chart
+- [x] Keep only 1Y, 3Y, 5Y projection points
+- [x] Update x-axis to show only projection periods
+- [x] Simplify line to connect projection points only
+- [x] Test and verify chart displays correctly
+- [x] Verified TypeScript compilation with 0 errors
