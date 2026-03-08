@@ -260,29 +260,49 @@ export function calcNetWorth(data: AppData): number {
 }
 
 export function calcWellnessScore(data: AppData): number {
-  const netWorth = calcNetWorth(data);
+  // Use new improved wellness score algorithm
+  const { calculateWellnessScore } = require('./wellness-score-calculator');
+  
+  // Calculate liquid assets (bank accounts)
+  const liquidAssets = data.bankAccounts.reduce((sum, acc) => sum + acc.balance, 0);
+  
+  // Estimate monthly expenses (assume 5% of liquid assets or 3000 SGD minimum)
+  const monthlyExpenses = Math.max(liquidAssets * 0.05, 3000);
+  
+  // Build asset allocation from holdings
+  const assetAllocation: Record<string, number> = {};
+  data.holdings.forEach((holding) => {
+    const assetClass = holding.assetClass || 'other';
+    const holdingValue = holding.currentPrice * holding.quantity;
+    assetAllocation[assetClass] = (assetAllocation[assetClass] || 0) + holdingValue;
+  });
+  
+  // Calculate totals
   const totalAssets = calcTotalAssets(data);
   const totalLiabilities = calcTotalLiabilities(data);
-  const debtRatio = totalAssets > 0 ? totalLiabilities / totalAssets : 1;
-  const creditScore = data.creditScore.score;
-
-  let score = 50;
-  if (netWorth > 500000) score += 15;
-  else if (netWorth > 250000) score += 10;
-  else if (netWorth > 100000) score += 5;
-
-  if (debtRatio < 0.3) score += 15;
-  else if (debtRatio < 0.5) score += 10;
-  else if (debtRatio < 0.7) score += 5;
-
-  if (creditScore > 1800) score += 10;
-  else if (creditScore > 1600) score += 5;
-
-  const investmentCount = data.holdings.length;
-  if (investmentCount >= 5) score += 10;
-  else if (investmentCount >= 3) score += 5;
-
-  return Math.min(score, 100);
+  const currentNetWorth = calcNetWorth(data);
+  
+  // Normalize CBS credit score (1000-2000 range) to 300-850 range for algorithm
+  // CBS 1000 = 300, CBS 2000 = 850
+  const cbsScore = data.creditScore.score;
+  const normalizedCreditScore = 300 + ((cbsScore - 1000) / 1000) * 550;
+  
+  // Use previous net worth (default to current if not available)
+  const previousNetWorth = currentNetWorth > 0 ? currentNetWorth * 0.95 : 0;
+  
+  // Calculate wellness score using new algorithm
+  const breakdown = calculateWellnessScore({
+    creditScore: Math.max(300, Math.min(850, normalizedCreditScore)),
+    liquidAssets,
+    monthlyExpenses,
+    assetAllocation,
+    currentNetWorth,
+    previousNetWorth,
+    liabilities: totalLiabilities,
+    assets: totalAssets,
+  });
+  
+  return breakdown.totalScore;
 }
 
 export function calcCBSScore(creditScore: CreditScoreData): string {
