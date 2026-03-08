@@ -8,6 +8,8 @@ import { useAppData } from '@/lib/app-data-context';
 import { Holding, AssetClass } from '@/lib/types';
 import { formatCurrency, calcPortfolioByAssetClass } from '@/lib/store';
 import { calculatePortfolioRiskMetrics, getRiskClassificationDetails, formatPortfolioMetrics } from '@/lib/portfolio-risk-analytics';
+import { analyzeDiversification } from '@/lib/diversification-analyzer';
+import { DiversificationCard } from '@/components/diversification-card';
 import { IconSymbol } from '@/components/ui/icon-symbol';
 import Svg, { G, Path, Circle, Text as SvgText } from 'react-native-svg';
 import { useRouter } from 'expo-router';
@@ -396,6 +398,11 @@ export default function InvestmentsScreen() {
             </View>
             <IconSymbol name="chevron.right" size={20} color="#000" />
           </Pressable>
+
+          {/* Diversification Analysis */}
+          {data.holdings.length > 0 && (
+            <DiversificationCard metrics={analyzeDiversification(portfolioByClass, totalValue)} />
+          )}
 
           {/* Pie Chart */}
           {pieData.length > 0 && (
