@@ -226,17 +226,124 @@ Comprehensive CPF planning tools for Singapore residents:
 
 ### Financial Calculations
 
-The app includes comprehensive financial calculations:
+The app uses sophisticated financial calculation engines for comprehensive analysis:
 
-- **Net Worth**: `Assets (Banks + Investments + Insurance + CPF) - Liabilities (Loans)`
-- **Wealth Wellness Score**: Weighted combination of:
-  - Diversification Index (30%)
-  - Liquidity Ratio (25%)
-  - Debt-to-Asset Ratio (25%)
-  - Credit Score (20%)
-- **CPF Projections**: Account growth with 2.5% (OA) and 4% (SA/MA/RA) annual interest
-- **CBS Credit Score**: Calculated from payment history, amounts owed, credit length, credit mix, and new credit
-- **Loan Capacity**: TDSR-based calculation for maximum loan eligibility
+#### Net Worth Calculation
+```
+Net Worth = Total Assets - Total Liabilities
+
+Total Assets = Bank Balances + Investment Holdings + Insurance Coverage + CPF Accounts + Private Assets
+Total Liabilities = Outstanding Loan Balances
+```
+
+#### Wealth Wellness Score (0-100)
+Composite score based on five weighted financial health factors:
+```
+Wellness Score = 
+  (Credit Score Normalized × 25%) +
+  (Liquidity Score × 25%) +
+  (Diversification Score × 20%) +
+  (Net Worth Growth Score × 15%) +
+  (Debt Ratio Score × 15%)
+```
+
+**Component Calculations:**
+- **Credit Score Normalized**: `((CBS Score - 1000) / (2000 - 1000)) × 100` (0-100 range)
+- **Liquidity Score**: Based on months of expenses covered by liquid assets
+  - ≤1 month: 20 points
+  - 1-3 months: 50 points
+  - 3-6 months: 80 points
+  - >6 months: 100 points
+- **Diversification Score**: Penalizes concentration if one asset class >60%
+  - Applies Herfindahl index for portfolio concentration analysis
+  - Concentration penalty: 2% per 1% over 60% threshold
+- **Net Worth Growth Score**: Year-over-year change
+  - Negative growth: 40 points
+  - 0-5% growth: 60 points
+  - 5-10% growth: 80 points
+  - >10% growth: 100 points
+- **Debt Ratio Score**: `(Liabilities / Assets)` ratio assessment
+  - <20%: 100 points (Excellent)
+  - 20-50%: 80 points (Good)
+  - 50-100%: 60 points (Fair)
+  - >100%: 20 points (Critical)
+
+#### CBS Credit Score (1000-2000)
+Singapore-style credit score based on five weighted factors:
+```
+CBS Score = 
+  (Payment History × 35%) +
+  (Amounts Owed × 30%) +
+  (Length of Credit × 15%) +
+  (Credit Mix × 15%) +
+  (New Credit × 5%)
+```
+
+**Factor Details:**
+- **Payment History (35%)**: Liquid assets vs monthly instalments ratio
+  - ≥12x ratio: 95 points
+  - 6-12x ratio: 85 points
+  - 3-6x ratio: 70 points
+  - 1-3x ratio: 50 points
+  - <1x ratio: 25 points
+- **Amounts Owed (30%)**: Debt-to-asset ratio analysis
+  - <20%: 95 points
+  - 20-50%: 75 points
+  - 50-100%: 50 points
+  - >100%: 20 points
+- **Length of Credit (15%)**: Account age and credit history duration
+- **Credit Mix (15%)**: Variety of credit types (secured, unsecured, revolving)
+- **New Credit (5%)**: Recent credit inquiries and new accounts
+
+#### CPF Projections
+Account growth calculations with annual interest rates:
+```
+Ordinary Account (OA): 2.5% annual interest
+Special Account (SA): 4% annual interest
+MediSave Account (MA): 4% annual interest
+Retirement Account (RA): 4% annual interest (activated at age 55)
+
+Projected Balance at Age 65 = Current Balance × (1 + interest_rate)^(65 - current_age)
+```
+
+#### Debt-to-Asset Ratio
+```
+Debt-to-Asset Ratio (%) = (Total Liabilities / Total Assets) × 100
+
+Status Classification:
+- <50%: Healthy
+- 50-150%: Warning
+- >150%: Critical
+```
+
+#### Liquidity Analysis
+```
+Liquidity Months = Liquid Assets / Monthly Debt Obligations
+
+Liquid Assets = Savings + Daily Accounts
+Monthly Debt Obligations = Sum of all monthly loan instalments
+
+Target: 6+ months of coverage (emergency fund)
+```
+
+#### Diversification Index
+```
+Asset Classes Tracked: Stocks, Crypto, ETFs, Bonds, Futures, Options, REITs, Commodities
+
+Diversification Score = 100 - Concentration Penalty - Herfindahl Penalty
+
+Target: 4+ asset classes with balanced allocation
+```
+
+#### TDSR-Based Loan Capacity
+```
+Maximum Loan Capacity = (Monthly Income × 60%) / Monthly Debt Service Ratio
+
+Where:
+- Monthly Income = Annual Salary / 12
+- TDSR = Total Debt Service / Monthly Income
+- Typical TDSR Limit: 60% for most lenders
+```
 
 ### AI Integration
 
@@ -306,6 +413,12 @@ The project includes comprehensive tests for:
 - **`design.md`**: UI/UX design specifications and brand guidelines
 - **`todo.md`**: Project roadmap and feature checklist
 - **`server/README.md`**: Backend development guide
+- **`lib/wellness-score-calculator.ts`**: Wealth Wellness Score calculation engine
+- **`lib/cbs-score-calculator.ts`**: CBS credit score calculation with TDSR analysis
+- **`lib/metric-insight-engine.ts`**: Financial health metrics and insights generation
+- **`lib/cpf-calculations.ts`**: CPF account projections and retirement planning
+- **`lib/diversification-analyzer.ts`**: Portfolio diversification analysis
+- **`lib/portfolio-risk-analytics.ts`**: Portfolio risk assessment and stress testing
 - **`FIREBASE_ARCHITECTURE.md`**: Firebase integration architecture (if available)
 
 ---
