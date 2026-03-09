@@ -1,5 +1,5 @@
 import React, { useEffect, useRef, useState } from 'react';
-import { View, ScrollView, Pressable, Animated, Dimensions } from 'react-native';
+import { View, ScrollView, Pressable, Animated, Dimensions, Text } from 'react-native';
 import { useAppColors } from '@/hooks/use-app-colors';
 import { IconSymbol } from '@/components/ui/icon-symbol';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
@@ -103,7 +103,9 @@ export function AnimatedTabBar({ tabs, activeTab, onTabChange }: AnimatedTabBarP
                   name={tab.icon as any}
                   color={tabColor}
                 />
-                {/* Text label would go here if using React Native Text */}
+                <Text style={{ fontSize: 10, fontWeight: '600', color: tabColor, maxWidth: tabWidth - 8 }}>
+                  {tab.title}
+                </Text>
               </View>
 
               {/* Active indicator */}

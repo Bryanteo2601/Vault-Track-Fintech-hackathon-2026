@@ -1,4 +1,4 @@
-import { Tabs, useNavigation } from "expo-router";
+import { Tabs, useNavigation, usePathname } from "expo-router";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { Platform } from "react-native";
 import { HapticTab } from "@/components/haptic-tab";
@@ -6,14 +6,22 @@ import { IconSymbol } from "@/components/ui/icon-symbol";
 import { useAppColors } from "@/hooks/use-app-colors";
 import { AnimatedTabBar } from "@/components/AnimatedTabBar";
 import { useState } from "react";
+import React from "react";
 
 export default function TabLayout() {
   const colors = useAppColors();
   const insets = useSafeAreaInsets();
   const navigation = useNavigation();
+  const pathname = usePathname();
   const [activeTab, setActiveTab] = useState('index');
   const bottomPadding = Platform.OS === "web" ? 12 : Math.max(insets.bottom, 8);
   const tabBarHeight = 60 + bottomPadding;
+
+  // Update active tab based on current route
+  React.useEffect(() => {
+    const routeName = pathname.split('/').pop() || 'index';
+    setActiveTab(routeName);
+  }, [pathname]);
 
   const tabs = [
     { name: 'index', title: 'Dashboard', icon: 'house.fill' },
@@ -38,7 +46,7 @@ export default function TabLayout() {
         tabBarInactiveTintColor: colors.muted,
         headerShown: false,
         tabBarButton: HapticTab,
-        tabBar: () => (
+        tabBar: (props) => (
           <AnimatedTabBar
             tabs={tabs}
             activeTab={activeTab}
