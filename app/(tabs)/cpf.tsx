@@ -90,7 +90,7 @@ export default function CPFScreen() {
         <CPFOverviewCard
           totalBalance={totalCPF}
           age={cpfData.age}
-          raBalance={cpfData.ra}
+          raBalance={projection.projectedRAAt65}
           monthlyPayoutAt65={projection.monthlyPayoutAt65}
         />
 
