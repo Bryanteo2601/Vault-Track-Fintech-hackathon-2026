@@ -22,13 +22,13 @@ export function ArcTabBar({ tabs, activeTab, onTabChange }: ArcTabBarProps) {
   const screenWidth = Dimensions.get('window').width;
   const screenHeight = Dimensions.get('window').height;
   const bottomPadding = Math.max(insets.bottom, 8);
-  const barHeight = 100 + bottomPadding;
+  const barHeight = 140 + bottomPadding;
   
-  // Arc configuration
-  const arcRadius = 120; // Radius of the arc
-  const arcStartAngle = 180; // Start angle in degrees (180 = left)
-  const arcEndAngle = 360; // End angle in degrees (360 = right)
-  const arcCenter = { x: screenWidth / 2, y: barHeight - 20 };
+  // Arc configuration - arc curves UPWARD from bottom center
+  const arcRadius = 100; // Radius of the arc
+  const arcStartAngle = 0; // Start angle in degrees (0 = right)
+  const arcEndAngle = 180; // End angle in degrees (180 = left)
+  const arcCenter = { x: screenWidth / 2, y: barHeight }; // Center at bottom
 
   // Calculate tab positions on the arc
   const getTabPosition = (index: number) => {
@@ -40,7 +40,7 @@ export function ArcTabBar({ tabs, activeTab, onTabChange }: ArcTabBarProps) {
     // Convert angle to radians
     const radians = (angle * Math.PI) / 180;
     
-    // Calculate position on arc
+    // Calculate position on arc (curving upward)
     const x = arcCenter.x + arcRadius * Math.cos(radians);
     const y = arcCenter.y - arcRadius * Math.sin(radians);
     
