@@ -65,7 +65,7 @@ export default function ProfileScreen() {
 
   const handleSaveBirthDate = async () => {
     if (!birthDateInput.trim()) {
-      Alert.alert('Error', 'Please enter a birth date (YYYY-MM-DD)');
+      Alert.alert('Error', 'Please enter a birth date');
       return;
     }
 
@@ -385,53 +385,53 @@ export default function ProfileScreen() {
         onRequestClose={() => setShowEditModal(false)}
       >
         <View className="flex-1" style={{ backgroundColor: colors.background }}>
-          <ScreenContainer className="flex-1 justify-between">
+          <View className="flex-1 flex-col">
             {/* Header */}
-            <View className="flex-row items-center justify-between mb-8">
+            <View className="flex-row items-center justify-between px-6 py-6 border-b" style={{ borderColor: colors.border }}>
               <Text className="text-2xl font-bold text-foreground">Edit Profile</Text>
               <Pressable onPress={() => setShowEditModal(false)} className="active:opacity-60">
                 <MaterialIcons name="close" size={28} color={colors.foreground} />
               </Pressable>
             </View>
 
-            {/* Form */}
-            <View className="flex-1">
-              <Text className="text-sm font-semibold text-muted mb-2">Birth Date (YYYY-MM-DD)</Text>
+            {/* Form Content */}
+            <View className="flex-1 px-6 py-8">
+              <Text className="text-sm font-semibold text-muted mb-3">Birth Date</Text>
               <TextInput
                 value={birthDateInput}
                 onChangeText={setBirthDateInput}
-                placeholder="e.g., 1995-05-15"
+                placeholder="YYYY-MM-DD (e.g., 1995-05-15)"
                 placeholderTextColor={colors.muted}
-                className="border rounded-xl px-4 py-3 text-foreground"
+                className="border rounded-xl px-4 py-4 text-foreground text-base"
                 style={{
                   borderColor: colors.border,
                   color: colors.foreground,
                   backgroundColor: colors.surface,
                 }}
               />
-              <Text className="text-xs text-muted mt-2">
-                Enter your birth date to calculate your age and determine your life stage.
+              <Text className="text-xs text-muted mt-3 leading-relaxed">
+                Enter your birth date to calculate your age and determine your life stage for personalized financial guidance.
               </Text>
             </View>
 
-            {/* Buttons */}
-            <View className="flex-row gap-3">
+            {/* Buttons - Fixed at bottom */}
+            <View className="px-6 py-6 border-t flex-row gap-3" style={{ borderColor: colors.border }}>
               <Pressable
                 onPress={() => setShowEditModal(false)}
-                className="flex-1 p-4 rounded-xl items-center active:opacity-80"
-                style={{ backgroundColor: colors.surface }}
+                className="flex-1 p-4 rounded-xl items-center justify-center active:opacity-80"
+                style={{ backgroundColor: colors.surface, borderWidth: 1, borderColor: colors.border }}
               >
-                <Text className="font-bold text-foreground">Cancel</Text>
+                <Text className="font-bold text-base text-foreground">Cancel</Text>
               </Pressable>
               <Pressable
                 onPress={handleSaveBirthDate}
-                className="flex-1 p-4 rounded-xl items-center active:opacity-80"
+                className="flex-1 p-4 rounded-xl items-center justify-center active:opacity-80"
                 style={{ backgroundColor: colors.primary }}
               >
-                <Text className="font-bold text-white">Save</Text>
+                <Text className="font-bold text-base text-white">Save</Text>
               </Pressable>
             </View>
-          </ScreenContainer>
+          </View>
         </View>
       </Modal>
     </ScreenContainer>
