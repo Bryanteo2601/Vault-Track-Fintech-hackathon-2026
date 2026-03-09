@@ -4,7 +4,7 @@ import { Platform } from "react-native";
 import { HapticTab } from "@/components/haptic-tab";
 import { IconSymbol } from "@/components/ui/icon-symbol";
 import { useAppColors } from "@/hooks/use-app-colors";
-import { AnimatedTabBar } from "@/components/AnimatedTabBar";
+import { ArcTabBar } from "@/components/ArcTabBar";
 import { useState } from "react";
 import React from "react";
 
@@ -47,7 +47,7 @@ export default function TabLayout() {
         headerShown: false,
         tabBarButton: HapticTab,
         tabBar: (props) => (
-          <AnimatedTabBar
+          <ArcTabBar
             tabs={tabs}
             activeTab={activeTab}
             onTabChange={handleTabChange}
