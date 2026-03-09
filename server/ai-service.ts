@@ -86,7 +86,7 @@ export async function chatWithAI(
   conversationHistory: Array<{ role: string; content: string }>
 ): Promise<string> {
   try {
-    const model = genAI.getGenerativeModel({ model: "gemini-pro" });
+    const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
     const metrics = calculatePortfolioMetrics(portfolioData);
 
     // Build system prompt with portfolio context

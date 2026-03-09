@@ -3,10 +3,10 @@ import { View, Text, TextInput, Pressable, ScrollView, KeyboardAvoidingView, Pla
 import { ScreenContainer } from '@/components/screen-container';
 import { useAppColors } from '@/hooks/use-app-colors';
 import { useAppData } from '@/lib/app-data-context';
-import { trpc } from '@/lib/trpc';
 import { useRouter, useFocusEffect } from 'expo-router';
 import { IconSymbol } from '@/components/ui/icon-symbol';
 import { useCallback } from 'react';
+import { chatWithAI } from '@/lib/gemini-ai-service';
 
 interface Message {
   id: string;
@@ -59,17 +59,12 @@ export default function AIChatScreen() {
         content: msg.content,
       }));
 
-      const result = await trpc.ai.chat.mutate({
-        message: userMessage.content,
-        portfolioData: data,
-        conversationHistory,
-      });
-
-      if (!result.success) {
-        throw new Error(result.error || 'Failed to get AI response');
-      }
-
-      const aiResponse = result.response;
+      // Use client-side AI service for dynamic responses
+      const aiResponse = await chatWithAI(
+        userMessage.content,
+        data,
+        conversationHistory
+      );
 
       const assistantMessage: Message = {
         id: (Date.now() + 1).toString(),
@@ -84,7 +79,7 @@ export default function AIChatScreen() {
       const errorMessage: Message = {
         id: (Date.now() + 1).toString(),
         role: 'assistant',
-        content: 'Sorry, I encountered an error. Please try again.',
+        content: `Sorry, I encountered an error: ${error instanceof Error ? error.message : 'Unknown error'}. Please try again.`,
         timestamp: new Date(),
       };
       setMessages(prev => [...prev, errorMessage]);
