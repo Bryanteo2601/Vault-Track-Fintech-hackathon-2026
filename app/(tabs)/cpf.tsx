@@ -1,4 +1,4 @@
-import React, { useMemo, useState } from 'react';
+import React, { useMemo, useState, useEffect } from 'react';
 import { ScrollView, View, Text, StyleSheet, Pressable } from 'react-native';
 import { ScreenContainer } from '@/components/screen-container';
 import { useAppColors } from '@/hooks/use-app-colors';
@@ -24,15 +24,29 @@ export default function CPFScreen() {
   const colors = useAppColors();
   const { data } = useAppData();
 
-  // Editable CPF data - starts with app context data or defaults
+  // Editable CPF data - starts with default values
   const [cpfData, setCPFData] = useState<CPFUserData>({
-    age: data.cpf?.age ?? 35,
-    oa: data.cpf?.oa ?? 0,
-    sa: data.cpf?.sa ?? 0,
-    ma: data.cpf?.ma ?? 0,
-    ra: data.cpf?.ra ?? 0,
-    annualSalary: data.cpf?.annualSalary ?? 60000,
+    age: 35,
+    oa: 0,
+    sa: 0,
+    ma: 0,
+    ra: 0,
+    annualSalary: 60000,
   });
+
+  // Sync CPF data from app context when it loads
+  useEffect(() => {
+    if (data.cpf) {
+      setCPFData({
+        age: data.cpf.age,
+        oa: data.cpf.oa,
+        sa: data.cpf.sa,
+        ma: data.cpf.ma,
+        ra: data.cpf.ra,
+        annualSalary: data.cpf.annualSalary,
+      });
+    }
+  }, [data.cpf]);
 
   // Editing state for each field
   const [editingField, setEditingField] = useState<string | null>(null);
