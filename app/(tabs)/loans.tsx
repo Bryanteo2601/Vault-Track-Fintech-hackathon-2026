@@ -9,6 +9,7 @@ import { useAppData } from '@/lib/app-data-context';
 import { Loan, LoanType, LoanSecurityType } from '@/lib/types';
 import { formatCurrency } from '@/lib/store';
 import { IconSymbol } from '@/components/ui/icon-symbol';
+import { glassDeepStyle } from '@/lib/glass-utils';
 
 // ─── Loan Type Config ─────────────────────────────────────────────────────────
 const loanTypeConfig: Record<LoanType, { label: string; icon: string; color: string }> = {
@@ -301,17 +302,17 @@ export default function LoansScreen() {
 
         <View style={styles.content}>
           {/* Summary */}
-          <View style={[styles.summaryCard, { backgroundColor: colors.primary }]}>
-            <Text style={styles.summaryMainLabel}>Total Outstanding</Text>
-            <Text style={styles.summaryMainValue}>{formatCurrency(totalOutstanding)}</Text>
+          <View style={[glassDeepStyle, styles.summaryCard]}>
+            <Text style={[styles.summaryMainLabel, { color: colors.muted }]}>Total Outstanding</Text>
+            <Text style={[styles.summaryMainValue, { color: colors.foreground }]}>{formatCurrency(totalOutstanding)}</Text>
             <View style={styles.summaryRow}>
               <View style={styles.summaryStat}>
-                <Text style={styles.summaryStatLabel}>Monthly Payments</Text>
+                <Text style={[styles.summaryStatLabel, { color: colors.muted }]}>Monthly Payments</Text>
                 <Text style={[styles.summaryStatValue, { color: '#FBBF24' }]}>{formatCurrency(totalMonthly)}</Text>
               </View>
-              <View style={[styles.summaryDivider, { backgroundColor: 'rgba(255,255,255,0.2)' }]} />
+              <View style={[styles.summaryDivider, { backgroundColor: colors.border }]} />
               <View style={styles.summaryStat}>
-                <Text style={styles.summaryStatLabel}>Total Interest</Text>
+                <Text style={[styles.summaryStatLabel, { color: colors.muted }]}>Total Interest</Text>
                 <Text style={[styles.summaryStatValue, { color: '#F87171' }]}>{formatCurrency(totalInterest)}</Text>
               </View>
             </View>

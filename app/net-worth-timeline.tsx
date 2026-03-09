@@ -10,6 +10,7 @@ import { calculateUnifiedFinancialSummary } from '@/lib/unified-financial-engine
 import { generateHistoricalNetWorthData } from '@/lib/historical-net-worth';
 import { useMemo, useState } from 'react';
 import Svg, { Line, Circle, Text as SvgText, G } from 'react-native-svg';
+import { glassDeepStyle } from '@/lib/glass-utils';
 
 const { width } = Dimensions.get('window');
 
@@ -126,20 +127,20 @@ export default function NetWorthTimelineScreen() {
 
       <ScrollView style={{ flex: 1 }} contentContainerStyle={{ paddingBottom: 20 }} showsVerticalScrollIndicator={false}>
         {/* Current Net Worth */}
-        <View style={[styles.currentCard, { backgroundColor: colors.primary }]}>
-          <Text style={{ fontSize: 12, color: 'rgba(255,255,255,0.8)', marginBottom: 4 }}>Current Net Worth</Text>
-          <Text style={{ fontSize: 32, fontWeight: '700', color: 'white', marginBottom: 8 }}>
+        <View style={[glassDeepStyle, styles.currentCard]}>
+          <Text style={{ fontSize: 12, color: colors.muted, marginBottom: 4 }}>Current Net Worth</Text>
+          <Text style={{ fontSize: 32, fontWeight: '700', color: colors.foreground, marginBottom: 8 }}>
             SGD {metrics.currentNetWorth.toLocaleString()}
           </Text>
           <View style={{ flexDirection: 'row', gap: 16 }}>
             <View>
-              <Text style={{ fontSize: 10, color: 'rgba(255,255,255,0.7)', marginBottom: 2 }}>12-Month Change</Text>
+              <Text style={{ fontSize: 10, color: colors.muted, marginBottom: 2 }}>12-Month Change</Text>
               <Text style={{ fontSize: 14, fontWeight: '700', color: metrics.yearlyChange >= 0 ? '#4ADE80' : '#F87171' }}>
                 {metrics.yearlyChange >= 0 ? '+' : ''}{metrics.yearlyChange.toLocaleString()} ({metrics.yearlyChangePercent.toFixed(1)}%)
               </Text>
             </View>
             <View>
-              <Text style={{ fontSize: 10, color: 'rgba(255,255,255,0.7)', marginBottom: 2 }}>Monthly Avg Growth</Text>
+              <Text style={{ fontSize: 10, color: colors.muted, marginBottom: 2 }}>Monthly Avg Growth</Text>
               <Text style={{ fontSize: 14, fontWeight: '700', color: '#4ADE80' }}>
                 {metrics.monthlyAvgGrowth.toFixed(2)}%
               </Text>
