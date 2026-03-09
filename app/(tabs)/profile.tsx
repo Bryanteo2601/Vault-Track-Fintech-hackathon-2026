@@ -7,6 +7,7 @@ import { logOut } from '@/lib/firebase-auth';
 import { useAppColors } from '@/hooks/use-app-colors';
 import { useAppData } from '@/lib/app-data-context';
 import { MaterialIcons } from '@expo/vector-icons';
+import { determineLifeStage, getLifeStageName } from '@/lib/life-stage';
 
 export default function ProfileScreen() {
   const router = useRouter();
@@ -16,6 +17,9 @@ export default function ProfileScreen() {
   const [loggingOut, setLoggingOut] = useState(false);
   const [billingCycle, setBillingCycle] = useState<'monthly' | 'annual'>('monthly');
   const [expandedPlan, setExpandedPlan] = useState<'pro' | 'premium' | null>(null);
+
+  const lifeStage = appData?.userProfile ? determineLifeStage(appData.userProfile.birthDate) : null;
+  const stageName = lifeStage ? getLifeStageName(lifeStage) : null;
 
   const handleLogout = async () => {
     Alert.alert('Sign Out', 'Are you sure you want to sign out?', [
@@ -77,6 +81,12 @@ export default function ProfileScreen() {
                     Edit Profile
                   </Text>
                 </Pressable>
+                {stageName && (
+                  <View className="mt-3 pt-3 border-t" style={{ borderColor: colors.border }}>
+                    <Text className="text-xs font-semibold text-muted mb-1">LIFE STAGE</Text>
+                    <Text className="text-sm font-bold text-foreground">{stageName}</Text>
+                  </View>
+                )}
               </View>
             </View>
           </View>
