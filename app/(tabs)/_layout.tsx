@@ -37,7 +37,7 @@ export default function TabLayout() {
 
   const handleTabChange = (tabName: string) => {
     setActiveTab(tabName);
-    (navigation as any).jumpTo(tabName);
+    (navigation as any).navigate({ name: tabName, merge: true });
   };
 
   return (
