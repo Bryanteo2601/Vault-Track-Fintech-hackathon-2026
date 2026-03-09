@@ -419,10 +419,10 @@ const styles = StyleSheet.create({
   typeGrid: { flexDirection: 'row', flexWrap: 'wrap', gap: 10, marginBottom: 16, justifyContent: 'space-between' },
   typeOption: { width: '23%', borderWidth: 1, borderRadius: 8, padding: 8, alignItems: 'center', gap: 4, justifyContent: 'center' },
   typeOptionEmoji: { fontSize: 18 },
-  typeOptionText: { fontSize: 9, fontWeight: '600', textAlign: 'center', numberOfLines: 2 },
+  typeOptionText: { fontSize: 9, fontWeight: '600', textAlign: 'center' } as any,
   secGrid: { flexDirection: 'row', flexWrap: 'wrap', gap: 10, marginBottom: 16, justifyContent: 'space-between' },
   secOption: { width: '48%', borderWidth: 1, borderRadius: 8, padding: 10, alignItems: 'center', justifyContent: 'center' },
-  secOptionText: { fontSize: 10, fontWeight: '600', textAlign: 'center', numberOfLines: 2 },
+  secOptionText: { fontSize: 10, fontWeight: '600', textAlign: 'center' } as any,
   saveBtn: { paddingVertical: 12, borderRadius: 8, alignItems: 'center', marginTop: 8, marginBottom: 32 },
   saveBtnText: { color: '#FFFFFF', fontWeight: '600', fontSize: 16 },
 });

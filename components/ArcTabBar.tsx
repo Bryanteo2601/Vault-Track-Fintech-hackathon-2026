@@ -1,5 +1,5 @@
 import React, { useEffect, useRef, useState } from 'react';
-import { View, Pressable, Animated, Dimensions, Text } from 'react-native';
+import { View, Pressable, ScrollView, Dimensions, Text, PanResponder, GestureResponderEvent } from 'react-native';
 import { useColors } from '@/hooks/use-colors';
 import { IconSymbol } from '@/components/ui/icon-symbol';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
@@ -20,15 +20,17 @@ export function ArcTabBar({ tabs, activeTab, onTabChange }: ArcTabBarProps) {
   const colors = useColors();
   const insets = useSafeAreaInsets();
   const screenWidth = Dimensions.get('window').width;
-  const screenHeight = Dimensions.get('window').height;
   const bottomPadding = Math.max(insets.bottom, 8);
-  const barHeight = 100 + bottomPadding;
+  const barHeight = 180 + bottomPadding; // Increased height
   
-  // Arc configuration
-  const arcRadius = 120; // Radius of the arc
-  const arcStartAngle = 180; // Start angle in degrees (180 = left)
-  const arcEndAngle = 360; // End angle in degrees (360 = right)
-  const arcCenter = { x: screenWidth / 2, y: barHeight - 20 };
+  // Horizontal scroll ref
+  const scrollViewRef = useRef<ScrollView>(null);
+  
+  // Arc configuration - arc curves UPWARD from bottom center
+  const arcRadius = 100; // Radius of the arc
+  const arcStartAngle = 0; // Start angle in degrees (0 = right)
+  const arcEndAngle = 180; // End angle in degrees (180 = left)
+  const arcCenter = { x: screenWidth / 2, y: barHeight - 20 }; // Center at bottom, moved up
 
   // Calculate tab positions on the arc
   const getTabPosition = (index: number) => {
@@ -40,7 +42,7 @@ export function ArcTabBar({ tabs, activeTab, onTabChange }: ArcTabBarProps) {
     // Convert angle to radians
     const radians = (angle * Math.PI) / 180;
     
-    // Calculate position on arc
+    // Calculate position on arc (curving upward)
     const x = arcCenter.x + arcRadius * Math.cos(radians);
     const y = arcCenter.y - arcRadius * Math.sin(radians);
     
@@ -48,7 +50,15 @@ export function ArcTabBar({ tabs, activeTab, onTabChange }: ArcTabBarProps) {
   };
 
   return (
-    <View
+    <ScrollView
+      ref={scrollViewRef}
+      horizontal
+      showsHorizontalScrollIndicator={false}
+      scrollEventThrottle={16}
+      contentContainerStyle={{
+        width: screenWidth * 1.5, // Make content wider for scrolling
+        height: barHeight,
+      }}
       style={{
         height: barHeight,
         backgroundColor: colors.surface,
@@ -103,21 +113,22 @@ export function ArcTabBar({ tabs, activeTab, onTabChange }: ArcTabBarProps) {
               opacity: isActive ? 1 : 0.7,
             }}
           >
-            <View style={{ alignItems: 'center', gap: 2 }}>
+            <View style={{ alignItems: 'center', gap: 4 }}>
               <IconSymbol
-                size={24}
+                size={20}
                 name={tab.icon as any}
                 color={tabColor}
               />
               <Text 
                 style={{ 
-                  fontSize: 8, 
+                  fontSize: 10, 
                   fontWeight: '600', 
                   color: tabColor,
                   textAlign: 'center',
                   maxWidth: 45,
+                  lineHeight: 12,
                 }}
-                numberOfLines={1}
+                numberOfLines={2}
               >
                 {tab.title}
               </Text>
@@ -154,7 +165,7 @@ export function ArcTabBar({ tabs, activeTab, onTabChange }: ArcTabBarProps) {
           zIndex: 10,
         }}
       />
-    </View>
+    </ScrollView>
   );
 }
 

@@ -25,7 +25,7 @@ import { IconSymbol } from '@/components/ui/icon-symbol';
 import Svg, { Circle, G } from 'react-native-svg';
 import { useScoringCalculations } from './dashboard-scoring';
 import { LifeStageWidget } from '@/components/life-stage-widget';
-import { determineLifeStage } from '@/lib/life-stage';
+import { determineLifeStage, calculateAge } from '@/lib/life-stage';
 import { GlassCard } from '@/components/glass-card';
 import { glassContainerStyle, glassDeepStyle, glassLightStyle, glassGlowStyle } from '@/lib/glass-utils';
 import { useMemo } from 'react';
@@ -244,7 +244,13 @@ export default function DashboardScreen() {
   const { cpfScore, cpfStatusLabel, insuranceScore, insuranceStatusLabel, privateAssetScore, privateAssetStatusLabel } = useScoringCalculations(data, unifiedSummary);
 
   // Determine life stage for investment recommendations
-  const lifeStage = data?.userProfile ? determineLifeStage(data.userProfile.birthDate) : 'fresh_entrant';
+  const lifeStage = data?.userProfile && data.userProfile.birthDate 
+    ? determineLifeStage(
+        calculateAge(data.userProfile.birthDate),
+        data.userProfile.hasDependents,
+        data.userProfile.hasAgedParents
+      )
+    : 'fresh_entrant';
 
   if (isLoading) {
     return (
