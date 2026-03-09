@@ -1,4 +1,3 @@
-import { useMemo } from 'react';
 import { ScrollView, View, Text, StyleSheet, Pressable, FlatList, GestureResponderEvent } from 'react-native';
 import { ScreenContainer } from '@/components/screen-container';
 import { useAppColors } from '@/hooks/use-app-colors';
@@ -25,9 +24,11 @@ import {
 import { IconSymbol } from '@/components/ui/icon-symbol';
 import Svg, { Circle, G } from 'react-native-svg';
 import { useScoringCalculations } from './dashboard-scoring';
-// InvestmentRecommendationsWidget removed - functionality moved to dedicated Investments tab
 import { LifeStageWidget } from '@/components/life-stage-widget';
 import { determineLifeStage } from '@/lib/life-stage';
+import { GlassCard } from '@/components/glass-card';
+import { glassContainerStyle, glassDeepStyle, glassLightStyle, glassGlowStyle } from '@/lib/glass-utils';
+import { useMemo } from 'react';
 
 // ─── Wellness Gauge ───────────────────────────────────────────────────────────
 function WellnessGauge({ score }: { score: number }) {
@@ -51,6 +52,7 @@ function WellnessGauge({ score }: { score: number }) {
             cx={size / 2} cy={size / 2} r={radius}
             stroke={colors.border} strokeWidth={strokeWidth}
             fill="none"
+            opacity={0.2}
           />
           <Circle
             cx={size / 2} cy={size / 2} r={radius}
@@ -63,7 +65,7 @@ function WellnessGauge({ score }: { score: number }) {
       </Svg>
       <View style={styles.gaugeCenter}>
         <Text style={[styles.gaugeScore, { color: gaugeColor }]}>{score}</Text>
-        <Text style={[styles.gaugeLabel, { color: colors.muted }]}>Wellness Score</Text>
+        <Text style={[styles.gaugeLabel, { color: colors.muted }]}>Wellness</Text>
       </View>
     </View>
   );
@@ -99,13 +101,18 @@ function AssetAllocationBar({ data }: { data: { label: string; value: number; co
   );
 }
 
-// ─── Health Metric Card ───────────────────────────────────────────────────────
+// ─── Health Metric Card with Glass Effect ───────────────────────────────────────────────────────
 function HealthMetricCard({ label, value, subtitle, color, onPress }: { label: string; value: string; subtitle: string; color: string; onPress?: () => void }) {
   const colors = useAppColors();
   return (
     <Pressable
       onPress={onPress}
-      style={({ pressed }) => [styles.metricCard, { backgroundColor: colors.surface, borderColor: colors.border, opacity: pressed ? 0.7 : 1 }]}
+      style={({ pressed }) => [
+        glassLightStyle,
+        styles.metricCard,
+        pressed && { opacity: 0.8, transform: [{ scale: 0.98 }] },
+        !pressed && glassGlowStyle,
+      ]}
     >
       <Text style={[styles.metricValue, { color }]}>{value}</Text>
       <View style={styles.metricContent}>
@@ -116,14 +123,14 @@ function HealthMetricCard({ label, value, subtitle, color, onPress }: { label: s
   );
 }
 
-// ─── AI Recommendation Card ───────────────────────────────────────────────────
+// ─── AI Recommendation Card with Glass Effect ───────────────────────────────────────────────────
 function AIRecommendationCard({ icon, title, description, type }: { icon: string; title: string; description: string; type: 'opportunity' | 'warning' | 'info' }) {
   const colors = useAppColors();
   const typeColor = type === 'opportunity' ? colors.success : type === 'warning' ? colors.warning : colors.primary;
-  const typeBg = type === 'opportunity' ? 'rgba(0,200,150,0.1)' : type === 'warning' ? 'rgba(245,158,11,0.1)' : 'rgba(26,60,94,0.1)';
+  const typeBg = type === 'opportunity' ? 'rgba(74,222,128,0.15)' : type === 'warning' ? 'rgba(251,191,36,0.15)' : 'rgba(0,217,255,0.15)';
 
   return (
-    <View style={[styles.aiCard, { backgroundColor: colors.surface, borderColor: colors.border, borderLeftColor: typeColor }]}>
+    <View style={[glassLightStyle, styles.aiCard, { borderLeftColor: typeColor, borderLeftWidth: 3 }]}>
       <View style={[styles.aiIconWrap, { backgroundColor: typeBg }]}>
         <Text style={styles.aiIcon}>{icon}</Text>
       </View>
@@ -256,96 +263,100 @@ export default function DashboardScreen() {
         contentContainerStyle={{ paddingBottom: 32 }}
         showsVerticalScrollIndicator={false}
       >
-
-
         <View style={styles.content}>
-          {/* Net Worth + Wellness Score */}
-          <Pressable onPress={() => router.push('/net-worth-timeline' as any)} style={({ pressed }) => [styles.heroCard, { backgroundColor: colors.primary, opacity: pressed ? 0.9 : 1 }]}>
+          {/* Hero Card - Net Worth + Wellness Score with Glass Effect */}
+          <Pressable 
+            onPress={() => router.push('/net-worth-timeline' as any)} 
+            style={({ pressed }) => [
+              glassDeepStyle,
+              styles.heroCard,
+              glassGlowStyle,
+              pressed && { opacity: 0.85, transform: [{ scale: 0.98 }] },
+            ]}
+          >
             <View style={styles.heroLeft}>
               <Text style={styles.heroLabel}>Total Net Worth</Text>
               <Text style={styles.heroValue}>{formatCurrency(netWorth)}</Text>
               <View style={styles.heroStats}>
                 <View style={styles.heroStat}>
                   <Text style={styles.heroStatLabel}>Assets</Text>
-                  <Text style={[styles.heroStatValue, { color: '#00C896' }]}>{formatCurrency(totalAssets)}</Text>
+                  <Text style={[styles.heroStatValue, { color: '#4ADE80' }]}>{formatCurrency(totalAssets)}</Text>
                 </View>
-                <View style={[styles.heroStatDivider, { backgroundColor: 'rgba(255,255,255,0.2)' }]} />
+                <View style={[styles.heroStatDivider, { backgroundColor: 'rgba(0,217,255,0.2)' }]} />
                 <View style={styles.heroStat}>
                   <Text style={styles.heroStatLabel}>Liabilities</Text>
                   <Text style={[styles.heroStatValue, { color: '#F87171' }]}>{formatCurrency(totalLiabilities)}</Text>
                 </View>
               </View>
-              <Text style={{ fontSize: 10, color: 'rgba(255,255,255,0.7)', marginTop: 8 }}>Tap to view timeline →</Text>
+              <Text style={{ fontSize: 10, color: 'rgba(240,247,255,0.6)', marginTop: 8 }}>Tap to view timeline →</Text>
             </View>
             <WellnessGauge score={wellnessScore} />
           </Pressable>
 
-          {/* Asset Allocation */}
-          <View style={[styles.section, { backgroundColor: colors.surface, borderColor: colors.border }]}>
+          {/* Asset Allocation with Glass Effect */}
+          <GlassCard variant="default" padding={16}>
             <Text style={[styles.sectionTitle, { color: colors.foreground }]}>Asset Allocation</Text>
             <AssetAllocationBar data={allocationData} />
-          </View>
+          </GlassCard>
 
-          {/* Financial Health Metrics */}
-          <View style={[styles.section, { backgroundColor: colors.surface, borderColor: colors.border }]}>
+          {/* Financial Health Metrics with Glass Effect */}
+          <GlassCard variant="default" padding={16}>
             <Text style={[styles.sectionTitle, { color: colors.foreground }]}>Financial Health</Text>
-          <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.metricsScroll}>
-            <View style={styles.metricsRow}>
-              <HealthMetricCard
-                label="Diversification"
-                value={`${assetClassCount}/8`}
-                subtitle="Asset classes"
-                color={assetClassCount >= 5 ? colors.success : assetClassCount >= 3 ? colors.warning : colors.error}
-                onPress={() => router.push('/diversification-analysis')}
-              />
-              <HealthMetricCard
-                label="Liquidity"
-                value={`${Math.min(liquidityMonths, 99)}mo`}
-                subtitle="Emergency cover"
-                color={liquidityMonths >= 6 ? colors.success : liquidityMonths >= 3 ? colors.warning : colors.error}
-                onPress={() => router.push('/liquidity-analysis')}
-              />
-              <HealthMetricCard
-                label="Debt Ratio"
-                value={`${dta.toFixed(0)}%`}
-                subtitle="Debt-to-assets"
-                color={dta <= 40 ? colors.success : dta <= 60 ? colors.warning : colors.error}
-                onPress={() => router.push('/debt-analysis')}
-              />
-              <HealthMetricCard
-                label="Credit Score"
-                value={cbsScore.score.toString()}
-                subtitle={`Grade ${cbsScore.grade}`}
-                color={cbsScore.score === 0 ? colors.muted : cbsScore.score >= 1825 ? colors.success : cbsScore.score >= 1500 ? colors.warning : colors.error}
-              />
-              <HealthMetricCard
-                label="CPF Health"
-                value={`${cpfScore.toFixed(0)}`}
-                subtitle={cpfStatusLabel}
-                color={cpfScore >= 80 ? colors.success : cpfScore >= 60 ? colors.warning : colors.error}
-              />
-              <HealthMetricCard
-                label="Insurance"
-                value={`${insuranceScore.toFixed(0)}`}
-                subtitle={insuranceStatusLabel}
-                color={insuranceScore >= 80 ? colors.success : insuranceScore >= 60 ? colors.warning : colors.error}
-              />
-              <HealthMetricCard
-                label="Private Assets"
-                value={`${privateAssetScore.toFixed(0)}`}
-                subtitle={privateAssetStatusLabel}
-                color={privateAssetScore >= 75 ? colors.success : privateAssetScore >= 50 ? colors.warning : colors.error}
-              />
-            </View>
-          </ScrollView>
-          </View>
+            <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.metricsScroll}>
+              <View style={styles.metricsRow}>
+                <HealthMetricCard
+                  label="Diversification"
+                  value={`${assetClassCount}/8`}
+                  subtitle="Asset classes"
+                  color={assetClassCount >= 5 ? colors.success : assetClassCount >= 3 ? colors.warning : colors.error}
+                  onPress={() => router.push('/diversification-analysis')}
+                />
+                <HealthMetricCard
+                  label="Liquidity"
+                  value={`${Math.min(liquidityMonths, 99)}mo`}
+                  subtitle="Emergency cover"
+                  color={liquidityMonths >= 6 ? colors.success : liquidityMonths >= 3 ? colors.warning : colors.error}
+                  onPress={() => router.push('/liquidity-analysis')}
+                />
+                <HealthMetricCard
+                  label="Debt Ratio"
+                  value={`${dta.toFixed(0)}%`}
+                  subtitle="Debt-to-assets"
+                  color={dta <= 40 ? colors.success : dta <= 60 ? colors.warning : colors.error}
+                  onPress={() => router.push('/debt-analysis')}
+                />
+                <HealthMetricCard
+                  label="Credit Score"
+                  value={cbsScore.score.toString()}
+                  subtitle={`Grade ${cbsScore.grade}`}
+                  color={cbsScore.score === 0 ? colors.muted : cbsScore.score >= 1825 ? colors.success : cbsScore.score >= 1500 ? colors.warning : colors.error}
+                />
+                <HealthMetricCard
+                  label="CPF Health"
+                  value={`${cpfScore.toFixed(0)}`}
+                  subtitle={cpfStatusLabel}
+                  color={cpfScore >= 80 ? colors.success : cpfScore >= 60 ? colors.warning : colors.error}
+                />
+                <HealthMetricCard
+                  label="Insurance"
+                  value={`${insuranceScore.toFixed(0)}`}
+                  subtitle={insuranceStatusLabel}
+                  color={insuranceScore >= 80 ? colors.success : insuranceScore >= 60 ? colors.warning : colors.error}
+                />
+                <HealthMetricCard
+                  label="Private Assets"
+                  value={`${privateAssetScore.toFixed(0)}`}
+                  subtitle={privateAssetStatusLabel}
+                  color={privateAssetScore >= 75 ? colors.success : privateAssetScore >= 50 ? colors.warning : colors.error}
+                />
+              </View>
+            </ScrollView>
+          </GlassCard>
 
           {/* Life Stage Widget */}
           <LifeStageWidget />
 
-          {/* Investment Recommendations Widget removed - functionality moved to dedicated Investments tab */}
-
-          {/* AI Recommendations */}
+          {/* AI Recommendations with Glass Effect */}
           <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginBottom: 12 }}>
             <Text style={[styles.sectionLabel, { color: colors.foreground }]}>AI Recommendations</Text>
             <Pressable onPress={() => router.push('/ai-chat')} style={{ padding: 8 }}>
@@ -356,18 +367,17 @@ export default function DashboardScreen() {
             <AIRecommendationCard key={i} {...rec} />
           ))}
           
-          {/* AI Chat Button */}
+          {/* AI Chat Button with Glass Effect */}
           <Pressable 
             onPress={() => router.push('/ai-chat')}
-            style={({ pressed }) => [{
-              backgroundColor: colors.primary,
-              borderRadius: 12,
-              padding: 16,
-              marginTop: 16,
-              opacity: pressed ? 0.8 : 1,
-            }]}
+            style={({ pressed }) => [
+              glassContainerStyle,
+              glassGlowStyle,
+              styles.aiChatButton,
+              pressed && { opacity: 0.8, transform: [{ scale: 0.97 }] },
+            ]}
           >
-            <Text style={{ color: '#FFFFFF', fontSize: 16, fontWeight: '700', textAlign: 'center' }}>
+            <Text style={{ color: colors.primary, fontSize: 16, fontWeight: '700', textAlign: 'center' }}>
               💬 Ask AI Financial Advisor
             </Text>
           </Pressable>
@@ -380,30 +390,20 @@ export default function DashboardScreen() {
 const styles = StyleSheet.create({
   loadingContainer: { flex: 1, alignItems: 'center', justifyContent: 'center' },
   loadingText: { fontSize: 16 },
-  header: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    paddingHorizontal: 20,
-    paddingVertical: 16,
-  },
-  greeting: { fontSize: 20, fontWeight: '700', color: '#FFFFFF', letterSpacing: -0.3 },
-  headerDate: { fontSize: 12, color: 'rgba(255,255,255,0.7)', marginTop: 2 },
-  headerBadge: { width: 40, height: 40, borderRadius: 20, alignItems: 'center', justifyContent: 'center' },
   content: { padding: 16, gap: 16 },
   heroCard: {
-    borderRadius: 20,
+    borderRadius: 24,
     padding: 20,
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
   },
   heroLeft: { flex: 1 },
-  heroLabel: { fontSize: 12, color: 'rgba(255,255,255,0.7)', fontWeight: '500', letterSpacing: 0.5, textTransform: 'uppercase' },
-  heroValue: { fontSize: 28, fontWeight: '800', color: '#FFFFFF', marginTop: 4, letterSpacing: -1 },
+  heroLabel: { fontSize: 12, color: 'rgba(240,247,255,0.7)', fontWeight: '500', letterSpacing: 0.5, textTransform: 'uppercase' },
+  heroValue: { fontSize: 28, fontWeight: '800', color: '#F0F7FF', marginTop: 4, letterSpacing: -1 },
   heroStats: { flexDirection: 'row', alignItems: 'center', marginTop: 12, gap: 12 },
   heroStat: { gap: 2 },
-  heroStatLabel: { fontSize: 11, color: 'rgba(255,255,255,0.6)' },
+  heroStatLabel: { fontSize: 11, color: 'rgba(240,247,255,0.6)' },
   heroStatValue: { fontSize: 14, fontWeight: '700' },
   heroStatDivider: { width: 1, height: 32 },
   gaugeContainer: { width: 160, height: 160, alignItems: 'center', justifyContent: 'center' },
@@ -412,6 +412,7 @@ const styles = StyleSheet.create({
   gaugeLabel: { fontSize: 11, fontWeight: '500', marginTop: 2 },
   section: { borderRadius: 16, padding: 16, borderWidth: 1 },
   sectionTitle: { fontSize: 15, fontWeight: '700', marginBottom: 12 },
+  sectionLabel: { fontSize: 18, fontWeight: '700', letterSpacing: -0.3 },
   allocBar: { gap: 10 },
   allocBarTrack: { flexDirection: 'row', height: 10, borderRadius: 5, overflow: 'hidden', gap: 2 },
   allocBarSegment: { borderRadius: 5 },
@@ -419,10 +420,7 @@ const styles = StyleSheet.create({
   allocLegendItem: { flexDirection: 'row', alignItems: 'center', gap: 6 },
   allocDot: { width: 8, height: 8, borderRadius: 4 },
   allocLegendText: { fontSize: 12 },
-  sectionLabel: { fontSize: 18, fontWeight: '700', letterSpacing: -0.3 },
-  metricsGrid: { gap: 8, marginBottom: 16 },
   metricsScroll: { marginHorizontal: -16 },
-  metricsContainer: { gap: 8, marginBottom: 16 },
   metricsRow: { flexDirection: 'row', paddingHorizontal: 16, gap: 12 },
   metricCard: {
     borderRadius: 16,
@@ -441,14 +439,19 @@ const styles = StyleSheet.create({
     borderRadius: 14,
     padding: 14,
     borderWidth: 1,
-    borderLeftWidth: 4,
     flexDirection: 'row',
     gap: 12,
     alignItems: 'flex-start',
+    marginBottom: 8,
   },
   aiIconWrap: { width: 36, height: 36, borderRadius: 10, alignItems: 'center', justifyContent: 'center' },
   aiIcon: { fontSize: 18 },
   aiContent: { flex: 1 },
-  aiTitle: { fontSize: 14, fontWeight: '700', marginBottom: 4 },
-  aiDesc: { fontSize: 12, lineHeight: 18 },
+  aiTitle: { fontSize: 13, fontWeight: '600', marginBottom: 2 },
+  aiDesc: { fontSize: 11, lineHeight: 16 },
+  aiChatButton: {
+    borderRadius: 16,
+    padding: 16,
+    marginTop: 16,
+  },
 });
