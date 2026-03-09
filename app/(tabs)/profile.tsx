@@ -8,7 +8,7 @@ import { useAppColors } from '@/hooks/use-app-colors';
 import { useAppData } from '@/lib/app-data-context';
 import { determineLifeStage, getLifeStageName, getRecommendedGoals, getKeyFocusAreas } from '@/lib/life-stage';
 import { MaterialIcons } from '@expo/vector-icons';
-import { EducationalContentCard } from '@/components/educational-content-card';
+
 
 export default function ProfileScreen() {
   const router = useRouter();
@@ -133,8 +133,7 @@ export default function ProfileScreen() {
             </View>
           )}
 
-          {/* Educational Content */}
-          <EducationalContentCard />
+
 
           {/* Birth Date Input Card */}
           <View className="bg-surface border border-border rounded-2xl p-4 mb-6">
