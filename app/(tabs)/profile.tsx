@@ -14,7 +14,7 @@ export default function ProfileScreen() {
   const router = useRouter();
   const colors = useAppColors();
   const { user, userData, loading } = useFirebaseAuth();
-  const { data: appData, updateAppData } = useAppData();
+  const { data: appData, updateUserProfile } = useAppData();
   const [loggingOut, setLoggingOut] = useState(false);
   const [billingCycle, setBillingCycle] = useState<'monthly' | 'annual'>('monthly');
   const [expandedPlan, setExpandedPlan] = useState<'pro' | 'premium' | null>(null);
@@ -41,12 +41,7 @@ export default function ProfileScreen() {
   const handleSaveBirthDate = async () => {
     if (birthDate) {
       try {
-        await updateAppData({
-          userProfile: {
-            ...appData?.userProfile,
-            birthDate,
-          },
-        });
+        await updateUserProfile({ birthDate });
         setEditingBirthDate(false);
         Alert.alert('Success', 'Birth date updated successfully');
       } catch (err) {

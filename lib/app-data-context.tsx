@@ -29,6 +29,8 @@ interface AppDataContextValue {
   addPrivateAsset: (asset: Omit<PrivateAsset, 'id' | 'createdAt' | 'updatedAt'>) => Promise<void>;
   updatePrivateAsset: (id: string, updates: Partial<PrivateAsset>) => Promise<void>;
   deletePrivateAsset: (id: string) => Promise<void>;
+  // User Profile
+  updateUserProfile: (updates: Partial<AppData['userProfile']>) => Promise<void>;
   // Utility
   refreshData: () => Promise<void>;
   resetData: () => Promise<void>;
@@ -161,6 +163,11 @@ export function AppDataProvider({ children }: { children: React.ReactNode }) {
     await persist({ ...data, privateAssets: data.privateAssets.filter(a => a.id !== id) });
   }, [data, persist]);
 
+  // User Profile
+  const updateUserProfile = useCallback(async (updates: Partial<AppData['userProfile']>) => {
+    await persist({ ...data, userProfile: { ...data.userProfile, ...updates } });
+  }, [data, persist]);
+
   const resetData = useCallback(async () => {
     await resetAppData();
     const fresh = await loadAppData();
@@ -176,6 +183,7 @@ export function AppDataProvider({ children }: { children: React.ReactNode }) {
       addInsurancePolicy, updateInsurancePolicy, deleteInsurancePolicy,
       updateCreditScore,
       addPrivateAsset, updatePrivateAsset, deletePrivateAsset,
+      updateUserProfile,
       refreshData, resetData,
     }}>
       {children}
