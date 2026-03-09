@@ -392,7 +392,6 @@ const styles = StyleSheet.create({
   loadingText: { fontSize: 16 },
   content: { padding: 16, gap: 16 },
   heroCard: {
-    borderRadius: 24,
     padding: 20,
     flexDirection: 'row',
     alignItems: 'center',
