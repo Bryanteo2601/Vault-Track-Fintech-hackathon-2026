@@ -1,12 +1,13 @@
-import { Tabs, useNavigation, usePathname } from "expo-router";
+import { Tabs, useNavigation } from "expo-router";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { Platform } from "react-native";
 import { HapticTab } from "@/components/haptic-tab";
 import { IconSymbol } from "@/components/ui/icon-symbol";
 import { useAppColors } from "@/hooks/use-app-colors";
-import { TabsLayoutWrapper } from "@/components/TabsLayoutWrapper";
+import { HorizontalTabBar } from "@/components/HorizontalTabBar";
 import { useState } from "react";
 import React from "react";
+import { usePathname } from "expo-router";
 
 export default function TabLayout() {
   const colors = useAppColors();
@@ -40,18 +41,24 @@ export default function TabLayout() {
   };
 
   return (
-    <TabsLayoutWrapper tabs={tabs}>
-      <Tabs
-        screenOptions={{
-          tabBarActiveTintColor: colors.primary,
-          tabBarInactiveTintColor: colors.muted,
-          headerShown: false,
-          tabBarButton: HapticTab,
-          tabBarStyle: {
-            display: 'none',
-          },
-        }}
-      >
+    <Tabs
+      screenOptions={{
+        tabBarActiveTintColor: colors.primary,
+        tabBarInactiveTintColor: colors.muted,
+        headerShown: false,
+        tabBarButton: HapticTab,
+        tabBarStyle: {
+          display: 'none',
+        },
+      }}
+      tabBar={(props) => (
+        <HorizontalTabBar
+          tabs={tabs}
+          activeTab={activeTab}
+          onTabChange={handleTabChange}
+        />
+      )}
+    >
       <Tabs.Screen
         name="index"
         listeners={({ navigation }) => ({
@@ -145,10 +152,9 @@ export default function TabLayout() {
         })}
         options={{
           title: "Profile",
-          tabBarIcon: ({ color }) => <IconSymbol size={26} name="paperplane.fill" color={color} />,
+          tabBarIcon: ({ color }) => <IconSymbol size={26} name="person.fill" color={color} />,
         }}
       />
-      </Tabs>
-    </TabsLayoutWrapper>
+    </Tabs>
   );
 }
