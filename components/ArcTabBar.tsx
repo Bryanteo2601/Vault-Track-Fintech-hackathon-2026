@@ -1,6 +1,6 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { View, Pressable, Animated, Dimensions, Text } from 'react-native';
-import { useAppColors } from '@/hooks/use-app-colors';
+import { useColors } from '@/hooks/use-colors';
 import { IconSymbol } from '@/components/ui/icon-symbol';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
@@ -17,7 +17,7 @@ interface ArcTabBarProps {
 }
 
 export function ArcTabBar({ tabs, activeTab, onTabChange }: ArcTabBarProps) {
-  const colors = useAppColors();
+  const colors = useColors();
   const insets = useSafeAreaInsets();
   const screenWidth = Dimensions.get('window').width;
   const screenHeight = Dimensions.get('window').height;
@@ -82,7 +82,7 @@ export function ArcTabBar({ tabs, activeTab, onTabChange }: ArcTabBarProps) {
       {tabs.map((tab, index) => {
         const isActive = tab.name === activeTab;
         const position = getTabPosition(index);
-        const tabColor = isActive ? colors.accent : colors.muted;
+        const tabColor = isActive ? colors.primary : colors.muted;
         
         return (
           <Pressable
@@ -97,7 +97,7 @@ export function ArcTabBar({ tabs, activeTab, onTabChange }: ArcTabBarProps) {
               justifyContent: 'center',
               alignItems: 'center',
               borderRadius: 25,
-              backgroundColor: isActive ? `${colors.accent}20` : 'transparent',
+              backgroundColor: isActive ? `${colors.primary}20` : 'transparent',
               borderColor: tabColor,
               borderWidth: isActive ? 2 : 1,
               opacity: isActive ? 1 : 0.7,
@@ -131,7 +131,7 @@ export function ArcTabBar({ tabs, activeTab, onTabChange }: ArcTabBarProps) {
                   width: 8,
                   height: 8,
                   borderRadius: 4,
-                  backgroundColor: colors.accent,
+                  backgroundColor: colors.primary,
                   top: -4,
                   right: -4,
                 }}
@@ -148,7 +148,7 @@ export function ArcTabBar({ tabs, activeTab, onTabChange }: ArcTabBarProps) {
           width: 12,
           height: 12,
           borderRadius: 6,
-          backgroundColor: colors.accent,
+          backgroundColor: colors.primary,
           left: screenWidth / 2 - 6,
           bottom: 8,
           zIndex: 10,

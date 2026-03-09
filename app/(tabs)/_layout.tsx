@@ -4,7 +4,7 @@ import { Platform } from "react-native";
 import { HapticTab } from "@/components/haptic-tab";
 import { IconSymbol } from "@/components/ui/icon-symbol";
 import { useAppColors } from "@/hooks/use-app-colors";
-import { ArcTabBar } from "@/components/ArcTabBar";
+import { TabsLayoutWrapper } from "@/components/TabsLayoutWrapper";
 import { useState } from "react";
 import React from "react";
 
@@ -40,34 +40,18 @@ export default function TabLayout() {
   };
 
   return (
-    <Tabs
-      screenOptions={{
-        tabBarActiveTintColor: colors.accent,
-        tabBarInactiveTintColor: colors.muted,
-        headerShown: false,
-        tabBarButton: HapticTab,
-        tabBar: (props) => (
-          <ArcTabBar
-            tabs={tabs}
-            activeTab={activeTab}
-            onTabChange={handleTabChange}
-          />
-        ),
-        tabBarStyle: {
-          paddingTop: 8,
-          paddingBottom: bottomPadding,
-          height: tabBarHeight,
-          backgroundColor: colors.surface,
-          borderTopColor: colors.border,
-          borderTopWidth: 0.5,
-        },
-        tabBarLabelStyle: {
-          fontSize: 10,
-          fontWeight: '600',
-          marginTop: 2,
-        },
-      }}
-    >
+    <TabsLayoutWrapper tabs={tabs}>
+      <Tabs
+        screenOptions={{
+          tabBarActiveTintColor: colors.primary,
+          tabBarInactiveTintColor: colors.muted,
+          headerShown: false,
+          tabBarButton: HapticTab,
+          tabBarStyle: {
+            display: 'none',
+          },
+        }}
+      >
       <Tabs.Screen
         name="index"
         listeners={({ navigation }) => ({
@@ -164,6 +148,7 @@ export default function TabLayout() {
           tabBarIcon: ({ color }) => <IconSymbol size={26} name="paperplane.fill" color={color} />,
         }}
       />
-    </Tabs>
+      </Tabs>
+    </TabsLayoutWrapper>
   );
 }
