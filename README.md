@@ -1,4 +1,4 @@
-# Wealth Wellness Hub (VaultTrack)
+# VaultTrack 
 
 **Your complete financial health, in one place.**
 
@@ -107,101 +107,6 @@ wealth-wellness-hub/
 ├── app.config.ts                # Expo app configuration
 └── package.json                 # Dependencies and scripts
 ```
-
----
-
-## 🚀 Getting Started
-
-### Prerequisites
-- Node.js 18+ and pnpm 9.12.0+
-- Expo CLI
-- iOS Simulator (macOS) or Android Emulator
-- Firebase project (for authentication and cloud sync)
-- Google Gemini API key (for AI features)
-
-### Installation
-
-1. **Clone the repository**
-   ```bash
-   git clone <repository-url>
-   cd wealth-wellness-hub
-   ```
-
-2. **Install dependencies**
-   ```bash
-   pnpm install
-   ```
-
-3. **Set up environment variables**
-   
-   Create a `.env` file in the root directory:
-   ```env
-   # Firebase Configuration
-   EXPO_PUBLIC_FIREBASE_API_KEY=your_api_key
-   EXPO_PUBLIC_FIREBASE_AUTH_DOMAIN=your_auth_domain
-   EXPO_PUBLIC_FIREBASE_PROJECT_ID=your_project_id
-   EXPO_PUBLIC_FIREBASE_STORAGE_BUCKET=your_storage_bucket
-   EXPO_PUBLIC_FIREBASE_MESSAGING_SENDER_ID=your_sender_id
-   EXPO_PUBLIC_FIREBASE_APP_ID=your_app_id
-   
-   # AI Integration
-   GEMINI_API_KEY=your_gemini_api_key
-   
-   # Backend API
-   EXPO_PUBLIC_API_BASE_URL=http://localhost:3000
-   
-   # Database (optional, for backend features)
-   DATABASE_URL=mysql://user:password@localhost:3306/wealth_wellness
-   ```
-
-4. **Set up Firebase (optional, for cloud sync)**
-   - Create a Firebase project at [Firebase Console](https://console.firebase.google.com/)
-   - Enable Authentication (Email/Password)
-   - Create a Firestore database
-   - Add your Firebase config to `.env`
-
-### Running the App
-
-**Development mode (with hot reload):**
-```bash
-pnpm dev
-```
-
-This runs both the Metro bundler and backend server concurrently.
-
-**iOS:**
-```bash
-pnpm ios
-```
-
-**Android:**
-```bash
-pnpm android
-```
-
-**Web:**
-```bash
-pnpm dev:metro
-```
-
-**Run tests:**
-```bash
-pnpm test
-```
-
-### Building for Production
-
-**Build the server:**
-```bash
-pnpm build
-```
-
-**Start production server:**
-```bash
-pnpm start
-```
-
----
 
 ## 📊 Key Modules
 
@@ -392,22 +297,6 @@ The app supports two authentication methods:
 
 ---
 
-## 🧪 Testing
-
-Run tests with:
-```bash
-pnpm test
-```
-
-The project includes comprehensive tests for:
-- CPF calculations (33+ tests)
-- Financial metrics and formulas
-- Data validation
-- API endpoints
-- Context integration
-
----
-
 ## 📚 Documentation
 
 - **`design.md`**: UI/UX design specifications and brand guidelines
@@ -421,39 +310,6 @@ The project includes comprehensive tests for:
 - **`lib/portfolio-risk-analytics.ts`**: Portfolio risk assessment and stress testing
 - **`FIREBASE_ARCHITECTURE.md`**: Firebase integration architecture (if available)
 
----
-
-## 🎨 Design System
-
-### Color Palette
-- **Primary**: `#0a7ea4` (Ocean Blue) - Trust, stability
-- **Accent**: `#00C896` (Emerald Green) - Growth, health
-- **Warning**: `#F59E0B` (Amber)
-- **Error**: `#EF4444` (Red)
-- **Background (Light)**: `#ffffff` (White)
-- **Background (Dark)**: `#151718` (Dark Grey)
-- **Surface**: `#f5f5f5` (Light Grey)
-
-### Design Principles
-- One-handed usage optimization
-- Card-based layout for clarity
-- Glass morphism effects for modern UI
-- Color-coded status indicators
-- Progressive disclosure of information
-- iOS Human Interface Guidelines (HIG) compliance
-
----
-
-## 🤝 Contributing
-
-1. Create a feature branch
-2. Make your changes
-3. Write/update tests: `pnpm test`
-4. Run linting and type checking: `pnpm check && pnpm lint`
-5. Format code: `pnpm format`
-6. Submit a pull request
-
----
 
 ## 🙏 Acknowledgments
 
@@ -468,6 +324,6 @@ Built with:
 
 ---
 
-**Wealth Wellness Hub** - Understand, optimize, and grow your wealth all in one place. 💰✨
+**VaultTrack** - Understand, optimize, and grow your wealth all in one place. 💰✨
 
 *Last updated: March 2026*
