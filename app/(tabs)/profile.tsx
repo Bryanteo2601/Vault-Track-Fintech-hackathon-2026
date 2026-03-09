@@ -1,6 +1,6 @@
 import { useState, useMemo } from 'react';
 import { useRouter } from 'expo-router';
-import { ScrollView, Text, View, Pressable, Alert, ActivityIndicator, Modal, TextInput, Switch } from 'react-native';
+import { ScrollView, Text, View, Pressable, Alert, ActivityIndicator, Modal, TextInput } from 'react-native';
 import { ScreenContainer } from '@/components/screen-container';
 import { useFirebaseAuth } from '@/lib/firebase-auth-context';
 import { logOut } from '@/lib/firebase-auth';
@@ -90,33 +90,52 @@ export default function ProfileScreen() {
   return (
     <ScreenContainer className="bg-background">
       <ScrollView contentContainerStyle={{ flexGrow: 1 }} showsVerticalScrollIndicator={false}>
-        <View className="flex-1 px-6 py-6">
+        <View style={{ flex: 1, paddingHorizontal: 24, paddingVertical: 24 }}>
           {/* ===== HEADER ===== */}
-          <View className="mb-8">
-            <Text className="text-3xl font-bold text-foreground">Settings</Text>
+          <View style={{ marginBottom: 32 }}>
+            <Text style={{ fontSize: 32, fontWeight: 'bold', color: colors.foreground }}>Settings</Text>
           </View>
 
           {/* ===== USER PROFILE CARD ===== */}
           <Pressable
             onPress={() => setShowEditModal(true)}
-            className="rounded-2xl p-5 mb-8 flex-row items-center justify-between active:opacity-80"
-            style={{ backgroundColor: colors.surface, borderWidth: 1, borderColor: colors.border }}
+            style={({ pressed }) => [
+              {
+                backgroundColor: colors.surface,
+                borderWidth: 1,
+                borderColor: colors.border,
+                borderRadius: 16,
+                padding: 20,
+                marginBottom: 32,
+                flexDirection: 'row',
+                alignItems: 'center',
+                justifyContent: 'space-between',
+                opacity: pressed ? 0.8 : 1,
+              },
+            ]}
           >
-            <View className="flex-row items-center gap-4 flex-1">
+            <View style={{ flexDirection: 'row', alignItems: 'center', gap: 16, flex: 1 }}>
               <View
-                className="w-16 h-16 rounded-full items-center justify-center flex-shrink-0"
-                style={{ backgroundColor: colors.primary }}
+                style={{
+                  width: 64,
+                  height: 64,
+                  borderRadius: 32,
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  backgroundColor: colors.primary,
+                  flexShrink: 0,
+                }}
               >
-                <Text className="text-3xl font-bold" style={{ color: colors.background }}>
+                <Text style={{ fontSize: 24, fontWeight: 'bold', color: colors.background }}>
                   {user?.displayName?.charAt(0).toUpperCase() || 'U'}
                 </Text>
               </View>
-              
-              <View className="flex-1">
-                <Text className="text-lg font-bold text-foreground mb-1">
+
+              <View style={{ flex: 1 }}>
+                <Text style={{ fontSize: 18, fontWeight: 'bold', color: colors.foreground, marginBottom: 4 }}>
                   {user?.displayName || 'User'}
                 </Text>
-                <Text className="text-sm text-muted">
+                <Text style={{ fontSize: 14, color: colors.muted }}>
                   {age ? `${age} years old` : 'Age not set'} • {stageName || 'Life stage not set'}
                 </Text>
               </View>
@@ -125,41 +144,82 @@ export default function ProfileScreen() {
           </Pressable>
 
           {/* ===== OTHER SETTINGS SECTION ===== */}
-          <Text className="text-lg font-bold text-foreground mb-4">Other Settings</Text>
+          <Text style={{ fontSize: 18, fontWeight: 'bold', color: colors.foreground, marginBottom: 16 }}>
+            Other Settings
+          </Text>
 
           {/* Profile Details */}
           <Pressable
             onPress={() => setShowEditModal(true)}
-            className="flex-row items-center justify-between px-5 py-4 rounded-xl mb-2 active:opacity-80"
-            style={{ backgroundColor: colors.surface }}
+            style={({ pressed }) => [
+              {
+                flexDirection: 'row',
+                alignItems: 'center',
+                justifyContent: 'space-between',
+                paddingHorizontal: 20,
+                paddingVertical: 16,
+                borderRadius: 12,
+                marginBottom: 8,
+                backgroundColor: colors.surface,
+                opacity: pressed ? 0.8 : 1,
+              },
+            ]}
           >
-            <View className="flex-row items-center gap-4 flex-1">
+            <View style={{ flexDirection: 'row', alignItems: 'center', gap: 16, flex: 1 }}>
               <MaterialIcons name="person" size={22} color={colors.primary} />
-              <Text className="text-base font-medium text-foreground">Profile Details</Text>
+              <Text style={{ fontSize: 16, fontWeight: '500', color: colors.foreground }}>
+                Profile Details
+              </Text>
             </View>
             <MaterialIcons name="chevron-right" size={22} color={colors.muted} />
           </Pressable>
 
           {/* Password */}
           <Pressable
-            className="flex-row items-center justify-between px-5 py-4 rounded-xl mb-2 active:opacity-80"
-            style={{ backgroundColor: colors.surface }}
+            style={({ pressed }) => [
+              {
+                flexDirection: 'row',
+                alignItems: 'center',
+                justifyContent: 'space-between',
+                paddingHorizontal: 20,
+                paddingVertical: 16,
+                borderRadius: 12,
+                marginBottom: 8,
+                backgroundColor: colors.surface,
+                opacity: pressed ? 0.8 : 1,
+              },
+            ]}
           >
-            <View className="flex-row items-center gap-4 flex-1">
+            <View style={{ flexDirection: 'row', alignItems: 'center', gap: 16, flex: 1 }}>
               <MaterialIcons name="lock" size={22} color={colors.primary} />
-              <Text className="text-base font-medium text-foreground">Password</Text>
+              <Text style={{ fontSize: 16, fontWeight: '500', color: colors.foreground }}>
+                Password
+              </Text>
             </View>
             <MaterialIcons name="chevron-right" size={22} color={colors.muted} />
           </Pressable>
 
           {/* Notifications */}
           <Pressable
-            className="flex-row items-center justify-between px-5 py-4 rounded-xl mb-2 active:opacity-80"
-            style={{ backgroundColor: colors.surface }}
+            style={({ pressed }) => [
+              {
+                flexDirection: 'row',
+                alignItems: 'center',
+                justifyContent: 'space-between',
+                paddingHorizontal: 20,
+                paddingVertical: 16,
+                borderRadius: 12,
+                marginBottom: 8,
+                backgroundColor: colors.surface,
+                opacity: pressed ? 0.8 : 1,
+              },
+            ]}
           >
-            <View className="flex-row items-center gap-4 flex-1">
+            <View style={{ flexDirection: 'row', alignItems: 'center', gap: 16, flex: 1 }}>
               <MaterialIcons name="notifications" size={22} color={colors.primary} />
-              <Text className="text-base font-medium text-foreground">Notifications</Text>
+              <Text style={{ fontSize: 16, fontWeight: '500', color: colors.foreground }}>
+                Notifications
+              </Text>
             </View>
             <MaterialIcons name="chevron-right" size={22} color={colors.muted} />
           </Pressable>
@@ -167,60 +227,125 @@ export default function ProfileScreen() {
           {/* Manage Subscriptions */}
           <Pressable
             onPress={() => router.push('manage-subscriptions' as any)}
-            className="flex-row items-center justify-between px-5 py-4 rounded-xl mb-2 active:opacity-80"
-            style={{ backgroundColor: colors.surface }}
+            style={({ pressed }) => [
+              {
+                flexDirection: 'row',
+                alignItems: 'center',
+                justifyContent: 'space-between',
+                paddingHorizontal: 20,
+                paddingVertical: 16,
+                borderRadius: 12,
+                marginBottom: 8,
+                backgroundColor: colors.surface,
+                opacity: pressed ? 0.8 : 1,
+              },
+            ]}
           >
-            <View className="flex-row items-center gap-4 flex-1">
+            <View style={{ flexDirection: 'row', alignItems: 'center', gap: 16, flex: 1 }}>
               <MaterialIcons name="card-membership" size={22} color={colors.primary} />
-              <Text className="text-base font-medium text-foreground">Manage Subscriptions</Text>
+              <Text style={{ fontSize: 16, fontWeight: '500', color: colors.foreground }}>
+                Manage Subscriptions
+              </Text>
             </View>
             <MaterialIcons name="chevron-right" size={22} color={colors.muted} />
           </Pressable>
 
           {/* Support */}
           <Pressable
-            className="flex-row items-center justify-between px-5 py-4 rounded-xl mb-2 active:opacity-80"
-            style={{ backgroundColor: colors.surface }}
+            style={({ pressed }) => [
+              {
+                flexDirection: 'row',
+                alignItems: 'center',
+                justifyContent: 'space-between',
+                paddingHorizontal: 20,
+                paddingVertical: 16,
+                borderRadius: 12,
+                marginBottom: 8,
+                backgroundColor: colors.surface,
+                opacity: pressed ? 0.8 : 1,
+              },
+            ]}
           >
-            <View className="flex-row items-center gap-4 flex-1">
+            <View style={{ flexDirection: 'row', alignItems: 'center', gap: 16, flex: 1 }}>
               <MaterialIcons name="help" size={22} color={colors.primary} />
-              <Text className="text-base font-medium text-foreground">Support</Text>
+              <Text style={{ fontSize: 16, fontWeight: '500', color: colors.foreground }}>
+                Support
+              </Text>
             </View>
             <MaterialIcons name="chevron-right" size={22} color={colors.muted} />
           </Pressable>
 
           {/* Report an Issue */}
           <Pressable
-            className="flex-row items-center justify-between px-5 py-4 rounded-xl mb-2 active:opacity-80"
-            style={{ backgroundColor: colors.surface }}
+            style={({ pressed }) => [
+              {
+                flexDirection: 'row',
+                alignItems: 'center',
+                justifyContent: 'space-between',
+                paddingHorizontal: 20,
+                paddingVertical: 16,
+                borderRadius: 12,
+                marginBottom: 8,
+                backgroundColor: colors.surface,
+                opacity: pressed ? 0.8 : 1,
+              },
+            ]}
           >
-            <View className="flex-row items-center gap-4 flex-1">
+            <View style={{ flexDirection: 'row', alignItems: 'center', gap: 16, flex: 1 }}>
               <MaterialIcons name="bug-report" size={22} color={colors.primary} />
-              <Text className="text-base font-medium text-foreground">Report an Issue</Text>
+              <Text style={{ fontSize: 16, fontWeight: '500', color: colors.foreground }}>
+                Report an Issue
+              </Text>
             </View>
             <MaterialIcons name="chevron-right" size={22} color={colors.muted} />
           </Pressable>
 
           {/* About */}
           <Pressable
-            className="flex-row items-center justify-between px-5 py-4 rounded-xl mb-2 active:opacity-80"
-            style={{ backgroundColor: colors.surface }}
+            style={({ pressed }) => [
+              {
+                flexDirection: 'row',
+                alignItems: 'center',
+                justifyContent: 'space-between',
+                paddingHorizontal: 20,
+                paddingVertical: 16,
+                borderRadius: 12,
+                marginBottom: 8,
+                backgroundColor: colors.surface,
+                opacity: pressed ? 0.8 : 1,
+              },
+            ]}
           >
-            <View className="flex-row items-center gap-4 flex-1">
+            <View style={{ flexDirection: 'row', alignItems: 'center', gap: 16, flex: 1 }}>
               <MaterialIcons name="info" size={22} color={colors.primary} />
-              <Text className="text-base font-medium text-foreground">About Wealth Wellness Hub</Text>
+              <Text style={{ fontSize: 16, fontWeight: '500', color: colors.foreground }}>
+                About Wealth Wellness Hub
+              </Text>
             </View>
             <MaterialIcons name="chevron-right" size={22} color={colors.muted} />
           </Pressable>
 
           {/* Language */}
           <Pressable
-            className="flex-row items-center justify-between px-5 py-4 rounded-xl mb-8 active:opacity-80"
-            style={{ backgroundColor: colors.surface }}
+            style={({ pressed }) => [
+              {
+                flexDirection: 'row',
+                alignItems: 'center',
+                justifyContent: 'space-between',
+                paddingHorizontal: 20,
+                paddingVertical: 16,
+                borderRadius: 12,
+                marginBottom: 32,
+                backgroundColor: colors.surface,
+                opacity: pressed ? 0.8 : 1,
+              },
+            ]}
           >
-            <View className="flex-row items-center gap-4 flex-1">
+            <View style={{ flexDirection: 'row', alignItems: 'center', gap: 16, flex: 1 }}>
               <MaterialIcons name="language" size={22} color={colors.primary} />
-              <Text className="text-base font-medium text-foreground">Language</Text>
+              <Text style={{ fontSize: 16, fontWeight: '500', color: colors.foreground }}>
+                Language
+              </Text>
             </View>
             <MaterialIcons name="chevron-right" size={22} color={colors.muted} />
           </Pressable>
@@ -229,12 +354,23 @@ export default function ProfileScreen() {
           <Pressable
             onPress={handleLogout}
             disabled={loggingOut}
-            className="flex-row items-center justify-between px-5 py-4 rounded-xl mb-8 active:opacity-80"
-            style={{ backgroundColor: colors.surface }}
+            style={({ pressed }) => [
+              {
+                flexDirection: 'row',
+                alignItems: 'center',
+                justifyContent: 'space-between',
+                paddingHorizontal: 20,
+                paddingVertical: 16,
+                borderRadius: 12,
+                marginBottom: 32,
+                backgroundColor: colors.surface,
+                opacity: pressed && !loggingOut ? 0.8 : loggingOut ? 0.6 : 1,
+              },
+            ]}
           >
-            <View className="flex-row items-center gap-4 flex-1">
+            <View style={{ flexDirection: 'row', alignItems: 'center', gap: 16, flex: 1 }}>
               <MaterialIcons name="logout" size={22} color="#EF5350" />
-              <Text className="text-base font-medium" style={{ color: '#EF5350' }}>
+              <Text style={{ fontSize: 16, fontWeight: '500', color: '#EF5350' }}>
                 {loggingOut ? 'Signing Out...' : 'Log out'}
               </Text>
             </View>
@@ -250,81 +386,91 @@ export default function ProfileScreen() {
         animationType="slide"
         onRequestClose={() => setShowEditModal(false)}
       >
-        <View className="flex-1" style={{ backgroundColor: colors.background }}>
-          <View className="flex-1 flex-col">
+        <View style={{ flex: 1, backgroundColor: colors.background }}>
+          <View style={{ flex: 1, flexDirection: 'column' }}>
             {/* Header */}
-            <View className="flex-row items-center justify-between px-6 py-6 border-b" style={{ borderColor: colors.border }}>
-              <Pressable onPress={() => setShowEditModal(false)} className="active:opacity-60">
+            <View
+              style={{
+                flexDirection: 'row',
+                alignItems: 'center',
+                justifyContent: 'space-between',
+                paddingHorizontal: 24,
+                paddingVertical: 24,
+                borderBottomWidth: 1,
+                borderBottomColor: colors.border,
+              }}
+            >
+              <Pressable
+                onPress={() => setShowEditModal(false)}
+                style={({ pressed }) => [{ opacity: pressed ? 0.6 : 1 }]}
+              >
                 <MaterialIcons name="arrow-back" size={28} color={colors.foreground} />
               </Pressable>
-              <Text className="text-2xl font-bold text-foreground">Profile Details</Text>
+              <Text style={{ fontSize: 24, fontWeight: 'bold', color: colors.foreground }}>
+                Profile Details
+              </Text>
               <View style={{ width: 28 }} />
             </View>
 
             {/* Form Content */}
-            <View className="flex-1 px-6 py-8">
+            <View style={{ flex: 1, paddingHorizontal: 24, paddingVertical: 32 }}>
               {/* User Info Display */}
-              <View className="mb-8 p-5 rounded-xl" style={{ backgroundColor: colors.surface }}>
-                <Text className="text-sm font-semibold text-muted mb-2">Name</Text>
-                <Text className="text-lg font-bold text-foreground mb-6">{user?.displayName || 'User'}</Text>
-                
-                <Text className="text-sm font-semibold text-muted mb-2">Email</Text>
-                <Text className="text-base text-foreground mb-6">{user?.email}</Text>
-
-                {age !== null && (
-                  <>
-                    <Text className="text-sm font-semibold text-muted mb-2">Age</Text>
-                    <Text className="text-base text-foreground mb-6">{age} years old</Text>
-                  </>
-                )}
-
-                {stageName && (
-                  <>
-                    <Text className="text-sm font-semibold text-muted mb-2">Life Stage</Text>
-                    <Text className="text-base text-foreground">{stageName}</Text>
-                  </>
-                )}
+              <View
+                style={{
+                  marginBottom: 32,
+                  padding: 20,
+                  borderRadius: 12,
+                  backgroundColor: colors.surface,
+                }}
+              >
+                <Text style={{ fontSize: 14, color: colors.muted, marginBottom: 8 }}>
+                  Email
+                </Text>
+                <Text style={{ fontSize: 16, fontWeight: '500', color: colors.foreground }}>
+                  {user?.email || 'Not available'}
+                </Text>
               </View>
 
               {/* Birth Date Input */}
-              <Text className="text-sm font-semibold text-muted mb-3">Birth Date</Text>
-              <TextInput
-                style={{
-                  borderWidth: 1,
-                  borderColor: colors.border,
-                  borderRadius: 12,
-                  padding: 12,
-                  color: colors.foreground,
-                  fontSize: 16,
-                  backgroundColor: colors.surface,
-                  marginBottom: 20,
-                }}
-                placeholder="YYYY-MM-DD"
-                placeholderTextColor={colors.muted}
-                value={birthDateInput}
-                onChangeText={setBirthDateInput}
-              />
-              <Text className="text-xs text-muted mb-8">Format: YYYY-MM-DD (e.g., 1993-12-15)</Text>
-
-              {/* Action Buttons */}
-              <View className="flex-row gap-3">
-                <Pressable
-                  onPress={() => setShowEditModal(false)}
-                  className="flex-1 p-4 rounded-xl items-center active:opacity-80"
-                  style={{ backgroundColor: colors.surface, borderWidth: 1, borderColor: colors.border }}
-                >
-                  <Text className="font-semibold text-base text-foreground">Cancel</Text>
-                </Pressable>
-                <Pressable
-                  onPress={handleSaveBirthDate}
-                  className="flex-1 p-4 rounded-xl items-center active:opacity-80"
-                  style={{ backgroundColor: colors.primary }}
-                >
-                  <Text className="font-semibold text-base" style={{ color: colors.background }}>
-                    Save
-                  </Text>
-                </Pressable>
+              <View style={{ marginBottom: 24 }}>
+                <Text style={{ fontSize: 14, color: colors.muted, marginBottom: 8 }}>
+                  Birth Date (YYYY-MM-DD)
+                </Text>
+                <TextInput
+                  value={birthDateInput}
+                  onChangeText={setBirthDateInput}
+                  placeholder="e.g., 1990-01-15"
+                  placeholderTextColor={colors.muted}
+                  style={{
+                    borderWidth: 1,
+                    borderColor: colors.border,
+                    borderRadius: 8,
+                    paddingHorizontal: 12,
+                    paddingVertical: 12,
+                    fontSize: 16,
+                    color: colors.foreground,
+                    backgroundColor: colors.background,
+                  }}
+                />
               </View>
+
+              {/* Save Button */}
+              <Pressable
+                onPress={handleSaveBirthDate}
+                style={({ pressed }) => [
+                  {
+                    backgroundColor: colors.primary,
+                    paddingVertical: 12,
+                    borderRadius: 8,
+                    alignItems: 'center',
+                    opacity: pressed ? 0.8 : 1,
+                  },
+                ]}
+              >
+                <Text style={{ fontSize: 16, fontWeight: '600', color: colors.background }}>
+                  Save Changes
+                </Text>
+              </Pressable>
             </View>
           </View>
         </View>
