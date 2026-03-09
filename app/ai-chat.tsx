@@ -4,8 +4,9 @@ import { ScreenContainer } from '@/components/screen-container';
 import { useAppColors } from '@/hooks/use-app-colors';
 import { useAppData } from '@/lib/app-data-context';
 import { chatWithAI } from '@/lib/gemini-ai-service';
-import { useRouter } from 'expo-router';
+import { useRouter, useFocusEffect } from 'expo-router';
 import { IconSymbol } from '@/components/ui/icon-symbol';
+import { useCallback } from 'react';
 
 interface Message {
   id: string;
@@ -17,7 +18,7 @@ interface Message {
 export default function AIChatScreen() {
   const colors = useAppColors();
   const router = useRouter();
-  const { data } = useAppData();
+  const { data, refreshData } = useAppData();
   const [messages, setMessages] = useState<Message[]>([
     {
       id: '1',
@@ -29,6 +30,13 @@ export default function AIChatScreen() {
   const [input, setInput] = useState('');
   const [loading, setLoading] = useState(false);
   const scrollViewRef = useRef<ScrollView>(null);
+
+  // Refresh portfolio data whenever screen is focused
+  useFocusEffect(
+    useCallback(() => {
+      refreshData();
+    }, [refreshData])
+  );
 
   const handleSendMessage = async () => {
     if (!input.trim() || loading) return;
