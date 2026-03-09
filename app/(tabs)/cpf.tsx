@@ -24,9 +24,26 @@ export default function CPFScreen() {
   const colors = useAppColors();
   const { data } = useAppData();
 
+  // Helper function to calculate age from birthDate
+  const calculateAgeFromBirthDate = (birthDate: string): number => {
+    const today = new Date();
+    const birth = new Date(birthDate);
+    let age = today.getFullYear() - birth.getFullYear();
+    const monthDiff = today.getMonth() - birth.getMonth();
+    if (monthDiff < 0 || (monthDiff === 0 && today.getDate() < birth.getDate())) {
+      age--;
+    }
+    return age;
+  };
+
+  // Get current age from user profile or default
+  const currentAge = data.userProfile?.birthDate
+    ? calculateAgeFromBirthDate(data.userProfile.birthDate)
+    : 35;
+
   // Editable CPF data - starts with default values
   const [cpfData, setCPFData] = useState<CPFUserData>({
-    age: 35,
+    age: currentAge,
     oa: 0,
     sa: 0,
     ma: 0,
@@ -34,11 +51,11 @@ export default function CPFScreen() {
     annualSalary: 60000,
   });
 
-  // Sync CPF data from app context when it loads
+  // Sync CPF data from app context and update age from profile
   useEffect(() => {
     if (data.cpf) {
       setCPFData({
-        age: data.cpf.age,
+        age: currentAge,
         oa: data.cpf.oa,
         sa: data.cpf.sa,
         ma: data.cpf.ma,
@@ -46,7 +63,7 @@ export default function CPFScreen() {
         annualSalary: data.cpf.annualSalary,
       });
     }
-  }, [data.cpf]);
+  }, [data.cpf, currentAge]);
 
   // Editing state for each field
   const [editingField, setEditingField] = useState<string | null>(null);
@@ -57,6 +74,10 @@ export default function CPFScreen() {
   const insights = useMemo(() => generateCPFInsights(cpfData, projection), [cpfData, projection]);
 
   const handleFieldChange = (field: keyof CPFUserData, value: number) => {
+    // Don't allow changing age - it's synced from profile
+    if (field === 'age') {
+      return;
+    }
     setCPFData((prev) => ({ ...prev, [field]: value }));
     // TODO: Persist to app context when backend is ready
   };
@@ -105,17 +126,19 @@ export default function CPFScreen() {
           </Text>
         </View>
 
-        {/* Age Input */}
-        <CPFEditableInput
-          label="Current Age"
-          icon="🎂"
-          value={cpfData.age}
-          onValueChange={(val) => handleFieldChange('age', val)}
-          color={colors.primary}
-          isEditing={editingField === 'age'}
-          onEditToggle={() => toggleEdit('age')}
-          unit="years"
-        />
+        {/* Age Input - Read Only from Profile */}
+        <View style={[styles.readOnlyInput, { backgroundColor: colors.surface, borderColor: colors.border }]}>
+          <View style={styles.inputHeader}>
+            <View style={styles.labelContainer}>
+              <Text style={styles.icon}>🎂</Text>
+              <View>
+                <Text style={[styles.label, { color: colors.foreground }]}>Current Age</Text>
+                <Text style={[styles.description, { color: colors.muted }]}>Synced from your profile</Text>
+              </View>
+            </View>
+          </View>
+          <Text style={[styles.value, { color: colors.primary }]}>{cpfData.age} years old</Text>
+        </View>
 
         {/* OA Input */}
         <CPFEditableInput
@@ -234,6 +257,38 @@ export default function CPFScreen() {
 }
 
 const styles = StyleSheet.create({
+  readOnlyInput: {
+    borderRadius: 8,
+    padding: 12,
+    marginBottom: 12,
+    borderWidth: 1,
+  },
+  inputHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+  },
+  labelContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+  },
+  icon: {
+    fontSize: 20,
+  },
+  label: {
+    fontSize: 14,
+    fontWeight: '600',
+    marginBottom: 2,
+  },
+  description: {
+    fontSize: 11,
+  },
+  value: {
+    fontSize: 18,
+    fontWeight: '700',
+    marginTop: 8,
+  },
   sectionDivider: {
     marginTop: 20,
     marginBottom: 12,
