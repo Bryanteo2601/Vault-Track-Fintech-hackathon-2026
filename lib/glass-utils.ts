@@ -15,10 +15,10 @@ export interface GlassStyle {
  * Uses semi-transparent background to simulate frosted glass
  */
 export const glassContainerStyle: ViewStyle = {
-  backgroundColor: 'rgba(26, 58, 71, 0.65)',
+  backgroundColor: 'rgba(15, 30, 40, 0.8)',
   borderRadius: 20,
   borderWidth: 1,
-  borderColor: 'rgba(126, 204, 196, 0.25)',
+  borderColor: 'rgba(126, 204, 196, 0.35)',
   overflow: 'hidden',
 };
 
@@ -39,10 +39,10 @@ export const glassLightStyle: ViewStyle = {
  * More opaque for better readability
  */
 export const glassDeepStyle: ViewStyle = {
-  backgroundColor: 'rgba(13, 27, 35, 0.8)',
+  backgroundColor: 'rgba(10, 20, 28, 0.95)',
   borderRadius: 24,
   borderWidth: 1.5,
-  borderColor: 'rgba(126, 204, 196, 0.3)',
+  borderColor: 'rgba(126, 204, 196, 0.4)',
   overflow: 'hidden',
 };
 
@@ -101,12 +101,12 @@ export const glassEasing = {
 /**
  * Helper to create glass container with custom opacity
  */
-export function createGlassContainer(opacity: number = 0.65): ViewStyle {
+export function createGlassContainer(opacity: number = 0.85): ViewStyle {
   return {
-    backgroundColor: `rgba(26, 58, 71, ${opacity})`,
+    backgroundColor: `rgba(15, 30, 40, ${opacity})`,
     borderRadius: 20,
     borderWidth: 1,
-    borderColor: `rgba(126, 204, 196, ${Math.min(opacity * 0.4, 0.3)})`,
+    borderColor: `rgba(126, 204, 196, ${Math.min(opacity * 0.4, 0.4)})`,
     overflow: 'hidden',
   };
 }
