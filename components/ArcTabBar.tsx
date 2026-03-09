@@ -1,5 +1,5 @@
 import React, { useEffect, useRef, useState } from 'react';
-import { View, Pressable, Animated, Dimensions, Text } from 'react-native';
+import { View, Pressable, Animated, Dimensions, Text, PanResponder, GestureResponderEvent } from 'react-native';
 import { useColors } from '@/hooks/use-colors';
 import { IconSymbol } from '@/components/ui/icon-symbol';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
@@ -23,6 +23,38 @@ export function ArcTabBar({ tabs, activeTab, onTabChange }: ArcTabBarProps) {
   const screenHeight = Dimensions.get('window').height;
   const bottomPadding = Math.max(insets.bottom, 8);
   const barHeight = 140 + bottomPadding;
+  
+  // Track scroll position for swipe detection
+  const [scrollOffset, setScrollOffset] = useState(0);
+  const panResponder = useRef(
+    PanResponder.create({
+      onStartShouldSetPanResponder: () => true,
+      onMoveShouldSetPanResponder: () => true,
+      onPanResponderMove: (evt: GestureResponderEvent, { dx }) => {
+        // Track horizontal movement
+      },
+      onPanResponderRelease: (evt: GestureResponderEvent, { dx, vx }) => {
+        // Swipe left (dx < 0) - move to next tab
+        // Swipe right (dx > 0) - move to previous tab
+        if (Math.abs(dx) > 50 || Math.abs(vx) > 0.5) {
+          const currentIndex = tabs.findIndex(t => t.name === activeTab);
+          let nextIndex = currentIndex;
+          
+          if (dx < 0 && currentIndex < tabs.length - 1) {
+            // Swipe left - go to next tab
+            nextIndex = currentIndex + 1;
+          } else if (dx > 0 && currentIndex > 0) {
+            // Swipe right - go to previous tab
+            nextIndex = currentIndex - 1;
+          }
+          
+          if (nextIndex !== currentIndex) {
+            onTabChange(tabs[nextIndex].name);
+          }
+        }
+      },
+    })
+  ).current;
   
   // Arc configuration - arc curves UPWARD from bottom center
   const arcRadius = 100; // Radius of the arc
@@ -49,6 +81,7 @@ export function ArcTabBar({ tabs, activeTab, onTabChange }: ArcTabBarProps) {
 
   return (
     <View
+      {...panResponder.panHandlers}
       style={{
         height: barHeight,
         backgroundColor: colors.surface,
