@@ -384,7 +384,7 @@ export default function InsuranceScreen() {
 
         <View style={styles.content}>
           {/* Summary */}
-          <View style={[styles.summaryCard, { backgroundColor: colors.primary }]}>
+          <View style={[styles.summaryCard, { backgroundColor: 'rgba(10, 20, 28, 0.95)', borderColor: 'rgba(126, 204, 196, 0.3)', borderWidth: 1 }]}>
             <Text style={styles.summaryMainLabel}>Total Coverage</Text>
             <Text style={styles.summaryMainValue}>{formatCurrency(totalCoverage)}</Text>
             <View style={styles.summaryRow}>
