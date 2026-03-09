@@ -23,7 +23,7 @@ export default function NetWorthTimelineScreen() {
   const colors = useAppColors();
   const router = useRouter();
   const { data } = useAppData();
-  const [period, setPeriod] = useState<'month' | 'quarter' | 'year'>('year');
+
   const [goalAmount, setGoalAmount] = useState(1000000);
   const [isEditingGoal, setIsEditingGoal] = useState(false);
   const [goalInput, setGoalInput] = useState(goalAmount.toString());
@@ -147,26 +147,7 @@ export default function NetWorthTimelineScreen() {
           </View>
         </View>
 
-        {/* Period Selector */}
-        <View style={{ flexDirection: 'row', gap: 8, marginBottom: 16, marginTop: 16 }}>
-          {(['month', 'quarter', 'year'] as const).map((p) => (
-            <Pressable
-              key={p}
-              onPress={() => setPeriod(p)}
-              style={[
-                styles.periodBtn,
-                {
-                  backgroundColor: period === p ? colors.primary : colors.surface,
-                  borderColor: period === p ? colors.primary : colors.border,
-                },
-              ]}
-            >
-              <Text style={{ fontSize: 12, fontWeight: '600', color: period === p ? 'white' : colors.foreground, textTransform: 'capitalize' }}>
-                {p}
-              </Text>
-            </Pressable>
-          ))}
-        </View>
+
 
         {/* Timeline Chart */}
         <View style={[styles.chartCard, { backgroundColor: colors.surface, borderColor: colors.border }]}>
