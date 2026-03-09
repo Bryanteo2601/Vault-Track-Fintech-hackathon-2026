@@ -1,15 +1,35 @@
-import { Tabs } from "expo-router";
+import { Tabs, useNavigation } from "expo-router";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { Platform } from "react-native";
 import { HapticTab } from "@/components/haptic-tab";
 import { IconSymbol } from "@/components/ui/icon-symbol";
 import { useAppColors } from "@/hooks/use-app-colors";
+import { AnimatedTabBar } from "@/components/AnimatedTabBar";
+import { useState } from "react";
 
 export default function TabLayout() {
   const colors = useAppColors();
   const insets = useSafeAreaInsets();
+  const navigation = useNavigation();
+  const [activeTab, setActiveTab] = useState('index');
   const bottomPadding = Platform.OS === "web" ? 12 : Math.max(insets.bottom, 8);
   const tabBarHeight = 60 + bottomPadding;
+
+  const tabs = [
+    { name: 'index', title: 'Dashboard', icon: 'house.fill' },
+    { name: 'banks', title: 'Banks', icon: 'building.columns.fill' },
+    { name: 'investments', title: 'Investments', icon: 'chart.pie.fill' },
+    { name: 'loans', title: 'Loans', icon: 'creditcard.fill' },
+    { name: 'insurance', title: 'Insurance', icon: 'shield.fill' },
+    { name: 'cpf', title: 'CPF', icon: 'building.2.fill' },
+    { name: 'private-assets', title: 'Assets', icon: 'diamond.fill' },
+    { name: 'profile', title: 'Profile', icon: 'paperplane.fill' },
+  ];
+
+  const handleTabChange = (tabName: string) => {
+    setActiveTab(tabName);
+    (navigation as any).navigate(tabName);
+  };
 
   return (
     <Tabs
@@ -18,6 +38,13 @@ export default function TabLayout() {
         tabBarInactiveTintColor: colors.muted,
         headerShown: false,
         tabBarButton: HapticTab,
+        tabBar: () => (
+          <AnimatedTabBar
+            tabs={tabs}
+            activeTab={activeTab}
+            onTabChange={handleTabChange}
+          />
+        ),
         tabBarStyle: {
           paddingTop: 8,
           paddingBottom: bottomPadding,
@@ -35,6 +62,11 @@ export default function TabLayout() {
     >
       <Tabs.Screen
         name="index"
+        listeners={({ navigation }) => ({
+          tabPress: (e) => {
+            setActiveTab('index');
+          },
+        })}
         options={{
           title: "Dashboard",
           tabBarIcon: ({ color }) => <IconSymbol size={26} name="house.fill" color={color} />,
@@ -42,6 +74,11 @@ export default function TabLayout() {
       />
       <Tabs.Screen
         name="banks"
+        listeners={({ navigation }) => ({
+          tabPress: (e) => {
+            setActiveTab('banks');
+          },
+        })}
         options={{
           title: "Banks",
           tabBarIcon: ({ color }) => <IconSymbol size={26} name="building.columns.fill" color={color} />,
@@ -49,6 +86,11 @@ export default function TabLayout() {
       />
       <Tabs.Screen
         name="investments"
+        listeners={({ navigation }) => ({
+          tabPress: (e) => {
+            setActiveTab('investments');
+          },
+        })}
         options={{
           title: "Investments",
           tabBarIcon: ({ color }) => <IconSymbol size={26} name="chart.pie.fill" color={color} />,
@@ -56,6 +98,11 @@ export default function TabLayout() {
       />
       <Tabs.Screen
         name="loans"
+        listeners={({ navigation }) => ({
+          tabPress: (e) => {
+            setActiveTab('loans');
+          },
+        })}
         options={{
           title: "Loans",
           tabBarIcon: ({ color }) => <IconSymbol size={26} name="creditcard.fill" color={color} />,
@@ -63,6 +110,11 @@ export default function TabLayout() {
       />
       <Tabs.Screen
         name="insurance"
+        listeners={({ navigation }) => ({
+          tabPress: (e) => {
+            setActiveTab('insurance');
+          },
+        })}
         options={{
           title: "Insurance",
           tabBarIcon: ({ color }) => <IconSymbol size={26} name="shield.fill" color={color} />,
@@ -70,6 +122,11 @@ export default function TabLayout() {
       />
       <Tabs.Screen
         name="cpf"
+        listeners={({ navigation }) => ({
+          tabPress: (e) => {
+            setActiveTab('cpf');
+          },
+        })}
         options={{
           title: "CPF",
           tabBarIcon: ({ color }) => <IconSymbol size={26} name="building.2.fill" color={color} />,
@@ -77,6 +134,11 @@ export default function TabLayout() {
       />
       <Tabs.Screen
         name="private-assets"
+        listeners={({ navigation }) => ({
+          tabPress: (e) => {
+            setActiveTab('private-assets');
+          },
+        })}
         options={{
           title: "Assets",
           tabBarIcon: ({ color }) => <IconSymbol size={26} name="diamond.fill" color={color} />,
@@ -84,6 +146,11 @@ export default function TabLayout() {
       />
       <Tabs.Screen
         name="profile"
+        listeners={({ navigation }) => ({
+          tabPress: (e) => {
+            setActiveTab('profile');
+          },
+        })}
         options={{
           title: "Profile",
           tabBarIcon: ({ color }) => <IconSymbol size={26} name="paperplane.fill" color={color} />,
