@@ -11,6 +11,7 @@ import { calculatePortfolioRiskMetrics, getRiskClassificationDetails, formatPort
 import { analyzeDiversification } from '@/lib/diversification-analyzer';
 import { DiversificationCard } from '@/components/diversification-card';
 import { IconSymbol } from '@/components/ui/icon-symbol';
+import { glassContainerStyle, glassDeepStyle, glassLightStyle } from '@/lib/glass-utils';
 import Svg, { G, Path, Circle, Text as SvgText } from 'react-native-svg';
 import { useRouter } from 'expo-router';
 
@@ -83,7 +84,7 @@ function HoldingRow({ holding, onEdit, onDelete }: { holding: Holding; onEdit: (
   const isPositive = pnl >= 0;
 
   return (
-    <View style={[styles.holdingRow, { backgroundColor: colors.surface, borderColor: colors.border }]}>
+    <View style={[glassContainerStyle, styles.holdingRow]}>
       <View style={styles.holdingLeft}>
         <View style={[styles.tickerBadge, { backgroundColor: assetClassConfig[holding.assetClass].color + '20' }]}>
           <Text style={[styles.tickerText, { color: assetClassConfig[holding.assetClass].color }]}>{holding.ticker}</Text>
@@ -325,7 +326,7 @@ export default function InvestmentsScreen() {
 
         <View style={styles.content}>
           {/* Portfolio Summary */}
-          <View style={[styles.summaryCard, { backgroundColor: colors.primary }]}>
+          <View style={[glassDeepStyle, styles.summaryCard]}>
             <View style={styles.summaryRow}>
               <View>
                 <Text style={styles.summaryLabel}>Total Value</Text>
@@ -345,7 +346,7 @@ export default function InvestmentsScreen() {
 
           {/* Risk Analytics Section */}
           {data.holdings.length > 0 && (
-            <View style={[styles.riskCard, { backgroundColor: colors.surface, borderColor: colors.border }]}>
+            <View style={[glassContainerStyle, styles.riskCard]}>
               <View style={styles.riskHeader}>
                 <Text style={[styles.riskTitle, { color: colors.foreground }]}>Portfolio Risk Analytics</Text>
                 <Text style={[styles.riskClassBadge, { backgroundColor: riskClassDetails.color + '20', color: riskClassDetails.color }]}>
@@ -406,7 +407,7 @@ export default function InvestmentsScreen() {
 
           {/* Pie Chart */}
           {pieData.length > 0 && (
-            <View style={[styles.chartCard, { backgroundColor: colors.surface, borderColor: colors.border }]}>
+            <View style={[glassContainerStyle, styles.chartCard]}>
               <Text style={[styles.chartTitle, { color: colors.foreground }]}>Portfolio Breakdown</Text>
               <View style={styles.chartRow}>
                 <PieChart data={pieData} />
@@ -439,7 +440,7 @@ export default function InvestmentsScreen() {
             const isExpanded = expandedClass === cls;
 
             return (
-              <View key={cls} style={[styles.classCard, { backgroundColor: colors.surface, borderColor: colors.border }]}>
+              <View key={cls} style={[glassContainerStyle, styles.classCard]}>
                 <Pressable onPress={() => setExpandedClass(isExpanded ? null : cls)}
                   style={({ pressed }) => [styles.classHeader, pressed && { opacity: 0.8 }]}>
                   <View style={styles.classHeaderLeft}>
@@ -480,7 +481,7 @@ export default function InvestmentsScreen() {
           })}
 
           {data.holdings.length === 0 && (
-            <View style={[styles.emptyState, { backgroundColor: colors.surface, borderColor: colors.border }]}>
+            <View style={[glassContainerStyle, styles.emptyState]}>
               <Text style={styles.emptyIcon}>📊</Text>
               <Text style={[styles.emptyText, { color: colors.muted }]}>No holdings yet. Tap + to add your first investment.</Text>
             </View>
@@ -489,7 +490,7 @@ export default function InvestmentsScreen() {
           {/* AI Suggestions */}
           <Text style={[styles.sectionTitle, { color: colors.foreground }]}>AI Portfolio Insights</Text>
           {aiSuggestions.map((s, i) => (
-            <View key={i} style={[styles.aiCard, { backgroundColor: colors.surface, borderColor: colors.border, borderLeftColor: s.color }]}>
+            <View key={i} style={[glassContainerStyle, styles.aiCard, { borderLeftColor: s.color }]}>
               <Text style={styles.aiIcon}>{s.icon}</Text>
               <View style={styles.aiContent}>
                 <Text style={[styles.aiTitle, { color: colors.foreground }]}>{s.title}</Text>
@@ -523,7 +524,7 @@ const styles = StyleSheet.create({
   summaryRight: { alignItems: 'flex-end' },
   summaryPnl: { fontSize: 18, fontWeight: '700', marginTop: 4 },
   summaryPnlPct: { fontSize: 13, fontWeight: '600' },
-  chartCard: { borderRadius: 16, padding: 16, borderWidth: 1 },
+  chartCard: { borderRadius: 16, padding: 16 },
   chartTitle: { fontSize: 16, fontWeight: '700', marginBottom: 12 },
   chartRow: { flexDirection: 'row', alignItems: 'center', gap: 8 },
   legend: { flex: 1, gap: 8 },
@@ -532,7 +533,7 @@ const styles = StyleSheet.create({
   legendLabel: { fontSize: 12, fontWeight: '600' },
   legendPct: { fontSize: 11 },
   sectionTitle: { fontSize: 18, fontWeight: '700', letterSpacing: -0.3 },
-  classCard: { borderRadius: 16, borderWidth: 1, overflow: 'hidden' },
+  classCard: { borderRadius: 16, overflow: 'hidden' },
   classHeader: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', padding: 14 },
   classHeaderLeft: { flexDirection: 'row', alignItems: 'center', gap: 10 },
   classIcon: { fontSize: 26 },
@@ -543,7 +544,7 @@ const styles = StyleSheet.create({
   classPnl: { fontSize: 12, fontWeight: '600' },
   holdingsList: { paddingHorizontal: 14, paddingBottom: 14 },
   holdingsDivider: { height: 1, marginBottom: 10 },
-  holdingRow: { borderRadius: 10, padding: 10, borderWidth: 1, marginBottom: 8, flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' },
+  holdingRow: { borderRadius: 10, padding: 10, marginBottom: 8, flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' },
   holdingLeft: { flexDirection: 'row', alignItems: 'center', gap: 8, flex: 1 },
   tickerBadge: { paddingHorizontal: 8, paddingVertical: 4, borderRadius: 6 },
   tickerText: { fontSize: 12, fontWeight: '700' },
@@ -556,16 +557,16 @@ const styles = StyleSheet.create({
   holdingActions: { flexDirection: 'row', gap: 8, marginTop: 2 },
   addHoldingBtn: { flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 6, borderWidth: 1.5, borderRadius: 10, padding: 10, marginTop: 4, borderStyle: 'dashed' },
   addHoldingText: { fontSize: 13, fontWeight: '600' },
-  emptyState: { borderRadius: 16, padding: 32, borderWidth: 1, alignItems: 'center', gap: 8 },
+  emptyState: { borderRadius: 16, padding: 32, alignItems: 'center', gap: 8 },
   emptyIcon: { fontSize: 40 },
   emptyText: { fontSize: 14, textAlign: 'center' },
-  aiCard: { borderRadius: 14, padding: 14, borderWidth: 1, borderLeftWidth: 4, flexDirection: 'row', gap: 12, alignItems: 'flex-start' },
+  aiCard: { borderRadius: 14, padding: 14, borderLeftWidth: 4, flexDirection: 'row', gap: 12, alignItems: 'flex-start' },
   aiIcon: { fontSize: 20, marginTop: 2 },
   aiContent: { flex: 1 },
   aiTitle: { fontSize: 14, fontWeight: '700', marginBottom: 4 },
   aiDesc: { fontSize: 12, lineHeight: 18 },
   stressTestBtn: { flexDirection: 'row', alignItems: 'center', gap: 12, borderRadius: 14, padding: 14, marginBottom: 16 },
-  riskCard: { borderRadius: 16, borderWidth: 1, padding: 16, gap: 12 },
+  riskCard: { borderRadius: 16, padding: 16, gap: 12 },
   riskHeader: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' },
   riskTitle: { fontSize: 16, fontWeight: '700' },
   riskClassBadge: { paddingHorizontal: 10, paddingVertical: 4, borderRadius: 8, fontSize: 12, fontWeight: '600' },

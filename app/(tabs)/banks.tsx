@@ -10,6 +10,7 @@ import { BankAccount, AccountType, Loan } from '@/lib/types';
 import { formatCurrency } from '@/lib/store';
 import { calculateCBSScore } from '@/lib/cbs-score-calculator';
 import { IconSymbol } from '@/components/ui/icon-symbol';
+import { glassContainerStyle, glassDeepStyle, glassLightStyle } from '@/lib/glass-utils';
 import Svg, { Circle, G, Path } from 'react-native-svg';
 
 // ─── CBS Credit Score Gauge ───────────────────────────────────────────────────
@@ -73,7 +74,7 @@ function AccountCard({ account, onEdit, onDelete }: { account: BankAccount; onEd
   const isNegative = account.balance < 0;
 
   return (
-    <View style={[styles.accountCard, { backgroundColor: colors.surface, borderColor: colors.border }]}>
+    <View style={[glassContainerStyle, styles.accountCard]}>
       <View style={styles.accountHeader}>
         <View style={styles.accountLeft}>
           <Text style={styles.accountEmoji}>{cfg.icon}</Text>
@@ -280,15 +281,15 @@ export default function BanksScreen() {
         <View style={styles.content}>
           {/* Summary Row */}
           <View style={styles.summaryRow}>
-            <View style={[styles.summaryCard, { backgroundColor: colors.surface, borderColor: colors.border }]}>
+            <View style={[glassContainerStyle, styles.summaryCard]}>
               <Text style={[styles.summaryLabel, { color: colors.muted }]}>Total Balance</Text>
               <Text style={[styles.summaryValue, { color: colors.foreground }]}>{formatCurrency(totalBalance)}</Text>
             </View>
-            <View style={[styles.summaryCard, { backgroundColor: colors.surface, borderColor: colors.border }]}>
+            <View style={[glassContainerStyle, styles.summaryCard]}>
               <Text style={[styles.summaryLabel, { color: colors.muted }]}>Interest/Month</Text>
               <Text style={[styles.summaryValue, { color: colors.success }]}>+{formatCurrency(totalInterestEarned)}</Text>
             </View>
-            <View style={[styles.summaryCard, { backgroundColor: colors.surface, borderColor: colors.border }]}>
+            <View style={[glassContainerStyle, styles.summaryCard]}>
               <Text style={[styles.summaryLabel, { color: colors.muted }]}>Monthly Debt</Text>
               <Text style={[styles.summaryValue, { color: colors.error }]}>{formatCurrency(totalMonthlyDebt)}</Text>
             </View>
@@ -297,7 +298,7 @@ export default function BanksScreen() {
           {/* Accounts */}
           <Text style={[styles.sectionTitle, { color: colors.foreground }]}>Accounts ({data.bankAccounts.length})</Text>
           {data.bankAccounts.length === 0 ? (
-            <View style={[styles.emptyState, { backgroundColor: colors.surface, borderColor: colors.border }]}>
+            <View style={[glassContainerStyle, styles.emptyState]}>
               <Text style={styles.emptyIcon}>🏦</Text>
               <Text style={[styles.emptyText, { color: colors.muted }]}>No bank accounts yet. Tap + to add one.</Text>
             </View>
@@ -312,12 +313,12 @@ export default function BanksScreen() {
           {/* Credit Score Section */}
           <Text style={[styles.sectionTitle, { color: colors.foreground }]}>Credit Bureau Singapore</Text>
           {cbsScore.score === 0 ? (
-            <View style={[styles.emptyState, { backgroundColor: colors.surface, borderColor: colors.border }]}>
+            <View style={[glassContainerStyle, styles.emptyState]}>
               <Text style={styles.emptyIcon}>📊</Text>
               <Text style={[styles.emptyText, { color: colors.muted }]}>No credit score data yet. Add bank accounts and loans to build your credit history.</Text>
             </View>
           ) : (
-            <View style={[styles.creditCard, { backgroundColor: colors.surface, borderColor: colors.border }]}>
+            <View style={[glassContainerStyle, styles.creditCard]}>
               <View style={styles.creditTop}>
                 <CreditScoreGauge score={cbsScore.score} grade={cbsScore.grade} color={getGradeColor(cbsScore.grade, colors)} />
                 <View style={styles.creditRight}>
@@ -360,7 +361,7 @@ export default function BanksScreen() {
                 const totalOutstanding = bankLoans.reduce((s, l) => s + l.outstandingBalance, 0);
                 const totalMonthly = bankLoans.reduce((s, l) => s + l.monthlyInstalment, 0);
                 return (
-                  <View key={bank} style={[styles.bankLoanCard, { backgroundColor: colors.surface, borderColor: colors.border }]}>
+                  <View key={bank} style={[glassContainerStyle, styles.bankLoanCard]}>
                     <View style={styles.bankLoanHeader}>
                       <Text style={[styles.bankLoanName, { color: colors.foreground }]}>{bank}</Text>
                       <Text style={[styles.bankLoanCount, { color: colors.muted }]}>{bankLoans.length} loan{bankLoans.length !== 1 ? 's' : ''}</Text>
@@ -400,11 +401,11 @@ const styles = StyleSheet.create({
   addBtn: { width: 44, height: 44, borderRadius: 22, backgroundColor: 'rgba(255,255,255,0.2)', alignItems: 'center', justifyContent: 'center' },
   content: { padding: 16, gap: 16 },
   summaryRow: { flexDirection: 'row', gap: 10 },
-  summaryCard: { flex: 1, borderRadius: 14, padding: 12, borderWidth: 1, alignItems: 'center' },
+  summaryCard: { flex: 1, borderRadius: 14, padding: 12, alignItems: 'center' },
   summaryLabel: { fontSize: 10, fontWeight: '500', textAlign: 'center', marginBottom: 4 },
   summaryValue: { fontSize: 14, fontWeight: '700', textAlign: 'center' },
   sectionTitle: { fontSize: 18, fontWeight: '700', letterSpacing: -0.3 },
-  accountCard: { borderRadius: 16, padding: 16, borderWidth: 1, marginBottom: 0 },
+  accountCard: { borderRadius: 16, padding: 16, marginBottom: 0 },
   accountHeader: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginBottom: 12 },
   accountLeft: { flexDirection: 'row', alignItems: 'center', gap: 10 },
   accountEmoji: { fontSize: 28 },
@@ -420,10 +421,10 @@ const styles = StyleSheet.create({
   interestLabel: { fontSize: 11 },
   interestValue: { fontSize: 18, fontWeight: '700' },
   interestEarned: { fontSize: 11, marginTop: 2 },
-  emptyState: { borderRadius: 16, padding: 32, borderWidth: 1, alignItems: 'center', gap: 8 },
+  emptyState: { borderRadius: 16, padding: 32, alignItems: 'center', gap: 8 },
   emptyIcon: { fontSize: 40 },
   emptyText: { fontSize: 14, textAlign: 'center' },
-  creditCard: { borderRadius: 16, padding: 16, borderWidth: 1 },
+  creditCard: { borderRadius: 16, padding: 16 },
   creditTop: { flexDirection: 'row', alignItems: 'center', gap: 16, marginBottom: 16 },
   gaugeWrap: { width: 140, height: 140, alignItems: 'center', justifyContent: 'center' },
   gaugeCenter: { position: 'absolute', alignItems: 'center' },
@@ -450,7 +451,7 @@ const styles = StyleSheet.create({
   factorFill: { height: 6, borderRadius: 3 },
   warningsBox: { borderRadius: 12, padding: 12, marginTop: 12, borderWidth: 1 },
   warningText: { fontSize: 12, marginBottom: 6, lineHeight: 18 },
-  bankLoanCard: { borderRadius: 14, padding: 14, borderWidth: 1 },
+  bankLoanCard: { borderRadius: 14, padding: 14 },
   bankLoanHeader: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginBottom: 10 },
   bankLoanName: { fontSize: 15, fontWeight: '700' },
   bankLoanCount: { fontSize: 12 },
