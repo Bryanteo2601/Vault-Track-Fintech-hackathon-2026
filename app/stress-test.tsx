@@ -160,34 +160,6 @@ export default function StressTestScreen() {
         {/* Worst vs Best Case */}
         {totalValue > 0 && (
           <>
-            <Text style={[styles.sectionTitle, { color: colors.foreground }]}>Scenario Impact</Text>
-
-            <View style={{ flexDirection: 'row', gap: 12, marginBottom: 16 }}>
-              {/* Worst Case */}
-              <View style={[styles.caseCard, { backgroundColor: colors.surface, borderColor: colors.border, flex: 1 }]}>
-                <Text style={{ fontSize: 12, fontWeight: '600', color: colors.muted, marginBottom: 8 }}>Worst Case</Text>
-                <Text style={{ fontSize: 16, fontWeight: '700', color: colors.error, marginBottom: 4 }}>
-                  {worstCase.percentageChange.toFixed(1)}%
-                </Text>
-                <Text style={{ fontSize: 11, color: colors.muted, marginBottom: 8 }}>{worstCase.scenarioName}</Text>
-                <Text style={{ fontSize: 12, fontWeight: '600', color: colors.error }}>
-                  SGD {worstCase.dollarChange.toLocaleString()}
-                </Text>
-              </View>
-
-              {/* Best Case */}
-              <View style={[styles.caseCard, { backgroundColor: colors.surface, borderColor: colors.border, flex: 1 }]}>
-                <Text style={{ fontSize: 12, fontWeight: '600', color: colors.muted, marginBottom: 8 }}>Best Case</Text>
-                <Text style={{ fontSize: 16, fontWeight: '700', color: colors.success, marginBottom: 4 }}>
-                  {bestCase.percentageChange.toFixed(1)}%
-                </Text>
-                <Text style={{ fontSize: 11, color: colors.muted, marginBottom: 8 }}>{bestCase.scenarioName}</Text>
-                <Text style={{ fontSize: 12, fontWeight: '600', color: colors.success }}>
-                  SGD {bestCase.dollarChange.toLocaleString()}
-                </Text>
-              </View>
-            </View>
-
             {/* Predefined Scenarios */}
             <Text style={[styles.sectionTitle, { color: colors.foreground }]}>Market Scenarios</Text>
 
