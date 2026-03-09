@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { View, useWindowDimensions } from 'react-native';
 import { usePathname, useRouter } from 'expo-router';
-import { ArcTabBar } from './ArcTabBar';
+import { HorizontalTabBar } from './HorizontalTabBar';
 import { useColors } from '@/hooks/use-colors';
 
 interface TabItem {
@@ -35,8 +35,8 @@ export function TabsLayoutWrapper({ children, tabs }: TabsLayoutWrapperProps) {
         {children}
       </View>
 
-      {/* Arc Tab Bar at bottom */}
-      <ArcTabBar
+      {/* Horizontal Tab Bar at bottom */}
+      <HorizontalTabBar
         tabs={tabs}
         activeTab={activeTab}
         onTabChange={handleTabChange}
