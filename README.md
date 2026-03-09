@@ -1,138 +1,130 @@
-# VaultTrack (Wealth wellness hub)
+# Wealth Wellness Hub (VaultTrack)
 
 **Your complete financial health, in one place.**
 
+A comprehensive mobile financial planning app built with React Native and Expo, featuring AI-powered insights, multi-asset portfolio tracking, and Singapore-specific financial tools.
 
-## Core Features
+---
 
-| Features | What It Does |
-|------|--------------|
-| **Dashboard** | Displays the **Wealth Wellness Score gauge**, net worth overview, asset allocation bar chart, four financial health cards (diversification, liquidity, debt-to-asset ratio, credit score), and AI-generated financial recommendations. |
-| **Banks** | Tracks savings, daily accounts, credit accounts, and fixed deposits. Includes a **CBS-style credit score breakdown (A–D grade)**, **TDSR-based loan capacity calculator**, and **monthly interest summary**. |
-| **Investments** | Provides **portfolio P&L tracking across 8 asset classes** (stocks, crypto, ETFs, bonds, futures, options, REITs, commodities), with pie chart visualization and AI-driven portfolio insights and suggestions. |
-| **Loans** | Loan management module with **CBS-format aggregated outstanding balances**, **6-month liability trend charts**, **security type classification**, and **amortization schedules**. |
-| **Insurance** | Policy tracking with **expiry status badges (Active / Expiring Soon / Expired)**, coverage breakdown, and **PDF document import for policy storage**. |
-| **CPF (Singapore-specific)** | Tracks **CPF OA / SA / MA accounts**, contribution history, **CPF LIFE payout estimator**, retirement milestone timeline (BRS / FRS / ERS), and withdrawal simulations. |
-| **AI Chat** | Interactive AI financial advisor that performs a **structured 5-point financial analysis**: Snapshot → Observations → Risks → Opportunities → Questions. |
-| **Stress Testing** | Scenario simulations for **market crashes, interest rate changes, and economic downturns**, generating AI-driven financial recommendations. |
-| **Profile & Subscriptions** | User profile management, **subscription tier comparison**, plan upgrades, and billing cycle toggle (monthly / annual). |
+## 🎯 Core Features
 
+| Feature | Description |
+|---------|-------------|
+| **Dashboard** | Wealth Wellness Score gauge, net worth overview, asset allocation visualization, financial health metrics, and AI-generated recommendations |
+| **Banks** | Savings, daily, and credit account tracking with CBS-style credit score breakdown and TDSR-based loan capacity calculator |
+| **Investments** | Portfolio P&L tracking across 8 asset classes (stocks, crypto, ETFs, bonds, futures, options, REITs, commodities) with AI insights |
+| **Loans** | Loan management with CBS-format aggregated balances, 6-month liability trends, and amortization schedules |
+| **Insurance** | Policy tracking with expiry status badges, coverage breakdown, and PDF document import |
+| **CPF (Singapore)** | CPF OA/SA/MA account tracking, contribution history, **CPF LIFE payout estimator**, retirement milestones (BRS/FRS/ERS), and withdrawal simulations |
+| **AI Chat** | Interactive AI financial advisor performing structured 5-point financial analysis: Snapshot → Observations → Risks → Opportunities → Questions |
+| **Stress Testing** | Scenario simulations for market crashes, interest rate changes, and economic downturns |
+| **Profile & Subscriptions** | User profile management, subscription tier comparison, and billing cycle options |
+
+---
 
 ## 🛠️ Technology Stack
 
 ### Frontend
-- **React Native** (0.81.5) with **Expo** (~54.0.29)
-- **Expo Router** (~6.0.19) for file-based routing
-- **TypeScript** for type safety
-- **NativeWind** (^4.2.1) for Tailwind CSS styling
-- **React Query** (@tanstack/react-query) for data fetching
-- **React Native Reanimated** for animations
+- **React Native** 0.81.5 with **Expo SDK 54**
+- **Expo Router** 6.0 for file-based routing
+- **TypeScript** 5.9 for type safety
+- **NativeWind** 4.2 for Tailwind CSS in React Native
+- **React Query** 5.90 for data fetching and caching
+- **React Native Reanimated** 4.x for smooth animations
 
 ### Backend
-- **tRPC** (11.7.2) for type-safe API communication
-- **Express** (^4.22.1) server
-- **Drizzle ORM** (^0.44.7) with MySQL2
-- **Firebase** (^12.10.0) for authentication and Firestore
-- **Google Gemini AI** for financial analysis and recommendations
+- **tRPC** 11.7.2 for type-safe API communication
+- **Express** 4.22 server framework
+- **Drizzle ORM** 0.44 with MySQL2
+- **Firebase** for authentication and Firestore
+- **Google Gemini AI** for financial analysis
 
 ### Data Storage
-- **AsyncStorage** for local data persistence
-- **Firebase Firestore** for cloud sync and user data
-- **S3 Storage** for file uploads (insurance PDFs, etc.)
+- **AsyncStorage** for local offline-first persistence
+- **Firebase Firestore** for cloud sync and real-time updates
+- **S3 Storage** for file uploads (insurance PDFs, documents)
 
-### Development Tools
-- **Vitest** for testing
+### Development & Testing
+- **Vitest** for unit and integration tests
 - **ESLint** for code quality
 - **Prettier** for code formatting
 - **Drizzle Kit** for database migrations
 
-## 📁 Project Architecture
-┌──────────────────────────────────────────────────────┐
-│              React Native (Expo) Frontend             │
-│  ┌────────────┐  ┌───────────┐  ┌─────────────────┐ │
-│  │ Expo Router │  │ NativeWind│  │ React Query +   │ │
-│  │ (file-based)│  │ (Tailwind)│  │ tRPC Client     │ │
-│  └────────────┘  └───────────┘  └─────────────────┘ │
-├──────────────────────────────────────────────────────┤
-│              State & Data Layer                       │
-│  ┌────────────────┐  ┌────────────────────────────┐  │
-│  │ AsyncStorage    │  │ Firebase Firestore         │  │
-│  │ (offline-first) │  │ (cloud sync, per-user      │  │
-│  │                 │  │  security rules)            │  │
-│  └────────────────┘  └────────────────────────────┘  │
-├──────────────────────────────────────────────────────┤
-│              Backend (Express + tRPC)                 │
-│  ┌────────────┐  ┌───────────┐  ┌─────────────────┐ │
-│  │ tRPC Server│  │ Drizzle   │  │ Firebase Admin  │ │
-│  │ (type-safe)│  │ ORM+MySQL │  │ Auth            │ │
-│  └────────────┘  └───────────┘  └─────────────────┘ │
-├──────────────────────────────────────────────────────┤
-│              AI & Analytics Engine                    │
-│  ┌────────────────────┐  ┌─────────────────────────┐ │
-│  │ Gemini AI Service  │  │ Metric Insight Engine   │ │
-│  │ (structured 5-pt   │  │ (debt, liquidity,       │ │
-│  │  portfolio analysis)│  │  diversification)       │ │
-│  └────────────────────┘  └─────────────────────────┘ │
-└──────────────────────────────────────────────────────┘
+---
+
+## 📁 Project Structure
 
 ```
 wealth-wellness-hub/
-├── app/                    # Expo Router screens
-│   ├── (tabs)/            # Tab navigation screens
-│   │   ├── index.tsx      # Dashboard
-│   │   ├── banks.tsx      # Banks module
-│   │   ├── investments.tsx # Investments module
-│   │   ├── loans.tsx      # Loans module
-│   │   ├── insurance.tsx  # Insurance module
-│   │   ├── cpf.tsx        # CPF module
-│   │   └── profile.tsx    # User profile
-│   ├── auth/              # Authentication screens
-│   ├── ai-chat.tsx        # AI chat assistant
-│   ├── debt-analysis.tsx  # Debt analysis drill-down
-│   ├── liquidity-analysis.tsx
-│   ├── diversification-analysis.tsx
-│   ├── stress-test.tsx    # Portfolio stress testing
-│   └── net-worth-timeline.tsx
-├── components/            # Reusable UI components
-│   ├── ui/               # Base UI components
+├── app/                          # Expo Router screens (file-based routing)
+│   ├── (tabs)/                  # Tab navigation screens
+│   │   ├── index.tsx            # Dashboard
+│   │   ├── banks.tsx            # Banks module
+│   │   ├── investments.tsx      # Investments module
+│   │   ├── loans.tsx            # Loans module
+│   │   ├── insurance.tsx        # Insurance module
+│   │   ├── cpf.tsx              # CPF module (Singapore-specific)
+│   │   ├── assets.tsx           # Assets overview
+│   │   └── profile.tsx          # User profile
+│   ├── auth/                     # Authentication screens
+│   ├── ai-chat.tsx              # AI chat assistant
+│   ├── stress-test.tsx          # Portfolio stress testing
+│   ├── net-worth-timeline.tsx   # Net worth history
+│   └── _layout.tsx              # Root layout with providers
+├── components/                   # Reusable UI components
+│   ├── ui/                       # Base UI components
+│   ├── cpf/                      # CPF-specific components
+│   │   ├── cpf-overview-card.tsx
+│   │   ├── cpf-retirement-sums.tsx
+│   │   └── cpf-payout-estimator.tsx
 │   ├── metric-card.tsx
-│   ├── metric-drill-down.tsx
-│   └── chart-container.tsx
-├── lib/                   # Core libraries and utilities
-│   ├── store.ts          # Data store and calculations
-│   ├── firebase-*.ts     # Firebase integration
-│   ├── gemini-ai-service.ts
-│   ├── metric-insight-engine.ts
-│   └── trpc.ts           # tRPC client
-├── server/                # Backend server
-│   ├── _core/            # Framework-level code
-│   ├── routers.ts        # tRPC API routes
-│   ├── db.ts             # Database queries
-│   └── storage.ts        # S3 storage helpers
-├── drizzle/              # Database schema and migrations
-│   ├── schema.ts
-│   └── migrations/
-├── shared/               # Shared types and constants
-├── hooks/                # Custom React hooks
-├── constants/             # App constants
-└── assets/               # Images and static assets
+│   └── screen-container.tsx      # SafeArea wrapper
+├── lib/                          # Core libraries and utilities
+│   ├── app-data-context.tsx     # Global app state
+│   ├── store.ts                 # Data calculations and storage
+│   ├── cpf-calculations.ts      # CPF-specific calculations
+│   ├── cpf-constants.ts         # CPF retirement sums (2026 values)
+│   ├── gemini-ai-service.ts     # AI integration
+│   ├── metric-insight-engine.ts # Financial insights
+│   ├── firebase-*.ts            # Firebase integration
+│   └── trpc.ts                  # tRPC client
+├── server/                       # Backend server
+│   ├── _core/                    # Framework-level code
+│   ├── routers.ts               # tRPC API routes
+│   ├── db.ts                    # Database queries
+│   └── storage.ts               # S3 storage helpers
+├── hooks/                        # Custom React hooks
+│   ├── use-colors.ts            # Theme colors
+│   ├── use-auth.ts              # Authentication
+│   └── use-color-scheme.ts      # Dark/light mode
+├── constants/                    # App constants
+├── __tests__/                    # Unit and integration tests
+│   ├── cpf-calculations.test.ts
+│   └── ...
+├── assets/                       # Images and static assets
+├── theme.config.js              # Tailwind theme configuration
+├── tailwind.config.js           # Tailwind CSS config
+├── app.config.ts                # Expo app configuration
+└── package.json                 # Dependencies and scripts
 ```
+
+---
 
 ## 🚀 Getting Started
 
 ### Prerequisites
 - Node.js 18+ and pnpm 9.12.0+
 - Expo CLI
-- iOS Simulator (for iOS development) or Android Emulator
+- iOS Simulator (macOS) or Android Emulator
 - Firebase project (for authentication and cloud sync)
-- MySQL/TiDB database (for backend features)
+- Google Gemini API key (for AI features)
 
 ### Installation
 
 1. **Clone the repository**
    ```bash
    git clone <repository-url>
-   cd Vault-Track-Fintech-hackathon-2026-
+   cd wealth-wellness-hub
    ```
 
 2. **Install dependencies**
@@ -152,28 +144,21 @@ wealth-wellness-hub/
    EXPO_PUBLIC_FIREBASE_MESSAGING_SENDER_ID=your_sender_id
    EXPO_PUBLIC_FIREBASE_APP_ID=your_app_id
    
+   # AI Integration
+   GEMINI_API_KEY=your_gemini_api_key
+   
    # Backend API
    EXPO_PUBLIC_API_BASE_URL=http://localhost:3000
    
-   # Database
+   # Database (optional, for backend features)
    DATABASE_URL=mysql://user:password@localhost:3306/wealth_wellness
-   
-   # OAuth (if using Manus OAuth)
-   VITE_APP_ID=your_app_id
-   OAUTH_SERVER_URL=your_oauth_url
    ```
 
-4. **Set up Firebase**
+4. **Set up Firebase (optional, for cloud sync)**
    - Create a Firebase project at [Firebase Console](https://console.firebase.google.com/)
    - Enable Authentication (Email/Password)
    - Create a Firestore database
-   - Configure security rules (see `FIREBASE_ARCHITECTURE.md`)
    - Add your Firebase config to `.env`
-
-5. **Set up database**
-   ```bash
-   pnpm db:push
-   ```
 
 ### Running the App
 
@@ -182,7 +167,7 @@ wealth-wellness-hub/
 pnpm dev
 ```
 
-This runs both the Metro bundler and the backend server concurrently.
+This runs both the Metro bundler and backend server concurrently.
 
 **iOS:**
 ```bash
@@ -199,6 +184,11 @@ pnpm android
 pnpm dev:metro
 ```
 
+**Run tests:**
+```bash
+pnpm test
+```
+
 ### Building for Production
 
 **Build the server:**
@@ -211,15 +201,28 @@ pnpm build
 pnpm start
 ```
 
-## 📱 Key Modules
+---
+
+## 📊 Key Modules
 
 ### Dashboard
-The main screen provides an overview of financial health:
+The main screen provides a comprehensive financial overview:
 - **Wealth Wellness Score**: Calculated from diversification, liquidity, debt ratios, and credit score
 - **Net Worth**: Sum of all assets minus liabilities
 - **Asset Allocation**: Visual breakdown of wealth distribution
 - **Financial Health Cards**: Quick access to detailed analysis
 - **AI Recommendations**: Personalized financial advice
+
+### CPF Module (Singapore-Specific)
+Comprehensive CPF planning tools for Singapore residents:
+- **Account Tracking**: OA (Ordinary Account), SA (Special Account), MA (MediSave Account)
+- **Retirement Benchmarks** (2026 values):
+  - BRS (Basic Retirement Sum): SGD $102,900
+  - FRS (Full Retirement Sum): SGD $205,800
+  - ERS (Enhanced Retirement Sum): SGD $308,700
+- **CPF LIFE Payout Estimator**: Monthly income projections based on RA balance
+- **Retirement Readiness**: Dynamic status (Below BRS → BRS to FRS → FRS to ERS → Above ERS)
+- **Age Sync**: Automatically syncs user age from profile for accurate projections
 
 ### Financial Calculations
 
@@ -231,6 +234,7 @@ The app includes comprehensive financial calculations:
   - Liquidity Ratio (25%)
   - Debt-to-Asset Ratio (25%)
   - Credit Score (20%)
+- **CPF Projections**: Account growth with 2.5% (OA) and 4% (SA/MA/RA) annual interest
 - **CBS Credit Score**: Calculated from payment history, amounts owed, credit length, credit mix, and new credit
 - **Loan Capacity**: TDSR-based calculation for maximum loan eligibility
 
@@ -238,9 +242,11 @@ The app includes comprehensive financial calculations:
 
 The app uses Google Gemini AI for:
 - **Financial Recommendations**: Analyzes portfolio and suggests improvements
-- **Chat Assistant**: Answers questions about financial health
+- **Chat Assistant**: Answers questions about financial health with data-driven insights
 - **Stress Test Analysis**: Provides insights on portfolio resilience
 - **Metric Insights**: Explains financial health metrics in plain language
+
+---
 
 ## 🔐 Authentication
 
@@ -256,9 +262,9 @@ The app supports two authentication methods:
    - OAuth-based authentication
    - Token-based (native) or cookie-based (web) sessions
 
-See `FIREBASE_ARCHITECTURE.md` and `FIREBASE_SETUP.md` for detailed setup instructions.
+---
 
-## 📊 Data Management
+## 📱 Data Management
 
 ### Local Storage
 - Uses AsyncStorage for offline-first data persistence
@@ -275,7 +281,9 @@ See `FIREBASE_ARCHITECTURE.md` and `FIREBASE_SETUP.md` for detailed setup instru
 - **Loan**: Bank, type, balance, interest, instalment, security type
 - **Holding**: Ticker, quantity, average cost, asset class
 - **InsurancePolicy**: Insurer, type, coverage, premium, expiry
-- **CPFAccount**: Account type (OA/SA/MA), balance, contributions
+- **CPFUserData**: OA, SA, MA, RA balances, age, annual salary
+
+---
 
 ## 🧪 Testing
 
@@ -284,55 +292,69 @@ Run tests with:
 pnpm test
 ```
 
-The project includes unit tests for:
-- Financial calculations (net worth, wellness score, credit score)
+The project includes comprehensive tests for:
+- CPF calculations (33+ tests)
+- Financial metrics and formulas
 - Data validation
 - API endpoints
+- Context integration
+
+---
 
 ## 📚 Documentation
 
 - **`design.md`**: UI/UX design specifications and brand guidelines
-- **`FIREBASE_ARCHITECTURE.md`**: Firebase integration architecture
-- **`FIREBASE_SETUP.md`**: Firebase setup instructions
+- **`todo.md`**: Project roadmap and feature checklist
 - **`server/README.md`**: Backend development guide
-- **`todo.md`**: Project roadmap and completed features
+- **`FIREBASE_ARCHITECTURE.md`**: Firebase integration architecture (if available)
+
+---
 
 ## 🎨 Design System
 
 ### Color Palette
-- **Primary**: `#1A3C5E` (Deep Navy) - Trust, stability
+- **Primary**: `#0a7ea4` (Ocean Blue) - Trust, stability
 - **Accent**: `#00C896` (Emerald Green) - Growth, health
 - **Warning**: `#F59E0B` (Amber)
 - **Error**: `#EF4444` (Red)
-- **Background (Light)**: `#F0F4F8` (Soft Blue-Grey)
-- **Background (Dark)**: `#0D1B2A` (Dark Navy)
+- **Background (Light)**: `#ffffff` (White)
+- **Background (Dark)**: `#151718` (Dark Grey)
+- **Surface**: `#f5f5f5` (Light Grey)
 
 ### Design Principles
 - One-handed usage optimization
 - Card-based layout for clarity
+- Glass morphism effects for modern UI
 - Color-coded status indicators
 - Progressive disclosure of information
-- iOS HIG compliance
+- iOS Human Interface Guidelines (HIG) compliance
+
+---
 
 ## 🤝 Contributing
 
 1. Create a feature branch
 2. Make your changes
-3. Write/update tests
+3. Write/update tests: `pnpm test`
 4. Run linting and type checking: `pnpm check && pnpm lint`
-5. Submit a pull request
-   
+5. Format code: `pnpm format`
+6. Submit a pull request
+
+---
 
 ## 🙏 Acknowledgments
 
 Built with:
-- [Expo](https://expo.dev/)
-- [React Native](https://reactnative.dev/)
-- [Firebase](https://firebase.google.com/)
-- [Google Gemini AI](https://ai.google.dev/)
-- [Drizzle ORM](https://orm.drizzle.team/)
-- [tRPC](https://trpc.io/)
+- [Expo](https://expo.dev/) - React Native framework
+- [React Native](https://reactnative.dev/) - Mobile UI framework
+- [Firebase](https://firebase.google.com/) - Authentication and database
+- [Google Gemini AI](https://ai.google.dev/) - AI-powered insights
+- [Drizzle ORM](https://orm.drizzle.team/) - Database ORM
+- [tRPC](https://trpc.io/) - Type-safe API framework
+- [NativeWind](https://www.nativewind.dev/) - Tailwind CSS for React Native
 
 ---
 
-**VaultTrack** - Understand, optimize, and grow your wealth all in one place. 💰✨
+**Wealth Wellness Hub** - Understand, optimize, and grow your wealth all in one place. 💰✨
+
+*Last updated: March 2026*
