@@ -92,33 +92,44 @@ export default function ProfileScreen() {
   return (
     <ScreenContainer className="bg-background">
       <ScrollView contentContainerStyle={{ flexGrow: 1 }} showsVerticalScrollIndicator={false}>
-        <View className="flex-1 px-6 py-8">
-          {/* ===== PROFILE HEADER ===== */}
-          <View className="mb-12">
-            <View className="flex-row items-center gap-4 mb-6">
+        <View className="flex-1 px-6 py-6">
+          {/* ===== USER HEADER SECTION ===== */}
+          <View className="mb-8">
+            <Text className="text-2xl font-bold text-foreground mb-6">User</Text>
+            
+            {/* Avatar and User Info */}
+            <View className="flex-row items-start gap-4 mb-6">
               <View
-                className="w-20 h-20 rounded-full items-center justify-center"
+                className="w-24 h-24 rounded-full items-center justify-center flex-shrink-0"
                 style={{ backgroundColor: colors.primary }}
               >
-                <Text className="text-4xl font-bold" style={{ color: colors.background }}>
+                <Text className="text-5xl font-bold" style={{ color: colors.background }}>
                   {user?.displayName?.charAt(0).toUpperCase() || 'U'}
                 </Text>
               </View>
+              
               <View className="flex-1">
-                <Text className="text-2xl font-bold text-foreground mb-1">
-                  {user?.displayName || 'User'}
-                </Text>
-                <Text className="text-sm text-muted mb-3">{user?.email}</Text>
-                <Pressable onPress={() => setShowEditModal(true)} className="flex-row items-center gap-1 active:opacity-60">
+                <View className="flex-row items-center gap-2 mb-3">
                   <MaterialIcons name="edit" size={16} color={colors.primary} />
-                  <Text className="text-xs font-semibold" style={{ color: colors.primary }}>
-                    Edit Profile
+                  <Pressable onPress={() => setShowEditModal(true)}>
+                    <Text className="text-sm font-semibold" style={{ color: colors.primary }}>
+                      Edit Profile
+                    </Text>
+                  </Pressable>
+                </View>
+                
+                <View className="border-b pb-4 mb-4" style={{ borderColor: colors.border }}>
+                  <Text className="text-lg font-bold text-foreground mb-1">
+                    {user?.displayName || 'User'}
                   </Text>
-                </Pressable>
+                  <Text className="text-xs text-muted">{user?.email}</Text>
+                </View>
+
+                {/* Age and Life Stage */}
                 {appData?.userProfile && (
-                  <View className="mt-3 pt-3 border-t" style={{ borderColor: colors.border }}>
+                  <View className="gap-3">
                     {age !== null && (
-                      <View className="mb-3">
+                      <View>
                         <Text className="text-xs font-semibold text-muted mb-1">AGE</Text>
                         <Text className="text-sm font-bold text-foreground">{age} years old</Text>
                       </View>
@@ -136,14 +147,14 @@ export default function ProfileScreen() {
           </View>
 
           {/* ===== SUBSCRIPTION SECTION ===== */}
-          <View className="mb-12">
-            <Text className="text-lg font-bold text-foreground mb-6">Subscription</Text>
+          <View className="mb-8">
+            <Text className="text-xl font-bold text-foreground mb-4">Subscription</Text>
 
             {/* Billing Cycle Toggle */}
             <View className="mb-6 flex-row gap-2">
               <Pressable
                 onPress={() => setBillingCycle('monthly')}
-                className="flex-1 p-3 rounded-xl items-center active:opacity-80"
+                className="flex-1 p-3 rounded-xl items-center justify-center active:opacity-80"
                 style={{
                   backgroundColor: billingCycle === 'monthly' ? colors.primary : colors.surface,
                   borderWidth: 1,
@@ -159,7 +170,7 @@ export default function ProfileScreen() {
               </Pressable>
               <Pressable
                 onPress={() => setBillingCycle('annual')}
-                className="flex-1 p-3 rounded-xl items-center active:opacity-80"
+                className="flex-1 p-3 rounded-xl items-center justify-center active:opacity-80"
                 style={{
                   backgroundColor: billingCycle === 'annual' ? colors.primary : colors.surface,
                   borderWidth: 1,
@@ -174,8 +185,8 @@ export default function ProfileScreen() {
                     Annual
                   </Text>
                   <Text
-                    className="text-xs"
-                    style={{ color: billingCycle === 'annual' ? colors.background : colors.muted }}
+                    className="text-xs font-medium"
+                    style={{ color: billingCycle === 'annual' ? colors.background : colors.primary }}
                   >
                     Save 20%
                   </Text>
@@ -184,64 +195,61 @@ export default function ProfileScreen() {
             </View>
 
             {/* Pro Plan Card */}
-            <View
-              className="rounded-2xl p-6 mb-4 border"
+            <Pressable
+              onPress={() => setExpandedPlan(expandedPlan === 'pro' ? null : 'pro')}
+              className="rounded-2xl p-5 mb-4 border active:opacity-80"
               style={{
                 backgroundColor: colors.surface,
                 borderColor: expandedPlan === 'pro' ? colors.primary : colors.border,
               }}
             >
-              <Pressable
-                onPress={() => setExpandedPlan(expandedPlan === 'pro' ? null : 'pro')}
-                className="flex-row items-start justify-between active:opacity-80 mb-4"
-              >
+              <View className="flex-row items-start justify-between mb-3">
                 <View className="flex-1">
-                  <Text className="text-xl font-bold text-foreground">Pro</Text>
-                  <Text className="text-sm text-muted mt-1">Perfect for serious investors</Text>
+                  <Text className="text-lg font-bold text-foreground">Pro</Text>
+                  <Text className="text-xs text-muted mt-1">Perfect for serious investors</Text>
                 </View>
                 <View className="items-end">
-                  <Text className="text-xl font-bold" style={{ color: colors.primary }}>
+                  <Text className="text-lg font-bold" style={{ color: colors.primary }}>
                     SGD {billingCycle === 'monthly' ? '30' : '300'}
                   </Text>
                   <Text className="text-xs text-muted">{billingCycle === 'monthly' ? '/month' : '/year'}</Text>
                 </View>
-              </Pressable>
+              </View>
 
               {expandedPlan === 'pro' && (
-                <View className="border-t" style={{ borderColor: colors.border }}>
-                  <View className="pt-4 gap-3">
-                    <View className="flex-row items-center gap-3">
-                      <MaterialIcons name="check-circle" size={16} color={colors.success} />
-                      <Text className="text-sm text-muted">Financial health breakdown</Text>
-                    </View>
-                    <View className="flex-row items-center gap-3">
-                      <MaterialIcons name="check-circle" size={16} color={colors.success} />
-                      <Text className="text-sm text-muted">Diversification analysis</Text>
-                    </View>
-                    <View className="flex-row items-center gap-3">
-                      <MaterialIcons name="check-circle" size={16} color={colors.success} />
-                      <Text className="text-sm text-muted">CPF retirement projections</Text>
-                    </View>
-                    <View className="flex-row items-center gap-3">
-                      <MaterialIcons name="check-circle" size={16} color={colors.success} />
-                      <Text className="text-sm text-muted">50 AI chats/month</Text>
-                    </View>
-                    <Pressable
-                      className="mt-4 p-3 rounded-xl items-center active:opacity-80"
-                      style={{ backgroundColor: colors.primary }}
-                    >
-                      <Text className="font-bold text-sm" style={{ color: colors.background }}>
-                        Choose Pro
-                      </Text>
-                    </Pressable>
+                <View className="border-t pt-4 gap-3" style={{ borderColor: colors.border }}>
+                  <View className="flex-row items-center gap-3">
+                    <MaterialIcons name="check-circle" size={16} color={colors.primary} />
+                    <Text className="text-xs text-muted flex-1">Financial health breakdown</Text>
                   </View>
+                  <View className="flex-row items-center gap-3">
+                    <MaterialIcons name="check-circle" size={16} color={colors.primary} />
+                    <Text className="text-xs text-muted flex-1">Diversification analysis</Text>
+                  </View>
+                  <View className="flex-row items-center gap-3">
+                    <MaterialIcons name="check-circle" size={16} color={colors.primary} />
+                    <Text className="text-xs text-muted flex-1">CPF retirement projections</Text>
+                  </View>
+                  <View className="flex-row items-center gap-3">
+                    <MaterialIcons name="check-circle" size={16} color={colors.primary} />
+                    <Text className="text-xs text-muted flex-1">50 AI chats/month</Text>
+                  </View>
+                  <Pressable
+                    className="mt-3 p-3 rounded-xl items-center active:opacity-80"
+                    style={{ backgroundColor: colors.primary }}
+                  >
+                    <Text className="font-bold text-sm" style={{ color: colors.background }}>
+                      Choose Pro
+                    </Text>
+                  </Pressable>
                 </View>
               )}
-            </View>
+            </Pressable>
 
             {/* Premium Plan Card */}
-            <View
-              className="rounded-2xl p-6 border-2"
+            <Pressable
+              onPress={() => setExpandedPlan(expandedPlan === 'premium' ? null : 'premium')}
+              className="rounded-2xl p-5 border-2 active:opacity-80"
               style={{
                 backgroundColor: colors.surface,
                 borderColor: expandedPlan === 'premium' ? colors.primary : colors.primary + '40',
@@ -253,57 +261,52 @@ export default function ProfileScreen() {
                 </Text>
               </View>
 
-              <Pressable
-                onPress={() => setExpandedPlan(expandedPlan === 'premium' ? null : 'premium')}
-                className="flex-row items-start justify-between active:opacity-80 mb-4"
-              >
-                <View className="flex-1 pr-8">
-                  <Text className="text-xl font-bold text-foreground">Premium</Text>
-                  <Text className="text-sm text-muted mt-1">Everything + AI wealth coach</Text>
+              <View className="flex-row items-start justify-between mb-3 pr-8">
+                <View className="flex-1">
+                  <Text className="text-lg font-bold text-foreground">Premium</Text>
+                  <Text className="text-xs text-muted mt-1">Everything + AI wealth coach</Text>
                 </View>
                 <View className="items-end">
-                  <Text className="text-xl font-bold" style={{ color: colors.primary }}>
+                  <Text className="text-lg font-bold" style={{ color: colors.primary }}>
                     SGD {billingCycle === 'monthly' ? '50' : '400'}
                   </Text>
                   <Text className="text-xs text-muted">{billingCycle === 'monthly' ? '/month' : '/year'}</Text>
                 </View>
-              </Pressable>
+              </View>
 
               {expandedPlan === 'premium' && (
-                <View className="border-t" style={{ borderColor: colors.border }}>
-                  <View className="pt-4 gap-3">
-                    <View className="flex-row items-center gap-3">
-                      <MaterialIcons name="check-circle" size={16} color={colors.success} />
-                      <Text className="text-sm text-muted">All Pro features</Text>
-                    </View>
-                    <View className="flex-row items-center gap-3">
-                      <MaterialIcons name="check-circle" size={16} color={colors.success} />
-                      <Text className="text-sm text-muted">AI wealth coach</Text>
-                    </View>
-                    <View className="flex-row items-center gap-3">
-                      <MaterialIcons name="check-circle" size={16} color={colors.success} />
-                      <Text className="text-sm text-muted">Portfolio stress testing</Text>
-                    </View>
-                    <View className="flex-row items-center gap-3">
-                      <MaterialIcons name="check-circle" size={16} color={colors.success} />
-                      <Text className="text-sm text-muted">Unlimited AI chats</Text>
-                    </View>
-                    <View className="flex-row items-center gap-3">
-                      <MaterialIcons name="check-circle" size={16} color={colors.success} />
-                      <Text className="text-sm text-muted">Global retirement planner</Text>
-                    </View>
-                    <Pressable
-                      className="mt-4 p-3 rounded-xl items-center active:opacity-80"
-                      style={{ backgroundColor: colors.primary }}
-                    >
-                      <Text className="font-bold text-sm" style={{ color: colors.background }}>
-                        Choose Premium
-                      </Text>
-                    </Pressable>
+                <View className="border-t pt-4 gap-3" style={{ borderColor: colors.border }}>
+                  <View className="flex-row items-center gap-3">
+                    <MaterialIcons name="check-circle" size={16} color={colors.primary} />
+                    <Text className="text-xs text-muted flex-1">All Pro features</Text>
                   </View>
+                  <View className="flex-row items-center gap-3">
+                    <MaterialIcons name="check-circle" size={16} color={colors.primary} />
+                    <Text className="text-xs text-muted flex-1">AI wealth coach</Text>
+                  </View>
+                  <View className="flex-row items-center gap-3">
+                    <MaterialIcons name="check-circle" size={16} color={colors.primary} />
+                    <Text className="text-xs text-muted flex-1">Portfolio stress testing</Text>
+                  </View>
+                  <View className="flex-row items-center gap-3">
+                    <MaterialIcons name="check-circle" size={16} color={colors.primary} />
+                    <Text className="text-xs text-muted flex-1">Unlimited AI chats</Text>
+                  </View>
+                  <View className="flex-row items-center gap-3">
+                    <MaterialIcons name="check-circle" size={16} color={colors.primary} />
+                    <Text className="text-xs text-muted flex-1">Global retirement planner</Text>
+                  </View>
+                  <Pressable
+                    className="mt-3 p-3 rounded-xl items-center active:opacity-80"
+                    style={{ backgroundColor: colors.primary }}
+                  >
+                    <Text className="font-bold text-sm" style={{ color: colors.background }}>
+                      Choose Premium
+                    </Text>
+                  </Pressable>
                 </View>
               )}
-            </View>
+            </Pressable>
 
             {/* Billing Info */}
             <View className="mt-6 gap-2 px-4 py-3 rounded-xl" style={{ backgroundColor: colors.surface + '40' }}>
@@ -323,8 +326,8 @@ export default function ProfileScreen() {
           </View>
 
           {/* ===== ACCOUNT SETTINGS SECTION ===== */}
-          <View className="mb-12">
-            <Text className="text-lg font-bold text-foreground mb-6">Account Settings</Text>
+          <View className="mb-8">
+            <Text className="text-lg font-bold text-foreground mb-4">Account Settings</Text>
 
             <Pressable
               style={({ pressed }) => [
@@ -337,7 +340,7 @@ export default function ProfileScreen() {
             >
               <View className="flex-row items-center gap-4">
                 <MaterialIcons name="lock" size={22} color={colors.primary} />
-                <Text className="text-base font-semibold text-foreground">Change Password</Text>
+                <Text className="text-sm font-semibold text-foreground">Change Password</Text>
               </View>
               <MaterialIcons name="chevron-right" size={22} color={colors.muted} />
             </Pressable>
@@ -353,7 +356,7 @@ export default function ProfileScreen() {
             >
               <View className="flex-row items-center gap-4">
                 <MaterialIcons name="privacy-tip" size={22} color={colors.primary} />
-                <Text className="text-base font-semibold text-foreground">Privacy Settings</Text>
+                <Text className="text-sm font-semibold text-foreground">Privacy Settings</Text>
               </View>
               <MaterialIcons name="chevron-right" size={22} color={colors.muted} />
             </Pressable>
@@ -398,38 +401,40 @@ export default function ProfileScreen() {
             <View className="flex-1 px-6 py-8">
               <Text className="text-sm font-semibold text-muted mb-3">Birth Date</Text>
               <TextInput
-                value={birthDateInput}
-                onChangeText={setBirthDateInput}
-                placeholder="YYYY-MM-DD (e.g., 1995-05-15)"
-                placeholderTextColor={colors.muted}
-                className="border rounded-xl px-4 py-4 text-foreground text-base"
                 style={{
+                  borderWidth: 1,
                   borderColor: colors.border,
+                  borderRadius: 12,
+                  padding: 12,
                   color: colors.foreground,
+                  fontSize: 16,
                   backgroundColor: colors.surface,
                 }}
+                placeholder="YYYY-MM-DD"
+                placeholderTextColor={colors.muted}
+                value={birthDateInput}
+                onChangeText={setBirthDateInput}
               />
-              <Text className="text-xs text-muted mt-3 leading-relaxed">
-                Enter your birth date to calculate your age and determine your life stage for personalized financial guidance.
-              </Text>
-            </View>
+              <Text className="text-xs text-muted mt-2">Format: YYYY-MM-DD (e.g., 1993-12-15)</Text>
 
-            {/* Buttons - Fixed at bottom */}
-            <View className="px-6 py-6 border-t flex-row gap-3" style={{ borderColor: colors.border }}>
-              <Pressable
-                onPress={() => setShowEditModal(false)}
-                className="flex-1 p-4 rounded-xl items-center justify-center active:opacity-80"
-                style={{ backgroundColor: colors.surface, borderWidth: 1, borderColor: colors.border }}
-              >
-                <Text className="font-bold text-base text-foreground">Cancel</Text>
-              </Pressable>
-              <Pressable
-                onPress={handleSaveBirthDate}
-                className="flex-1 p-4 rounded-xl items-center justify-center active:opacity-80"
-                style={{ backgroundColor: colors.primary }}
-              >
-                <Text className="font-bold text-base text-white">Save</Text>
-              </Pressable>
+              <View className="flex-row gap-3 mt-8">
+                <Pressable
+                  onPress={() => setShowEditModal(false)}
+                  className="flex-1 p-4 rounded-xl items-center active:opacity-80"
+                  style={{ backgroundColor: colors.surface, borderWidth: 1, borderColor: colors.border }}
+                >
+                  <Text className="font-semibold text-sm text-foreground">Cancel</Text>
+                </Pressable>
+                <Pressable
+                  onPress={handleSaveBirthDate}
+                  className="flex-1 p-4 rounded-xl items-center active:opacity-80"
+                  style={{ backgroundColor: colors.primary }}
+                >
+                  <Text className="font-semibold text-sm" style={{ color: colors.background }}>
+                    Save
+                  </Text>
+                </Pressable>
+              </View>
             </View>
           </View>
         </View>
