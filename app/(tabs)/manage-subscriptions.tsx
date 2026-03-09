@@ -236,27 +236,27 @@ export default function ManageSubscriptionsScreen() {
 
           {/* ===== SUBSCRIBE BUTTON ===== */}
           {selectedPlan !== 'free' && (
-            <>
+            <View className="mt-8 mb-8">
               <Pressable
                 onPress={handleSubscribe}
                 disabled={isSubscribing}
-                className="p-4 rounded-full items-center justify-center mb-4 active:opacity-80"
-                style={{ backgroundColor: colors.primary }}
+                className="py-4 px-8 rounded-full items-center justify-center active:opacity-80"
+                style={{ backgroundColor: '#1a1a1a' }}
               >
                 {isSubscribing ? (
-                  <ActivityIndicator size="small" color={colors.background} />
+                  <ActivityIndicator size="small" color="white" />
                 ) : (
-                  <Text className="font-bold text-lg" style={{ color: colors.background }}>
-                    Subscribe Now
+                  <Text className="font-bold text-lg text-white">
+                    Subscribe
                   </Text>
                 )}
               </Pressable>
 
               {/* ===== CANCEL ANYTIME ===== */}
-              <Pressable className="items-center mb-6 active:opacity-60">
-                <Text className="text-base font-medium text-muted">Cancel anytime</Text>
+              <Pressable className="items-center mt-4 active:opacity-60">
+                <Text className="text-base text-foreground">Cancel anytime</Text>
               </Pressable>
-            </>
+            </View>
           )}
 
           {/* ===== INFO TEXT ===== */}
