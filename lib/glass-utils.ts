@@ -15,10 +15,10 @@ export interface GlassStyle {
  * Uses semi-transparent background to simulate frosted glass
  */
 export const glassContainerStyle: ViewStyle = {
-  backgroundColor: 'rgba(19, 47, 76, 0.6)',
+  backgroundColor: 'rgba(26, 58, 71, 0.65)',
   borderRadius: 20,
   borderWidth: 1,
-  borderColor: 'rgba(0, 217, 255, 0.2)',
+  borderColor: 'rgba(126, 204, 196, 0.25)',
   overflow: 'hidden',
 };
 
@@ -27,10 +27,10 @@ export const glassContainerStyle: ViewStyle = {
  * More transparent for layered glass effect
  */
 export const glassLightStyle: ViewStyle = {
-  backgroundColor: 'rgba(26, 58, 82, 0.4)',
+  backgroundColor: 'rgba(35, 74, 87, 0.45)',
   borderRadius: 16,
   borderWidth: 1,
-  borderColor: 'rgba(0, 217, 255, 0.15)',
+  borderColor: 'rgba(126, 204, 196, 0.2)',
   overflow: 'hidden',
 };
 
@@ -39,10 +39,10 @@ export const glassLightStyle: ViewStyle = {
  * More opaque for better readability
  */
 export const glassDeepStyle: ViewStyle = {
-  backgroundColor: 'rgba(13, 27, 42, 0.8)',
+  backgroundColor: 'rgba(13, 27, 35, 0.8)',
   borderRadius: 24,
   borderWidth: 1.5,
-  borderColor: 'rgba(0, 217, 255, 0.3)',
+  borderColor: 'rgba(126, 204, 196, 0.3)',
   overflow: 'hidden',
 };
 
@@ -50,10 +50,10 @@ export const glassDeepStyle: ViewStyle = {
  * Glass button style with interactive states
  */
 export const glassButtonStyle: ViewStyle = {
-  backgroundColor: 'rgba(0, 217, 255, 0.15)',
+  backgroundColor: 'rgba(126, 204, 196, 0.15)',
   borderRadius: 12,
   borderWidth: 1,
-  borderColor: 'rgba(0, 217, 255, 0.4)',
+  borderColor: 'rgba(126, 204, 196, 0.4)',
   paddingHorizontal: 16,
   paddingVertical: 12,
 };
@@ -62,8 +62,8 @@ export const glassButtonStyle: ViewStyle = {
  * Glass button pressed state
  */
 export const glassButtonPressedStyle: ViewStyle = {
-  backgroundColor: 'rgba(0, 217, 255, 0.25)',
-  borderColor: 'rgba(0, 217, 255, 0.6)',
+  backgroundColor: 'rgba(126, 204, 196, 0.25)',
+  borderColor: 'rgba(126, 204, 196, 0.6)',
 };
 
 /**
@@ -71,9 +71,9 @@ export const glassButtonPressedStyle: ViewStyle = {
  * Creates a subtle light reflection on glass surfaces
  */
 export const glassGlowStyle: ViewStyle = {
-  shadowColor: '#00D9FF',
+  shadowColor: '#7ECCC4',
   shadowOffset: { width: 0, height: 0 },
-  shadowOpacity: 0.3,
+  shadowOpacity: 0.25,
   shadowRadius: 12,
   elevation: 8,
 };
@@ -101,12 +101,12 @@ export const glassEasing = {
 /**
  * Helper to create glass container with custom opacity
  */
-export function createGlassContainer(opacity: number = 0.6): ViewStyle {
+export function createGlassContainer(opacity: number = 0.65): ViewStyle {
   return {
-    backgroundColor: `rgba(19, 47, 76, ${opacity})`,
+    backgroundColor: `rgba(26, 58, 71, ${opacity})`,
     borderRadius: 20,
     borderWidth: 1,
-    borderColor: `rgba(0, 217, 255, ${Math.min(opacity * 0.33, 0.3)})`,
+    borderColor: `rgba(126, 204, 196, ${Math.min(opacity * 0.4, 0.3)})`,
     overflow: 'hidden',
   };
 }
@@ -119,10 +119,10 @@ export function createGlassButton(
   borderOpacity: number = 0.4
 ): ViewStyle {
   return {
-    backgroundColor: `rgba(0, 217, 255, ${bgOpacity})`,
+    backgroundColor: `rgba(126, 204, 196, ${bgOpacity})`,
     borderRadius: 12,
     borderWidth: 1,
-    borderColor: `rgba(0, 217, 255, ${borderOpacity})`,
+    borderColor: `rgba(126, 204, 196, ${borderOpacity})`,
     paddingHorizontal: 16,
     paddingVertical: 12,
   };
@@ -131,7 +131,7 @@ export function createGlassButton(
 /**
  * Helper to add glow effect with custom color
  */
-export function createGlowEffect(color: string = '#00D9FF', intensity: number = 0.3): ViewStyle {
+export function createGlowEffect(color: string = '#7ECCC4', intensity: number = 0.25): ViewStyle {
   return {
     shadowColor: color,
     shadowOffset: { width: 0, height: 0 },

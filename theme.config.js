@@ -1,20 +1,20 @@
 /** @type {const} */
 const themeColors = {
-  // Liquid glass aesthetic - deep teal backgrounds with cyan accents
-  primary: { light: '#00D9FF', dark: '#00D9FF' },
-  accent: { light: '#00D9FF', dark: '#00D9FF' },
-  background: { light: '#0A1929', dark: '#0A1929' },
-  surface: { light: '#132F4C', dark: '#132F4C' },
+  // Liquid glass aesthetic - dark teal/slate with muted accents (matching reference image)
+  primary: { light: '#7ECCC4', dark: '#7ECCC4' },
+  accent: { light: '#7ECCC4', dark: '#7ECCC4' },
+  background: { light: '#0D1B23', dark: '#0D1B23' },
+  surface: { light: '#1A3A47', dark: '#1A3A47' },
   
-  // Secondary panels - glassmorphism with transparency effect
-  panel: { light: '#1A3A52', dark: '#1A3A52' },
+  // Secondary panels - glassmorphism with muted transparency
+  panel: { light: '#234A57', dark: '#234A57' },
   
   // Text colors for clarity on glass
-  foreground: { light: '#F0F7FF', dark: '#F0F7FF' },
-  muted: { light: '#90CAF9', dark: '#90CAF9' },
+  foreground: { light: '#E8F1F5', dark: '#E8F1F5' },
+  muted: { light: '#8DB5C4', dark: '#8DB5C4' },
   
-  // Borders - subtle glass edge definition
-  border: { light: '#1E5A8E', dark: '#1E5A8E' },
+  // Borders - subtle glass edge definition with teal tone
+  border: { light: '#2A5A6F', dark: '#2A5A6F' },
   
   // Status colors - vibrant on glass
   success: { light: '#4ADE80', dark: '#4ADE80' },
@@ -22,16 +22,16 @@ const themeColors = {
   error: { light: '#F87171', dark: '#F87171' },
   
   // Additional glass colors
-  card: { light: '#1A3A52', dark: '#1A3A52' },
-  tint: { light: '#00D9FF', dark: '#00D9FF' },
+  card: { light: '#1A3A47', dark: '#1A3A47' },
+  tint: { light: '#7ECCC4', dark: '#7ECCC4' },
   
   // Hover and interactive states - glass highlight
-  hover: { light: '#1E5A8E', dark: '#1E5A8E' },
-  active: { light: '#00D9FF', dark: '#00D9FF' },
+  hover: { light: '#2A5A6F', dark: '#2A5A6F' },
+  active: { light: '#7ECCC4', dark: '#7ECCC4' },
   
-  // Glass-specific colors
-  glass: { light: 'rgba(19, 47, 76, 0.7)', dark: 'rgba(19, 47, 76, 0.7)' },
-  glassLight: { light: 'rgba(26, 58, 82, 0.5)', dark: 'rgba(26, 58, 82, 0.5)' },
+  // Glass-specific colors - muted teal
+  glass: { light: 'rgba(26, 58, 71, 0.65)', dark: 'rgba(26, 58, 71, 0.65)' },
+  glassLight: { light: 'rgba(35, 74, 87, 0.45)', dark: 'rgba(35, 74, 87, 0.45)' },
 };
 
 module.exports = { themeColors };
