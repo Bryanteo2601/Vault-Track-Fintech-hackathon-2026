@@ -17,7 +17,6 @@ export default function ProfileScreen() {
   const [loggingOut, setLoggingOut] = useState(false);
   const [showEditModal, setShowEditModal] = useState(false);
   const [birthDateInput, setBirthDateInput] = useState(appData?.userProfile?.birthDate || '');
-  const [darkMode, setDarkMode] = useState(false);
 
   // Get life stage from userProfile if available
   const userLifeStage = appData?.userProfile?.lifeStage;
@@ -165,22 +164,18 @@ export default function ProfileScreen() {
             <MaterialIcons name="chevron-right" size={22} color={colors.muted} />
           </Pressable>
 
-          {/* Dark Mode */}
-          <View
-            className="flex-row items-center justify-between px-5 py-4 rounded-xl mb-2"
+          {/* Manage Subscriptions */}
+          <Pressable
+            onPress={() => router.push('/(tabs)/manage-subscriptions' as any)}
+            className="flex-row items-center justify-between px-5 py-4 rounded-xl mb-2 active:opacity-80"
             style={{ backgroundColor: colors.surface }}
           >
             <View className="flex-row items-center gap-4 flex-1">
-              <MaterialIcons name="dark-mode" size={22} color={colors.primary} />
-              <Text className="text-base font-medium text-foreground">Dark Mode</Text>
+              <MaterialIcons name="card-membership" size={22} color={colors.primary} />
+              <Text className="text-base font-medium text-foreground">Manage Subscriptions</Text>
             </View>
-            <Switch
-              value={darkMode}
-              onValueChange={setDarkMode}
-              trackColor={{ false: colors.border, true: colors.primary + '40' }}
-              thumbColor={darkMode ? colors.primary : colors.muted}
-            />
-          </View>
+            <MaterialIcons name="chevron-right" size={22} color={colors.muted} />
+          </Pressable>
 
           {/* Support */}
           <Pressable
