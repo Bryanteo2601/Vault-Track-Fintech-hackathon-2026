@@ -321,6 +321,16 @@ const defaultInsurancePoliciesOld: InsurancePolicy[] = [
   },
 ];
 
+// Default CPF data
+const defaultCPFData = {
+  age: 35,
+  oa: 125000,  // Ordinary Account - for housing, education, investment
+  sa: 85000,   // Special Account - for retirement savings
+  ma: 45000,   // Medisave Account - for healthcare
+  ra: 0,       // Retirement Account - activated at 55
+  annualSalary: 72000,
+};
+
 // Sample credit score with good standing
 const defaultCreditScore: CreditScoreData = {
   score: 1825,
@@ -427,6 +437,7 @@ export const defaultAppData: AppData = {
   insurancePolicies: defaultInsurancePolicies,
   privateAssets: defaultPrivateAssets,
   creditScore: defaultCreditScore,
+  cpf: defaultCPFData,
   userAccountStartDate: '2022-01-01', // User account creation date
   userProfile: {
     birthDate: '1995-05-15',

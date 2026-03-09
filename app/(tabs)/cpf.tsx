@@ -2,6 +2,7 @@ import React, { useMemo, useState } from 'react';
 import { ScrollView, View, Text, StyleSheet, Pressable } from 'react-native';
 import { ScreenContainer } from '@/components/screen-container';
 import { useAppColors } from '@/hooks/use-app-colors';
+import { useAppData } from '@/lib/app-data-context';
 import { CPFOverviewCard } from '@/components/cpf/cpf-overview-card';
 import { CPFEditableInput } from '@/components/cpf/cpf-editable-input';
 import { CPFAccountDescription } from '@/components/cpf/cpf-account-description';
@@ -18,17 +19,19 @@ import {
 } from '@/lib/cpf-calculations';
 import { shouldHaveSA, shouldHaveRA, CPF_ACCOUNT_DESCRIPTIONS } from '@/lib/cpf-constants';
 
+
 export default function CPFScreen() {
   const colors = useAppColors();
+  const { data } = useAppData();
 
-  // Editable CPF data - starts with default values
+  // Editable CPF data - starts with app context data or defaults
   const [cpfData, setCPFData] = useState<CPFUserData>({
-    age: 35,
-    oa: 0,
-    sa: 0,
-    ma: 0,
-    ra: 0,
-    annualSalary: 60000,
+    age: data.cpf?.age ?? 35,
+    oa: data.cpf?.oa ?? 0,
+    sa: data.cpf?.sa ?? 0,
+    ma: data.cpf?.ma ?? 0,
+    ra: data.cpf?.ra ?? 0,
+    annualSalary: data.cpf?.annualSalary ?? 60000,
   });
 
   // Editing state for each field
@@ -41,6 +44,7 @@ export default function CPFScreen() {
 
   const handleFieldChange = (field: keyof CPFUserData, value: number) => {
     setCPFData((prev) => ({ ...prev, [field]: value }));
+    // TODO: Persist to app context when backend is ready
   };
 
   const toggleEdit = (field: string) => {

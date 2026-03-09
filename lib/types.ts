@@ -156,6 +156,15 @@ export interface UserProfile {
 }
 
 // ─── App State ────────────────────────────────────────────────────────────────────
+export interface CPFData {
+  age: number;
+  oa: number; // Ordinary Account
+  sa: number; // Special Account
+  ma: number; // Medisave Account
+  ra: number; // Retirement Account
+  annualSalary: number;
+}
+
 export interface AppData {
   bankAccounts: BankAccount[];
   loans: Loan[];
@@ -163,6 +172,7 @@ export interface AppData {
   insurancePolicies: InsurancePolicy[];
   privateAssets: PrivateAsset[];
   creditScore: CreditScoreData;
+  cpf?: CPFData; // CPF account data
   userAccountStartDate?: string; // ISO date string (e.g., "2022-01-01")
   userProfile?: UserProfile; // User age, life stage, and demographic info
 }

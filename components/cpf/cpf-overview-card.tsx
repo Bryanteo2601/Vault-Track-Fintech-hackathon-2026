@@ -4,6 +4,7 @@ import { useAppColors } from '@/hooks/use-app-colors';
 import { CPF_RETIREMENT_SUMS } from '@/lib/cpf-constants';
 import { formatCurrency } from '@/lib/store';
 
+
 interface CPFOverviewCardProps {
   totalBalance: number;
   age: number;
@@ -121,7 +122,7 @@ const styles = StyleSheet.create({
   grid: {
     flexDirection: 'row',
     flexWrap: 'wrap',
-    gap: 12,
+    gap: 10,
   },
   gridItem: {
     flex: 1,
