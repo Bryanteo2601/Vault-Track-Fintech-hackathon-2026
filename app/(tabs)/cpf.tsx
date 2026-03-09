@@ -196,7 +196,7 @@ export default function CPFScreen() {
           </Text>
         </View>
 
-        <CPFRetirementSums currentRA={cpfData.ra} />
+        <CPFRetirementSums currentRA={projection.projectedRAAt65} />
 
         {/* CPF LIFE Payout Estimator */}
         <View style={styles.sectionDivider}>
@@ -206,7 +206,7 @@ export default function CPFScreen() {
           </Text>
         </View>
 
-        <CPFPayoutEstimator data={cpfData} />
+        <CPFPayoutEstimator data={{ ...cpfData, ra: projection.projectedRAAt65 }} />
 
         {/* Milestones Timeline */}
         <View style={styles.sectionDivider}>
