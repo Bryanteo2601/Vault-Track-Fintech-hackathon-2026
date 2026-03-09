@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { useRouter } from 'expo-router';
+import { useRouter, Stack } from 'expo-router';
 import { ScrollView, Text, View, Pressable, Alert, ActivityIndicator } from 'react-native';
 import { ScreenContainer } from '@/components/screen-container';
 import { useAppColors } from '@/hooks/use-app-colors';
@@ -86,6 +86,15 @@ const plans: PlanOption[] = [
 ];
 
 export default function ManageSubscriptionsScreen() {
+  return (
+    <>
+      <Stack.Screen options={{ headerShown: false }} />
+      <ManageSubscriptionsContent />
+    </>
+  );
+}
+
+function ManageSubscriptionsContent() {
   const router = useRouter();
   const colors = useAppColors();
   const [selectedPlan, setSelectedPlan] = useState<SubscriptionPlan>('free');
