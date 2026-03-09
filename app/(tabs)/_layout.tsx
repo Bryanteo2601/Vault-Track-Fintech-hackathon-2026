@@ -1,4 +1,4 @@
-import { Tabs, useNavigation } from "expo-router";
+import { Tabs, useRouter } from "expo-router";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { Platform } from "react-native";
 import { HapticTab } from "@/components/haptic-tab";
@@ -12,7 +12,7 @@ import { usePathname } from "expo-router";
 export default function TabLayout() {
   const colors = useAppColors();
   const insets = useSafeAreaInsets();
-  const navigation = useNavigation();
+  const router = useRouter();
   const pathname = usePathname();
   const [activeTab, setActiveTab] = useState('index');
   const bottomPadding = Platform.OS === "web" ? 12 : Math.max(insets.bottom, 8);
@@ -37,7 +37,7 @@ export default function TabLayout() {
 
   const handleTabChange = (tabName: string) => {
     setActiveTab(tabName);
-    (navigation as any).navigate({ name: tabName, merge: true });
+    router.push(`/(tabs)/${tabName}` as any);
   };
 
   return (
