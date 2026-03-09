@@ -25,7 +25,7 @@ import {
 import { IconSymbol } from '@/components/ui/icon-symbol';
 import Svg, { Circle, G } from 'react-native-svg';
 import { useScoringCalculations } from './dashboard-scoring';
-import { InvestmentRecommendationsWidget } from '@/components/investment-recommendations-widget';
+// InvestmentRecommendationsWidget removed - functionality moved to dedicated Investments tab
 import { LifeStageWidget } from '@/components/life-stage-widget';
 import { determineLifeStage } from '@/lib/life-stage';
 
@@ -343,10 +343,7 @@ export default function DashboardScreen() {
           {/* Life Stage Widget */}
           <LifeStageWidget />
 
-          {/* Investment Recommendations Widget */}
-          {lifeStage && (
-            <InvestmentRecommendationsWidget lifeStage={lifeStage} holdings={data?.holdings || []} />
-          )}
+          {/* Investment Recommendations Widget removed - functionality moved to dedicated Investments tab */}
 
           {/* AI Recommendations */}
           <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginBottom: 12 }}>
