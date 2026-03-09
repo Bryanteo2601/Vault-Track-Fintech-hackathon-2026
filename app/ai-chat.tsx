@@ -3,7 +3,7 @@ import { View, Text, TextInput, Pressable, ScrollView, KeyboardAvoidingView, Pla
 import { ScreenContainer } from '@/components/screen-container';
 import { useAppColors } from '@/hooks/use-app-colors';
 import { useAppData } from '@/lib/app-data-context';
-import { chatWithAI } from '@/lib/gemini-ai-service';
+import { trpc } from '@/lib/trpc';
 import { useRouter, useFocusEffect } from 'expo-router';
 import { IconSymbol } from '@/components/ui/icon-symbol';
 import { useCallback } from 'react';
@@ -59,7 +59,17 @@ export default function AIChatScreen() {
         content: msg.content,
       }));
 
-      const aiResponse = await chatWithAI(userMessage.content, data, conversationHistory);
+      const result = await trpc.ai.chat.mutate({
+        message: userMessage.content,
+        portfolioData: data,
+        conversationHistory,
+      });
+
+      if (!result.success) {
+        throw new Error(result.error || 'Failed to get AI response');
+      }
+
+      const aiResponse = result.response;
 
       const assistantMessage: Message = {
         id: (Date.now() + 1).toString(),
