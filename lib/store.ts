@@ -428,6 +428,13 @@ export const defaultAppData: AppData = {
   privateAssets: defaultPrivateAssets,
   creditScore: defaultCreditScore,
   userAccountStartDate: '2022-01-01', // User account creation date
+  userProfile: {
+    birthDate: '1995-05-15',
+    ageRange: '25-34',
+    lifeStage: 'fresh_entrant',
+    hasDependents: false,
+    hasAgedParents: false,
+  },
 };
 
 // ─── Load App Data from Firestore ─────────────────────────────────────────────

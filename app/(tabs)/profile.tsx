@@ -18,8 +18,9 @@ export default function ProfileScreen() {
   const [billingCycle, setBillingCycle] = useState<'monthly' | 'annual'>('monthly');
   const [expandedPlan, setExpandedPlan] = useState<'pro' | 'premium' | null>(null);
 
-  const lifeStage = appData?.userProfile ? determineLifeStage(appData.userProfile.birthDate) : null;
-  const stageName = lifeStage ? getLifeStageName(lifeStage) : null;
+  // Get life stage from userProfile if available
+  const userLifeStage = appData?.userProfile?.lifeStage;
+  const stageName = userLifeStage ? getLifeStageName(userLifeStage) : null;
 
   const handleLogout = async () => {
     Alert.alert('Sign Out', 'Are you sure you want to sign out?', [
@@ -81,10 +82,12 @@ export default function ProfileScreen() {
                     Edit Profile
                   </Text>
                 </Pressable>
-                {stageName && (
+                {appData?.userProfile && (
                   <View className="mt-3 pt-3 border-t" style={{ borderColor: colors.border }}>
                     <Text className="text-xs font-semibold text-muted mb-1">LIFE STAGE</Text>
-                    <Text className="text-sm font-bold text-foreground">{stageName}</Text>
+                    <Text className="text-sm font-bold text-foreground">
+                      {stageName || 'Not Set'}
+                    </Text>
                   </View>
                 )}
               </View>
