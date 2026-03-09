@@ -6,13 +6,14 @@
 
 // ─── Retirement Sums (2026) ───────────────────────────────────────────────────
 // These are the official CPF retirement sum targets for 2026
+// Source: CPF Board Singapore
 export const CPF_RETIREMENT_SUMS = {
-  // Basic Retirement Sum - minimum to receive monthly payouts
-  BRS: 180000,
-  // Full Retirement Sum - benchmark retirement target (recommended)
-  FRS: 360000,
-  // Enhanced Retirement Sum - for higher monthly payouts
-  ERS: 540000,
+  // Basic Retirement Sum - minimum retirement savings if you own a property and can pledge it
+  BRS: 102900,
+  // Full Retirement Sum - standard target for a comfortable retirement income
+  FRS: 205800,
+  // Enhanced Retirement Sum - higher savings target for larger CPF LIFE payouts
+  ERS: 308700,
 } as const;
 
 // ─── Interest Rates (2026) ─────────────────────────────────────────────────────
