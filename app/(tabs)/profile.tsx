@@ -166,7 +166,7 @@ export default function ProfileScreen() {
 
           {/* Manage Subscriptions */}
           <Pressable
-            onPress={() => router.push('/(tabs)/manage-subscriptions' as any)}
+            onPress={() => router.push('/manage-subscriptions' as any)}
             className="flex-row items-center justify-between px-5 py-4 rounded-xl mb-2 active:opacity-80"
             style={{ backgroundColor: colors.surface }}
           >
