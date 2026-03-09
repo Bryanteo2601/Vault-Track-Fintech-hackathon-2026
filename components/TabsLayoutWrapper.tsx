@@ -25,7 +25,7 @@ export function TabsLayoutWrapper({ children, tabs }: TabsLayoutWrapperProps) {
   const activeTab = pathname.split('/').pop() || 'index';
 
   const handleTabChange = (tabName: string) => {
-    router.push(tabName as any);
+    router.push(`/(tabs)/${tabName}` as any);
   };
 
   return (
