@@ -1,48 +1,456 @@
-import { ScrollView, Text, View, TouchableOpacity } from "react-native";
+import { ScrollView, View, Text, StyleSheet, Pressable, FlatList, GestureResponderEvent } from 'react-native';
+import { ScreenContainer } from '@/components/screen-container';
+import { useAppColors } from '@/hooks/use-app-colors';
+import { useAppData } from '@/lib/app-data-context';
+import { useRouter } from 'expo-router';
+import {
+  calcNetWorth,
+  calcTotalAssets,
+  calcTotalLiabilities,
+  calcWellnessScore,
+  formatCurrency,
+  calcPortfolioByAssetClass,
+} from '@/lib/store';
+import { calculateCBSScore } from '@/lib/cbs-score-calculator';
+import { calculateUnifiedFinancialSummary, calculateWellnessScoreFromUnified } from '@/lib/unified-financial-engine';
+import {
+  calculateInsuranceProtectionScore,
+  calculateCPFRetirementScore,
+  calculatePrivateAssetQualityScore,
+  getInsuranceStatusLabel,
+  getCPFStatusLabel,
+  getPrivateAssetStatusLabel,
+} from '@/lib/evidence-based-scoring';
+import { IconSymbol } from '@/components/ui/icon-symbol';
+import Svg, { Circle, G } from 'react-native-svg';
+import { useScoringCalculations } from './dashboard-scoring';
+import { LifeStageWidget } from '@/components/life-stage-widget';
+import { determineLifeStage } from '@/lib/life-stage';
+import { GlassCard } from '@/components/glass-card';
+import { glassContainerStyle, glassDeepStyle, glassLightStyle, glassGlowStyle } from '@/lib/glass-utils';
+import { useMemo } from 'react';
 
-import { ScreenContainer } from "@/components/screen-container";
+// ─── Wellness Gauge ───────────────────────────────────────────────────────────
+function WellnessGauge({ score }: { score: number }) {
+  const colors = useAppColors();
+  const size = 160;
+  const strokeWidth = 14;
+  const radius = (size - strokeWidth) / 2;
+  const circumference = 2 * Math.PI * radius;
+  const progress = (score / 100) * circumference;
 
-/**
- * Home Screen - NativeWind Example
- *
- * This template uses NativeWind (Tailwind CSS for React Native).
- * You can use familiar Tailwind classes directly in className props.
- *
- * Key patterns:
- * - Use `className` instead of `style` for most styling
- * - Theme colors: use tokens directly (bg-background, text-foreground, bg-primary, etc.); no dark: prefix needed
- * - Responsive: standard Tailwind breakpoints work on web
- * - Custom colors defined in tailwind.config.js
- */
-export default function HomeScreen() {
+  const gaugeColor =
+    score >= 75 ? colors.success :
+    score >= 50 ? colors.warning :
+    colors.error;
+
   return (
-    <ScreenContainer className="p-6">
-      <ScrollView contentContainerStyle={{ flexGrow: 1 }}>
-        <View className="flex-1 gap-8">
-          {/* Hero Section */}
-          <View className="items-center gap-2">
-            <Text className="text-4xl font-bold text-foreground">Welcome</Text>
-            <Text className="text-base text-muted text-center">
-              Edit app/(tabs)/index.tsx to get started
+    <View style={styles.gaugeContainer}>
+      <Svg width={size} height={size}>
+        <G rotation="-90" origin={`${size / 2}, ${size / 2}`}>
+          <Circle
+            cx={size / 2} cy={size / 2} r={radius}
+            stroke={colors.border} strokeWidth={strokeWidth}
+            fill="none"
+            opacity={0.2}
+          />
+          <Circle
+            cx={size / 2} cy={size / 2} r={radius}
+            stroke={gaugeColor} strokeWidth={strokeWidth}
+            fill="none"
+            strokeDasharray={`${progress} ${circumference}`}
+            strokeLinecap="round"
+          />
+        </G>
+      </Svg>
+      <View style={styles.gaugeCenter}>
+        <Text style={[styles.gaugeScore, { color: gaugeColor }]}>{score}</Text>
+        <Text style={[styles.gaugeLabel, { color: colors.muted }]}>Wellness</Text>
+      </View>
+    </View>
+  );
+}
+
+// ─── Asset Allocation Bar ─────────────────────────────────────────────────────
+function AssetAllocationBar({ data }: { data: { label: string; value: number; color: string }[] }) {
+  const colors = useAppColors();
+  const total = data.reduce((s, d) => s + d.value, 0);
+  if (total === 0) return null;
+
+  return (
+    <View style={styles.allocBar}>
+      <View style={styles.allocBarTrack}>
+        {data.map((d, i) => (
+          <View
+            key={i}
+            style={[styles.allocBarSegment, { flex: d.value / total, backgroundColor: d.color }]}
+          />
+        ))}
+      </View>
+      <View style={styles.allocLegend}>
+        {data.map((d, i) => (
+          <View key={i} style={styles.allocLegendItem}>
+            <View style={[styles.allocDot, { backgroundColor: d.color }]} />
+            <Text style={[styles.allocLegendText, { color: colors.muted }]}>
+              {d.label} {((d.value / total) * 100).toFixed(0)}%
             </Text>
           </View>
+        ))}
+      </View>
+    </View>
+  );
+}
 
-          {/* Example Card */}
-          <View className="w-full max-w-sm self-center bg-surface rounded-2xl p-6 shadow-sm border border-border">
-            <Text className="text-lg font-semibold text-foreground mb-2">NativeWind Ready</Text>
-            <Text className="text-sm text-muted leading-relaxed">
-              Use Tailwind CSS classes directly in your React Native components.
+// ─── Health Metric Card with Glass Effect ───────────────────────────────────────────────────────
+function HealthMetricCard({ label, value, subtitle, color, onPress }: { label: string; value: string; subtitle: string; color: string; onPress?: () => void }) {
+  const colors = useAppColors();
+  return (
+    <Pressable
+      onPress={onPress}
+      style={({ pressed }) => [
+        glassLightStyle,
+        styles.metricCard,
+        pressed && { opacity: 0.8, transform: [{ scale: 0.98 }] },
+        !pressed && glassGlowStyle,
+      ]}
+    >
+      <Text style={[styles.metricValue, { color }]}>{value}</Text>
+      <View style={styles.metricContent}>
+        <Text style={[styles.metricLabel, { color: colors.foreground }]}>{label}</Text>
+        <Text style={[styles.metricSub, { color: colors.muted }]}>{subtitle}</Text>
+      </View>
+    </Pressable>
+  );
+}
+
+// ─── AI Recommendation Card with Glass Effect ───────────────────────────────────────────────────
+function AIRecommendationCard({ icon, title, description, type }: { icon: string; title: string; description: string; type: 'opportunity' | 'warning' | 'info' }) {
+  const colors = useAppColors();
+  const typeColor = type === 'opportunity' ? colors.success : type === 'warning' ? colors.warning : colors.primary;
+  const typeBg = type === 'opportunity' ? 'rgba(74,222,128,0.15)' : type === 'warning' ? 'rgba(251,191,36,0.15)' : 'rgba(0,217,255,0.15)';
+
+  return (
+    <View style={[glassLightStyle, styles.aiCard, { borderLeftColor: typeColor, borderLeftWidth: 3 }]}>
+      <View style={[styles.aiIconWrap, { backgroundColor: typeBg }]}>
+        <Text style={styles.aiIcon}>{icon}</Text>
+      </View>
+      <View style={styles.aiContent}>
+        <Text style={[styles.aiTitle, { color: colors.foreground }]}>{title}</Text>
+        <Text style={[styles.aiDesc, { color: colors.muted }]}>{description}</Text>
+      </View>
+    </View>
+  );
+}
+
+// ─── Main Dashboard ───────────────────────────────────────────────────────────
+export default function DashboardScreen() {
+  const colors = useAppColors();
+  const router = useRouter();
+  const { data, isLoading } = useAppData();
+
+  // Use unified financial engine as single source of truth
+  const unifiedSummary = useMemo(() => calculateUnifiedFinancialSummary(data, null), [data]);
+
+  // Extract values from unified summary
+  const netWorth = useMemo(() => unifiedSummary.netWorth.totalNetWorth, [unifiedSummary]);
+  const totalAssets = useMemo(() => unifiedSummary.assetsBreakdown.totalAssets, [unifiedSummary]);
+  const totalLiabilities = useMemo(() => unifiedSummary.liabilitiesBreakdown.totalLiabilities, [unifiedSummary]);
+  
+  // Calculate wellness score using unified engine
+  const wellnessScore = useMemo(() => {
+    const cpfScore = 60;
+    const insuranceScore = 60;
+    const liquidAssets = data.bankAccounts.filter(a => ['savings', 'daily'].includes(a.accountType)).reduce((s, a) => s + a.balance, 0);
+    const result = calculateWellnessScoreFromUnified({
+      creditScore: data.creditScore.score,
+      liquidAssets,
+      monthlyExpenses: 5000,
+      summary: unifiedSummary,
+      previousNetWorth: netWorth,
+      cpfScore,
+      insuranceScore,
+    });
+    return result.score;
+  }, [unifiedSummary, data, netWorth]);
+  const monthlyIncome = 5000; // TODO: Get from user profile
+  const cbsScore = useMemo(() => calculateCBSScore(data, monthlyIncome), [data, monthlyIncome]);
+  const portfolioByClass = useMemo(() => calcPortfolioByAssetClass(data.holdings), [data.holdings]);
+
+  // Use unified asset allocation
+  const allocationData = useMemo(() => {
+    const allocation = [];
+    if (unifiedSummary.assetsBreakdown.banks > 0) {
+      allocation.push({ label: 'Banks', value: unifiedSummary.assetsBreakdown.banks, color: '#1A3C5E' });
+    }
+    if (unifiedSummary.assetsBreakdown.investments > 0) {
+      allocation.push({ label: 'Investments', value: unifiedSummary.assetsBreakdown.investments, color: '#00C896' });
+    }
+    if (unifiedSummary.assetsBreakdown.cpf > 0) {
+      allocation.push({ label: 'CPF', value: unifiedSummary.assetsBreakdown.cpf, color: '#8B5CF6' });
+    }
+    if (unifiedSummary.assetsBreakdown.privateAssets > 0) {
+      allocation.push({ label: 'Private Assets', value: unifiedSummary.assetsBreakdown.privateAssets, color: '#EC4899' });
+    }
+    if (unifiedSummary.assetsBreakdown.insuranceCashValue > 0) {
+      allocation.push({ label: 'Insurance', value: unifiedSummary.assetsBreakdown.insuranceCashValue, color: '#F59E0B' });
+    }
+    return allocation;
+  }, [unifiedSummary]);
+
+  const dta = totalAssets > 0 ? (totalLiabilities / totalAssets) * 100 : 0;
+  const liquidAssets = data.bankAccounts
+    .filter(a => ['savings', 'daily'].includes(a.accountType))
+    .reduce((s, a) => s + a.balance, 0);
+  const monthlyDebt = data.loans.reduce((s, l) => s + l.monthlyInstalment, 0);
+  const liquidityMonths = monthlyDebt > 0 ? Math.round(liquidAssets / monthlyDebt) : 99;
+
+  // Count asset classes including private assets and CPF
+  const assetClassCount = useMemo(() => {
+    let count = 0;
+    if (unifiedSummary.assetsBreakdown.banks > 0) count++;
+    if (unifiedSummary.assetsBreakdown.investments > 0) count++;
+    if (unifiedSummary.assetsBreakdown.cpf > 0) count++;
+    if (unifiedSummary.assetsBreakdown.privateAssets > 0) count++;
+    if (unifiedSummary.assetsBreakdown.insuranceCashValue > 0) count++;
+    return count;
+  }, [unifiedSummary]);
+
+  const today = new Date();
+  const hour = today.getHours();
+  const greeting = hour < 12 ? 'Good morning' : hour < 17 ? 'Good afternoon' : 'Good evening';
+  const dateStr = today.toLocaleDateString('en-SG', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' });
+
+  const aiRecommendations = useMemo(() => {
+    const recs = [];
+    if (dta > 60) {
+      recs.push({ icon: '⚠️', title: 'High Debt-to-Asset Ratio', description: `Your debt is ${dta.toFixed(0)}% of total assets. Consider accelerating loan repayments to improve financial resilience.`, type: 'warning' as const });
+    }
+    if (assetClassCount < 4) {
+      recs.push({ icon: '✨', title: 'Diversify Your Portfolio', description: `You hold ${assetClassCount} asset class${assetClassCount !== 1 ? 'es' : ''}. Adding bonds or REITs can reduce volatility and improve risk-adjusted returns.`, type: 'opportunity' as const });
+    }
+    if (liquidityMonths < 6) {
+      recs.push({ icon: '💧', title: 'Build Emergency Fund', description: `Your liquid assets cover ${liquidityMonths} months of debt payments. Aim for 6 months to protect against income disruptions.`, type: 'warning' as const });
+    }
+    if (cbsScore.score > 0 && cbsScore.score >= 1825) {
+      recs.push({ icon: '🏆', title: 'Excellent Credit Standing', description: `Your CBS score of ${cbsScore.score} (${cbsScore.grade}) qualifies you for preferential loan rates. Consider refinancing existing loans.`, type: 'info' as const });
+    }
+    if (recs.length === 0) {
+      recs.push({ icon: '🎯', title: 'Strong Financial Health', description: 'Your wealth wellness metrics are looking great. Continue your current strategy and review quarterly.', type: 'info' as const });
+    }
+    return recs.slice(0, 3);
+  }, [dta, assetClassCount, liquidityMonths, cbsScore]);
+  
+  // Use the scoring calculations hook
+  const { cpfScore, cpfStatusLabel, insuranceScore, insuranceStatusLabel, privateAssetScore, privateAssetStatusLabel } = useScoringCalculations(data, unifiedSummary);
+
+  // Determine life stage for investment recommendations
+  const lifeStage = data?.userProfile ? determineLifeStage(data.userProfile.birthDate) : 'fresh_entrant';
+
+  if (isLoading) {
+    return (
+      <ScreenContainer>
+        <View style={styles.loadingContainer}>
+          <Text style={[styles.loadingText, { color: colors.muted }]}>Loading your wealth data...</Text>
+        </View>
+      </ScreenContainer>
+    );
+  }
+
+  return (
+    <ScreenContainer containerClassName="bg-background">
+      <ScrollView
+        style={{ flex: 1 }}
+        contentContainerStyle={{ paddingBottom: 32 }}
+        showsVerticalScrollIndicator={false}
+      >
+        <View style={styles.content}>
+          {/* Hero Card - Net Worth + Wellness Score with Glass Effect */}
+          <Pressable 
+            onPress={() => router.push('/net-worth-timeline' as any)} 
+            style={({ pressed }) => [
+              glassDeepStyle,
+              styles.heroCard,
+              glassGlowStyle,
+              pressed && { opacity: 0.85, transform: [{ scale: 0.98 }] },
+            ]}
+          >
+            <View style={styles.heroLeft}>
+              <Text style={styles.heroLabel}>Total Net Worth</Text>
+              <Text style={styles.heroValue}>{formatCurrency(netWorth)}</Text>
+              <View style={styles.heroStats}>
+                <View style={styles.heroStat}>
+                  <Text style={styles.heroStatLabel}>Assets</Text>
+                  <Text style={[styles.heroStatValue, { color: '#4ADE80' }]}>{formatCurrency(totalAssets)}</Text>
+                </View>
+                <View style={[styles.heroStatDivider, { backgroundColor: 'rgba(0,217,255,0.2)' }]} />
+                <View style={styles.heroStat}>
+                  <Text style={styles.heroStatLabel}>Liabilities</Text>
+                  <Text style={[styles.heroStatValue, { color: '#F87171' }]}>{formatCurrency(totalLiabilities)}</Text>
+                </View>
+              </View>
+              <Text style={{ fontSize: 10, color: 'rgba(240,247,255,0.6)', marginTop: 8 }}>Tap to view timeline →</Text>
+            </View>
+            <WellnessGauge score={wellnessScore} />
+          </Pressable>
+
+          {/* Asset Allocation with Glass Effect */}
+          <GlassCard variant="default" padding={16}>
+            <Text style={[styles.sectionTitle, { color: colors.foreground }]}>Asset Allocation</Text>
+            <AssetAllocationBar data={allocationData} />
+          </GlassCard>
+
+          {/* Financial Health Metrics with Glass Effect */}
+          <GlassCard variant="default" padding={16}>
+            <Text style={[styles.sectionTitle, { color: colors.foreground }]}>Financial Health</Text>
+            <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.metricsScroll}>
+              <View style={styles.metricsRow}>
+                <HealthMetricCard
+                  label="Diversification"
+                  value={`${assetClassCount}/8`}
+                  subtitle="Asset classes"
+                  color={assetClassCount >= 5 ? colors.success : assetClassCount >= 3 ? colors.warning : colors.error}
+                  onPress={() => router.push('/diversification-analysis')}
+                />
+                <HealthMetricCard
+                  label="Liquidity"
+                  value={`${Math.min(liquidityMonths, 99)}mo`}
+                  subtitle="Emergency cover"
+                  color={liquidityMonths >= 6 ? colors.success : liquidityMonths >= 3 ? colors.warning : colors.error}
+                  onPress={() => router.push('/liquidity-analysis')}
+                />
+                <HealthMetricCard
+                  label="Debt Ratio"
+                  value={`${dta.toFixed(0)}%`}
+                  subtitle="Debt-to-assets"
+                  color={dta <= 40 ? colors.success : dta <= 60 ? colors.warning : colors.error}
+                  onPress={() => router.push('/debt-analysis')}
+                />
+                <HealthMetricCard
+                  label="Credit Score"
+                  value={cbsScore.score.toString()}
+                  subtitle={`Grade ${cbsScore.grade}`}
+                  color={cbsScore.score === 0 ? colors.muted : cbsScore.score >= 1825 ? colors.success : cbsScore.score >= 1500 ? colors.warning : colors.error}
+                />
+                <HealthMetricCard
+                  label="CPF Health"
+                  value={`${cpfScore.toFixed(0)}`}
+                  subtitle={cpfStatusLabel}
+                  color={cpfScore >= 80 ? colors.success : cpfScore >= 60 ? colors.warning : colors.error}
+                />
+                <HealthMetricCard
+                  label="Insurance"
+                  value={`${insuranceScore.toFixed(0)}`}
+                  subtitle={insuranceStatusLabel}
+                  color={insuranceScore >= 80 ? colors.success : insuranceScore >= 60 ? colors.warning : colors.error}
+                />
+                <HealthMetricCard
+                  label="Private Assets"
+                  value={`${privateAssetScore.toFixed(0)}`}
+                  subtitle={privateAssetStatusLabel}
+                  color={privateAssetScore >= 75 ? colors.success : privateAssetScore >= 50 ? colors.warning : colors.error}
+                />
+              </View>
+            </ScrollView>
+          </GlassCard>
+
+          {/* Life Stage Widget */}
+          <LifeStageWidget />
+
+          {/* AI Recommendations with Glass Effect */}
+          <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginBottom: 12 }}>
+            <Text style={[styles.sectionLabel, { color: colors.foreground }]}>AI Recommendations</Text>
+            <Pressable onPress={() => router.push('/ai-chat')} style={{ padding: 8 }}>
+              <Text style={{ fontSize: 12, color: colors.primary, fontWeight: '600' }}>Chat →</Text>
+            </Pressable>
+          </View>
+          {aiRecommendations.map((rec, i) => (
+            <AIRecommendationCard key={i} {...rec} />
+          ))}
+          
+          {/* AI Chat Button with Glass Effect */}
+          <Pressable 
+            onPress={() => router.push('/ai-chat')}
+            style={({ pressed }) => [
+              glassContainerStyle,
+              glassGlowStyle,
+              styles.aiChatButton,
+              pressed && { opacity: 0.8, transform: [{ scale: 0.97 }] },
+            ]}
+          >
+            <Text style={{ color: colors.primary, fontSize: 16, fontWeight: '700', textAlign: 'center' }}>
+              💬 Ask AI Financial Advisor
             </Text>
-          </View>
-
-          {/* Example Button */}
-          <View className="items-center">
-            <TouchableOpacity className="bg-primary px-6 py-3 rounded-full active:opacity-80">
-              <Text className="text-background font-semibold">Get Started</Text>
-            </TouchableOpacity>
-          </View>
+          </Pressable>
         </View>
       </ScrollView>
     </ScreenContainer>
   );
 }
+
+const styles = StyleSheet.create({
+  loadingContainer: { flex: 1, alignItems: 'center', justifyContent: 'center' },
+  loadingText: { fontSize: 16 },
+  content: { padding: 16, gap: 16 },
+  heroCard: {
+    padding: 20,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+  },
+  heroLeft: { flex: 1 },
+  heroLabel: { fontSize: 12, color: 'rgba(240,247,255,0.7)', fontWeight: '500', letterSpacing: 0.5, textTransform: 'uppercase' },
+  heroValue: { fontSize: 28, fontWeight: '800', color: '#F0F7FF', marginTop: 4, letterSpacing: -1 },
+  heroStats: { flexDirection: 'row', alignItems: 'center', marginTop: 12, gap: 12 },
+  heroStat: { gap: 2 },
+  heroStatLabel: { fontSize: 11, color: 'rgba(240,247,255,0.6)' },
+  heroStatValue: { fontSize: 14, fontWeight: '700' },
+  heroStatDivider: { width: 1, height: 32 },
+  gaugeContainer: { width: 160, height: 160, alignItems: 'center', justifyContent: 'center' },
+  gaugeCenter: { position: 'absolute', alignItems: 'center' },
+  gaugeScore: { fontSize: 32, fontWeight: '800', letterSpacing: -1 },
+  gaugeLabel: { fontSize: 11, fontWeight: '500', marginTop: 2 },
+  section: { borderRadius: 16, padding: 16, borderWidth: 1 },
+  sectionTitle: { fontSize: 15, fontWeight: '700', marginBottom: 12 },
+  sectionLabel: { fontSize: 18, fontWeight: '700', letterSpacing: -0.3 },
+  allocBar: { gap: 10 },
+  allocBarTrack: { flexDirection: 'row', height: 10, borderRadius: 5, overflow: 'hidden', gap: 2 },
+  allocBarSegment: { borderRadius: 5 },
+  allocLegend: { flexDirection: 'row', flexWrap: 'wrap', gap: 12 },
+  allocLegendItem: { flexDirection: 'row', alignItems: 'center', gap: 6 },
+  allocDot: { width: 8, height: 8, borderRadius: 4 },
+  allocLegendText: { fontSize: 12 },
+  metricsScroll: { marginHorizontal: -16 },
+  metricsRow: { flexDirection: 'row', paddingHorizontal: 16, gap: 12 },
+  metricCard: {
+    borderRadius: 16,
+    padding: 14,
+    borderWidth: 1,
+    alignItems: 'center',
+    flexDirection: 'row',
+    gap: 12,
+    marginBottom: 8,
+  },
+  metricValue: { fontSize: 22, fontWeight: '800', letterSpacing: -0.5, minWidth: 50 },
+  metricContent: { flex: 1 },
+  metricLabel: { fontSize: 12, fontWeight: '600' },
+  metricSub: { fontSize: 10, marginTop: 2 },
+  aiCard: {
+    borderRadius: 14,
+    padding: 14,
+    borderWidth: 1,
+    flexDirection: 'row',
+    gap: 12,
+    alignItems: 'flex-start',
+    marginBottom: 8,
+  },
+  aiIconWrap: { width: 36, height: 36, borderRadius: 10, alignItems: 'center', justifyContent: 'center' },
+  aiIcon: { fontSize: 18 },
+  aiContent: { flex: 1 },
+  aiTitle: { fontSize: 13, fontWeight: '600', marginBottom: 2 },
+  aiDesc: { fontSize: 11, lineHeight: 16 },
+  aiChatButton: {
+    borderRadius: 16,
+    padding: 16,
+    marginTop: 16,
+  },
+});
