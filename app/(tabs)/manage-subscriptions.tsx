@@ -175,7 +175,7 @@ export default function ManageSubscriptionsScreen() {
             <Pressable
               key={plan.id}
               onPress={() => setSelectedPlan(plan.id)}
-              className="rounded-2xl p-6 mb-4 border-2 active:opacity-80 relative"
+              className="rounded-2xl p-6 mb-6 border-2 active:opacity-80"
               style={{
                 borderColor: selectedPlan === plan.id ? colors.primary : colors.border,
                 backgroundColor: selectedPlan === plan.id ? colors.surface : colors.background,
@@ -183,9 +183,9 @@ export default function ManageSubscriptionsScreen() {
             >
               {/* Popular Badge */}
               {plan.isPopular && (
-                <View className="absolute -top-3 left-6">
+                <View className="mb-3">
                   <View
-                    className="px-3 py-1 rounded-full"
+                    className="px-3 py-1 rounded-full w-fit"
                     style={{ backgroundColor: colors.primary }}
                   >
                     <Text className="text-white font-bold text-xs">RECOMMENDED</Text>
@@ -195,22 +195,22 @@ export default function ManageSubscriptionsScreen() {
 
               {/* Plan Header */}
               <View className="flex-row items-start justify-between mb-4">
-                <View className="flex-1">
-                  <Text className="text-2xl font-bold text-foreground mb-1">{plan.name}</Text>
-                  <View className="flex-row items-baseline gap-1">
+                <View className="flex-1 pr-4">
+                  <Text className="text-2xl font-bold text-foreground mb-2">{plan.name}</Text>
+                  <View className="flex-row items-baseline gap-1 mb-1">
                     <Text className="text-3xl font-bold" style={{ color: colors.primary }}>
                       {plan.price}
                     </Text>
                     <Text className="text-sm text-muted">{plan.period}</Text>
                   </View>
                   {plan.yearlyPrice && billingCycle === 'monthly' && (
-                    <Text className="text-xs text-muted mt-2">or {plan.yearlyPrice}</Text>
+                    <Text className="text-xs text-muted">or {plan.yearlyPrice}</Text>
                   )}
                 </View>
 
                 {/* Radio Button */}
                 <View
-                  className="w-6 h-6 rounded-full border-2 items-center justify-center flex-shrink-0"
+                  className="w-6 h-6 rounded-full border-2 items-center justify-center flex-shrink-0 mt-1"
                   style={{ borderColor: colors.primary }}
                 >
                   {selectedPlan === plan.id && (
