@@ -1,6 +1,6 @@
-import { useState } from 'react';
+import { useState, useMemo } from 'react';
 import { useRouter } from 'expo-router';
-import { ScrollView, Text, View, Pressable, Alert, ActivityIndicator } from 'react-native';
+import { ScrollView, Text, View, Pressable, Alert, ActivityIndicator, Modal, TextInput } from 'react-native';
 import { ScreenContainer } from '@/components/screen-container';
 import { useFirebaseAuth } from '@/lib/firebase-auth-context';
 import { logOut } from '@/lib/firebase-auth';
@@ -13,14 +13,29 @@ export default function ProfileScreen() {
   const router = useRouter();
   const colors = useAppColors();
   const { user, loading } = useFirebaseAuth();
-  const { data: appData } = useAppData();
+  const { data: appData, updateUserProfile } = useAppData();
   const [loggingOut, setLoggingOut] = useState(false);
   const [billingCycle, setBillingCycle] = useState<'monthly' | 'annual'>('monthly');
   const [expandedPlan, setExpandedPlan] = useState<'pro' | 'premium' | null>(null);
+  const [showEditModal, setShowEditModal] = useState(false);
+  const [birthDateInput, setBirthDateInput] = useState(appData?.userProfile?.birthDate || '');
 
   // Get life stage from userProfile if available
   const userLifeStage = appData?.userProfile?.lifeStage;
   const stageName = userLifeStage ? getLifeStageName(userLifeStage) : null;
+
+  // Calculate age from birthDate
+  const age = useMemo(() => {
+    if (!appData?.userProfile?.birthDate) return null;
+    const birthDate = new Date(appData.userProfile.birthDate);
+    const today = new Date();
+    let calculatedAge = today.getFullYear() - birthDate.getFullYear();
+    const monthDiff = today.getMonth() - birthDate.getMonth();
+    if (monthDiff < 0 || (monthDiff === 0 && today.getDate() < birthDate.getDate())) {
+      calculatedAge--;
+    }
+    return calculatedAge;
+  }, [appData?.userProfile?.birthDate]);
 
   const handleLogout = async () => {
     Alert.alert('Sign Out', 'Are you sure you want to sign out?', [
@@ -46,6 +61,24 @@ export default function ProfileScreen() {
         style: 'destructive',
       },
     ]);
+  };
+
+  const handleSaveBirthDate = async () => {
+    if (!birthDateInput.trim()) {
+      Alert.alert('Error', 'Please enter a birth date (YYYY-MM-DD)');
+      return;
+    }
+
+    try {
+      await updateUserProfile({
+        birthDate: birthDateInput,
+      });
+      setShowEditModal(false);
+      Alert.alert('Success', 'Birth date updated successfully');
+    } catch (err) {
+      const error = err as Error;
+      Alert.alert('Error', error.message || 'Failed to update birth date');
+    }
   };
 
   if (loading) {
@@ -76,7 +109,7 @@ export default function ProfileScreen() {
                   {user?.displayName || 'User'}
                 </Text>
                 <Text className="text-sm text-muted mb-3">{user?.email}</Text>
-                <Pressable className="flex-row items-center gap-1 active:opacity-60">
+                <Pressable onPress={() => setShowEditModal(true)} className="flex-row items-center gap-1 active:opacity-60">
                   <MaterialIcons name="edit" size={16} color={colors.primary} />
                   <Text className="text-xs font-semibold" style={{ color: colors.primary }}>
                     Edit Profile
@@ -84,10 +117,18 @@ export default function ProfileScreen() {
                 </Pressable>
                 {appData?.userProfile && (
                   <View className="mt-3 pt-3 border-t" style={{ borderColor: colors.border }}>
-                    <Text className="text-xs font-semibold text-muted mb-1">LIFE STAGE</Text>
-                    <Text className="text-sm font-bold text-foreground">
-                      {stageName || 'Not Set'}
-                    </Text>
+                    {age !== null && (
+                      <View className="mb-3">
+                        <Text className="text-xs font-semibold text-muted mb-1">AGE</Text>
+                        <Text className="text-sm font-bold text-foreground">{age} years old</Text>
+                      </View>
+                    )}
+                    <View>
+                      <Text className="text-xs font-semibold text-muted mb-1">LIFE STAGE</Text>
+                      <Text className="text-sm font-bold text-foreground">
+                        {stageName || 'Not Set'}
+                      </Text>
+                    </View>
                   </View>
                 )}
               </View>
@@ -335,6 +376,64 @@ export default function ProfileScreen() {
           </Pressable>
         </View>
       </ScrollView>
+
+      {/* ===== EDIT PROFILE MODAL ===== */}
+      <Modal
+        visible={showEditModal}
+        transparent
+        animationType="slide"
+        onRequestClose={() => setShowEditModal(false)}
+      >
+        <View className="flex-1" style={{ backgroundColor: colors.background }}>
+          <ScreenContainer className="flex-1 justify-between">
+            {/* Header */}
+            <View className="flex-row items-center justify-between mb-8">
+              <Text className="text-2xl font-bold text-foreground">Edit Profile</Text>
+              <Pressable onPress={() => setShowEditModal(false)} className="active:opacity-60">
+                <MaterialIcons name="close" size={28} color={colors.foreground} />
+              </Pressable>
+            </View>
+
+            {/* Form */}
+            <View className="flex-1">
+              <Text className="text-sm font-semibold text-muted mb-2">Birth Date (YYYY-MM-DD)</Text>
+              <TextInput
+                value={birthDateInput}
+                onChangeText={setBirthDateInput}
+                placeholder="e.g., 1995-05-15"
+                placeholderTextColor={colors.muted}
+                className="border rounded-xl px-4 py-3 text-foreground"
+                style={{
+                  borderColor: colors.border,
+                  color: colors.foreground,
+                  backgroundColor: colors.surface,
+                }}
+              />
+              <Text className="text-xs text-muted mt-2">
+                Enter your birth date to calculate your age and determine your life stage.
+              </Text>
+            </View>
+
+            {/* Buttons */}
+            <View className="flex-row gap-3">
+              <Pressable
+                onPress={() => setShowEditModal(false)}
+                className="flex-1 p-4 rounded-xl items-center active:opacity-80"
+                style={{ backgroundColor: colors.surface }}
+              >
+                <Text className="font-bold text-foreground">Cancel</Text>
+              </Pressable>
+              <Pressable
+                onPress={handleSaveBirthDate}
+                className="flex-1 p-4 rounded-xl items-center active:opacity-80"
+                style={{ backgroundColor: colors.primary }}
+              >
+                <Text className="font-bold text-white">Save</Text>
+              </Pressable>
+            </View>
+          </ScreenContainer>
+        </View>
+      </Modal>
     </ScreenContainer>
   );
 }
