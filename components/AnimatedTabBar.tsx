@@ -1,9 +1,8 @@
 import React, { useEffect, useRef, useState } from 'react';
-import { View, ScrollView, Pressable, Animated, Dimensions, Text } from 'react-native';
+import { View, ScrollView, Pressable, Dimensions, Text, NativeScrollEvent, NativeSyntheticEvent } from 'react-native';
 import { useAppColors } from '@/hooks/use-app-colors';
 import { IconSymbol } from '@/components/ui/icon-symbol';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { useNavigation } from 'expo-router';
 
 export interface TabItem {
   name: string;
@@ -21,26 +20,25 @@ export function AnimatedTabBar({ tabs, activeTab, onTabChange }: AnimatedTabBarP
   const colors = useAppColors();
   const insets = useSafeAreaInsets();
   const scrollViewRef = useRef<ScrollView>(null);
-  const [scrollPosition, setScrollPosition] = useState(0);
   const screenWidth = Dimensions.get('window').width;
-  const tabWidth = screenWidth / 3; // Show ~3 tabs at a time
+  const tabWidth = 70; // Fixed width for each tab
+  const visibleTabs = 4; // Show ~4 tabs at a time
   const bottomPadding = Math.max(insets.bottom, 8);
-  const tabBarHeight = 60 + bottomPadding;
+  const tabBarHeight = 70 + bottomPadding;
 
   // Auto-scroll to active tab
   useEffect(() => {
     const activeIndex = tabs.findIndex(tab => tab.name === activeTab);
     if (activeIndex !== -1) {
-      const scrollX = Math.max(0, activeIndex * tabWidth - screenWidth / 2 + tabWidth / 2);
+      const scrollX = Math.max(0, activeIndex * tabWidth - (screenWidth / 2 - tabWidth / 2));
       scrollViewRef.current?.scrollTo({ x: scrollX, animated: true });
     }
   }, [activeTab, tabs, tabWidth, screenWidth]);
 
   // Handle scroll and auto-navigate to nearest tab
-  const handleScroll = (event: any) => {
+  const handleScroll = (event: NativeSyntheticEvent<NativeScrollEvent>) => {
     const scrollX = event.nativeEvent.contentOffset.x;
-    setScrollPosition(scrollX);
-
+    
     // Calculate which tab is closest to center
     const centerX = scrollX + screenWidth / 2;
     const closestTabIndex = Math.round(centerX / tabWidth);
@@ -65,6 +63,7 @@ export function AnimatedTabBar({ tabs, activeTab, onTabChange }: AnimatedTabBarP
         borderTopWidth: 0.5,
         paddingTop: 8,
         paddingBottom: bottomPadding,
+        overflow: 'hidden',
       }}
     >
       <ScrollView
@@ -81,7 +80,7 @@ export function AnimatedTabBar({ tabs, activeTab, onTabChange }: AnimatedTabBarP
           paddingHorizontal: screenWidth / 2 - tabWidth / 2,
         }}
       >
-        {tabs.map((tab, index) => {
+        {tabs.map((tab) => {
           const isActive = tab.name === activeTab;
           const tabColor = isActive ? colors.accent : colors.muted;
 
@@ -103,7 +102,16 @@ export function AnimatedTabBar({ tabs, activeTab, onTabChange }: AnimatedTabBarP
                   name={tab.icon as any}
                   color={tabColor}
                 />
-                <Text style={{ fontSize: 10, fontWeight: '600', color: tabColor, maxWidth: tabWidth - 8 }}>
+                <Text 
+                  style={{ 
+                    fontSize: 9, 
+                    fontWeight: '600', 
+                    color: tabColor,
+                    textAlign: 'center',
+                    maxWidth: tabWidth - 4,
+                  }}
+                  numberOfLines={1}
+                >
                   {tab.title}
                 </Text>
               </View>
@@ -113,11 +121,11 @@ export function AnimatedTabBar({ tabs, activeTab, onTabChange }: AnimatedTabBarP
                 <View
                   style={{
                     position: 'absolute',
-                    bottom: 0,
-                    width: '60%',
-                    height: 3,
+                    bottom: 2,
+                    width: '70%',
+                    height: 2,
                     backgroundColor: colors.accent,
-                    borderRadius: 1.5,
+                    borderRadius: 1,
                   }}
                 />
               )}
