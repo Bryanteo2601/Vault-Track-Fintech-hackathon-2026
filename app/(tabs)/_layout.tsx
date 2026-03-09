@@ -24,14 +24,14 @@ export default function TabLayout() {
   }, [pathname]);
 
   const tabs = [
-    { name: 'profile', title: 'Profile', icon: 'person.fill' },
-    { name: 'private-assets', title: 'Assets', icon: 'diamond.fill' },
-    { name: 'cpf', title: 'CPF', icon: 'building.2.fill' },
-    { name: 'insurance', title: 'Insurance', icon: 'shield.fill' },
-    { name: 'loans', title: 'Loans', icon: 'creditcard.fill' },
-    { name: 'investments', title: 'Investments', icon: 'chart.pie.fill' },
+    { name: 'index', title: 'Dashboard', icon: 'house.fill' },
     { name: 'banks', title: 'Banks', icon: 'building.columns.fill' },
-    { name: 'index', title: 'Home', icon: 'house.fill' },
+    { name: 'investments', title: 'Investments', icon: 'chart.pie.fill' },
+    { name: 'loans', title: 'Loans', icon: 'creditcard.fill' },
+    { name: 'insurance', title: 'Insurance', icon: 'shield.fill' },
+    { name: 'cpf', title: 'CPF', icon: 'building.2.fill' },
+    { name: 'private-assets', title: 'Assets', icon: 'diamond.fill' },
+    { name: 'profile', title: 'Profile', icon: 'person.fill' },
   ];
 
   const handleTabChange = (tabName: string) => {
