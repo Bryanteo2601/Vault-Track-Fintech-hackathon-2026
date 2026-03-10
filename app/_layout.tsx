@@ -25,8 +25,8 @@ const DEFAULT_WEB_INSETS: EdgeInsets = { top: 0, right: 0, bottom: 0, left: 0 };
 const DEFAULT_WEB_FRAME: Rect = { x: 0, y: 0, width: 0, height: 0 };
 
 export const unstable_settings = {
-  anchor: "(tabs)",
-  initialRoute: "(tabs)",
+  anchor: "index",
+  initialRoute: "index",
 };
 
 // Separate component to use auth context
@@ -43,15 +43,19 @@ function RootLayoutContent() {
 
   return (
     <Stack screenOptions={{ headerShown: false }}>
+      {/* Always available routes */}
+      <Stack.Screen name="net-worth-timeline" />
+      <Stack.Screen name="diversification-analysis" />
+      <Stack.Screen name="liquidity-analysis" />
+      <Stack.Screen name="debt-analysis" />
+      <Stack.Screen name="ai-chat" />
+      <Stack.Screen name="stress-test-ai-chat" />
+      <Stack.Screen name="oauth/callback" />
+      
+      {/* Auth-dependent routes */}
       {user ? (
         <>
           <Stack.Screen name="(tabs)" />
-          <Stack.Screen name="net-worth-timeline" />
-          <Stack.Screen name="diversification-analysis" />
-          <Stack.Screen name="liquidity-analysis" />
-          <Stack.Screen name="debt-analysis" />
-          <Stack.Screen name="ai-chat" />
-          <Stack.Screen name="stress-test-ai-chat" />
         </>
       ) : (
         <>
@@ -60,7 +64,6 @@ function RootLayoutContent() {
           <Stack.Screen name="signup" />
         </>
       )}
-      <Stack.Screen name="oauth/callback" />
     </Stack>
   );
 }
