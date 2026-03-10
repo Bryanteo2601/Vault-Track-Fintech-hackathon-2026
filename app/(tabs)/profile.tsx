@@ -133,7 +133,7 @@ export default function ProfileScreen() {
 
               <View style={{ flex: 1 }}>
                 <Text style={{ fontSize: 18, fontWeight: 'bold', color: colors.foreground, marginBottom: 4 }}>
-                  {user?.displayName || 'User'}
+                  {appData?.userProfile?.name || user?.displayName || 'User'}
                 </Text>
                 <Text style={{ fontSize: 14, color: colors.muted }}>
                   {age ? `${age} years old` : 'Age not set'} • {stageName || 'Life stage not set'}
@@ -427,7 +427,7 @@ export default function ProfileScreen() {
                   Email
                 </Text>
                 <Text style={{ fontSize: 16, fontWeight: '500', color: colors.foreground }}>
-                  {user?.email || 'Not available'}
+                  {appData?.userProfile?.email || user?.email || 'Not available'}
                 </Text>
               </View>
 

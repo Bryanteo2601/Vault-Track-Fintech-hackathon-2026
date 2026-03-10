@@ -44,6 +44,8 @@ export default function SignupScreen() {
       
       // Save user data to AppData context
       await updateUserProfile({
+        email: email.trim(),
+        name: name.trim(),
         birthDate: birthDate.toISOString().split('T')[0],
       });
       // Redirect to main app
