@@ -71,7 +71,7 @@ export default function PrivateAssetFormScreen() {
       } else {
         await addPrivateAsset(assetData);
       }
-      router.back();
+      router.replace('/(tabs)/index' as any);
     } catch (error) {
       Alert.alert('Error', 'Failed to save asset');
     } finally {
@@ -84,7 +84,7 @@ export default function PrivateAssetFormScreen() {
       <ScrollView showsVerticalScrollIndicator={false}>
         {/* Header */}
         <View className="mb-6">
-          <Pressable onPress={() => router.back()} className="mb-4">
+          <Pressable onPress={() => router.replace('/(tabs)/index' as any)} className="mb-4">
             <Text className="text-accent text-base font-semibold">← Back</Text>
           </Pressable>
           <Text className="text-2xl font-bold text-foreground">

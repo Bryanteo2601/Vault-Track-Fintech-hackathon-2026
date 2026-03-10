@@ -102,7 +102,7 @@ export default function AIChatScreen() {
         {/* Header */}
         <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', paddingBottom: 12, borderBottomWidth: 1, borderBottomColor: colors.border }}>
           <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
-            <Pressable onPress={() => router.back()} style={{ padding: 8 }}>
+            <Pressable onPress={() => router.replace('/(tabs)/index' as any)} style={{ padding: 8 }}>
               <IconSymbol name="chevron.left" size={24} color={colors.foreground} />
             </Pressable>
             <View>

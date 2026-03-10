@@ -117,7 +117,7 @@ export default function NetWorthTimelineScreen() {
     <ScreenContainer containerClassName="bg-background">
       {/* Header */}
       <View style={{ paddingBottom: 16, borderBottomWidth: 1, borderBottomColor: colors.border, marginBottom: 16 }}>
-        <Pressable onPress={() => router.back()} style={{ flexDirection: 'row', alignItems: 'center', gap: 8, marginBottom: 8 }}>
+        <Pressable onPress={() => router.replace('/(tabs)/index' as any)} style={{ flexDirection: 'row', alignItems: 'center', gap: 8, marginBottom: 8 }}>
           <IconSymbol name="chevron.left" size={24} color={colors.primary} />
           <Text style={{ fontSize: 16, fontWeight: '600', color: colors.primary }}>Back</Text>
         </Pressable>

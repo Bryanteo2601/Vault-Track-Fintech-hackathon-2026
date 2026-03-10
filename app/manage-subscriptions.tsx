@@ -112,7 +112,7 @@ function ManageSubscriptionsContent() {
         {
           text: 'OK',
           onPress: () => {
-            router.back();
+            router.replace('/(tabs)/index' as any);
           },
         },
       ]);
@@ -140,7 +140,7 @@ function ManageSubscriptionsContent() {
         <View className="flex-1 px-6 py-6">
           {/* ===== HEADER ===== */}
           <View className="flex-row items-center justify-between mb-8">
-            <Pressable onPress={() => router.back()} className="active:opacity-60">
+            <Pressable onPress={() => router.replace('/(tabs)/index' as any)} className="active:opacity-60">
               <MaterialIcons name="arrow-back" size={28} color={colors.foreground} />
             </Pressable>
             <Text className="text-3xl font-bold text-foreground">Subscription</Text>
