@@ -25,8 +25,16 @@ export default function OnboardingScreen() {
     }
 
     const ageNum = parseInt(age, 10);
-    if (isNaN(ageNum) || ageNum < 18 || ageNum > 120) {
-      Alert.alert('Error', 'Please enter a valid age (18-120)');
+    if (isNaN(ageNum)) {
+      Alert.alert('Error', 'Please enter a valid age');
+      return;
+    }
+    if (ageNum < 18) {
+      Alert.alert('Error', 'You must be 18 or above to use this app');
+      return;
+    }
+    if (ageNum > 120) {
+      Alert.alert('Error', 'Please enter a valid age');
       return;
     }
 
