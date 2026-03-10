@@ -37,9 +37,8 @@ export default function TabLayout() {
 
   const handleTabChange = (tabName: string) => {
     setActiveTab(tabName);
-    // Use replace instead of push to avoid navigation stack issues
-    // This ensures we go to the tab screen, not a detail screen
-    router.replace(`/(tabs)/${tabName}` as any);
+    // Let the Tabs component handle navigation naturally
+    router.push(`/(tabs)/${tabName}` as any);
   };
 
   return (
@@ -63,14 +62,6 @@ export default function TabLayout() {
     >
       <Tabs.Screen
         name="index"
-        listeners={({ navigation }) => ({
-          tabPress: (e) => {
-            // Reset to dashboard when tab is pressed
-            e.preventDefault();
-            setActiveTab('index');
-            router.replace('/(tabs)/index' as any);
-          },
-        })}
         options={{
           title: "Dashboard",
           tabBarIcon: ({ color }) => <IconSymbol size={26} name="house.fill" color={color} />,
@@ -78,11 +69,6 @@ export default function TabLayout() {
       />
       <Tabs.Screen
         name="banks"
-        listeners={({ navigation }) => ({
-          tabPress: (e) => {
-            setActiveTab('banks');
-          },
-        })}
         options={{
           title: "Banks",
           tabBarIcon: ({ color }) => <IconSymbol size={26} name="building.columns.fill" color={color} />,
@@ -90,11 +76,6 @@ export default function TabLayout() {
       />
       <Tabs.Screen
         name="investments"
-        listeners={({ navigation }) => ({
-          tabPress: (e) => {
-            setActiveTab('investments');
-          },
-        })}
         options={{
           title: "Investments",
           tabBarIcon: ({ color }) => <IconSymbol size={26} name="chart.pie.fill" color={color} />,
@@ -102,11 +83,6 @@ export default function TabLayout() {
       />
       <Tabs.Screen
         name="loans"
-        listeners={({ navigation }) => ({
-          tabPress: (e) => {
-            setActiveTab('loans');
-          },
-        })}
         options={{
           title: "Loans",
           tabBarIcon: ({ color }) => <IconSymbol size={26} name="creditcard.fill" color={color} />,
@@ -114,11 +90,6 @@ export default function TabLayout() {
       />
       <Tabs.Screen
         name="insurance"
-        listeners={({ navigation }) => ({
-          tabPress: (e) => {
-            setActiveTab('insurance');
-          },
-        })}
         options={{
           title: "Insurance",
           tabBarIcon: ({ color }) => <IconSymbol size={26} name="shield.fill" color={color} />,
@@ -126,11 +97,6 @@ export default function TabLayout() {
       />
       <Tabs.Screen
         name="cpf"
-        listeners={({ navigation }) => ({
-          tabPress: (e) => {
-            setActiveTab('cpf');
-          },
-        })}
         options={{
           title: "CPF",
           tabBarIcon: ({ color }) => <IconSymbol size={26} name="building.2.fill" color={color} />,
@@ -138,11 +104,6 @@ export default function TabLayout() {
       />
       <Tabs.Screen
         name="private-assets"
-        listeners={({ navigation }) => ({
-          tabPress: (e) => {
-            setActiveTab('private-assets');
-          },
-        })}
         options={{
           title: "Assets",
           tabBarIcon: ({ color }) => <IconSymbol size={26} name="diamond.fill" color={color} />,
@@ -150,11 +111,6 @@ export default function TabLayout() {
       />
       <Tabs.Screen
         name="profile"
-        listeners={({ navigation }) => ({
-          tabPress: (e) => {
-            setActiveTab('profile');
-          },
-        })}
         options={{
           title: "Profile",
           tabBarIcon: ({ color }) => <IconSymbol size={26} name="person.fill" color={color} />,
