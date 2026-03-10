@@ -170,6 +170,16 @@ export default function OnboardingScreen() {
                   }}
                   editable={!isLoading}
                 />
+                <Text
+                  style={{
+                    fontSize: 12,
+                    color: colors.muted,
+                    marginTop: 8,
+                    fontStyle: 'italic',
+                  }}
+                >
+                  Users must be 18 and above
+                </Text>
               </View>
             </View>
 
