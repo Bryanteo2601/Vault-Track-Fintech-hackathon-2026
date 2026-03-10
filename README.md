@@ -91,82 +91,82 @@ The app is built on a modern React Native stack optimized for performance and de
 ```
 wealth-wellness-hub/
 ├── app/                              # Expo Router screens (file-based routing)
-│   ├── (tabs)/                      # Tab navigation screens
-│   │   ├── index.tsx                # Dashboard
-│   │   ├── banks.tsx                # Banks module
-│   │   ├── investments.tsx          # Investments module
-│   │   ├── loans.tsx                # Loans module
-│   │   ├── insurance.tsx            # Insurance module
-│   │   ├── cpf.tsx                  # CPF module (Singapore-specific)
-│   │   ├── assets.tsx               # Assets overview
-│   │   └── profile.tsx              # User profile with email/name display
+│   ├── (tabs)/                       # Tab navigation screens
+│   │   ├── index.tsx                 # Dashboard
+│   │   ├── banks.tsx                 # Banks module
+│   │   ├── investments.tsx           # Investments module
+│   │   ├── loans.tsx                 # Loans module
+│   │   ├── insurance.tsx             # Insurance module
+│   │   ├── cpf.tsx                   # CPF module (Singapore-specific)
+│   │   ├── assets.tsx                # Assets overview
+│   │   └── profile.tsx               # User profile with email/name display
 │   ├── auth/                         # Authentication screens
-│   │   └── login.tsx                # Login page
-│   ├── signup.tsx                   # Multi-step signup with Gmail auth
-│   ├── ai-chat.tsx                  # AI chat assistant
-│   ├── stress-test.tsx              # Portfolio stress testing
-│   ├── stress-test-ai-chat.tsx      # AI-powered stress test analysis
-│   ├── net-worth-timeline.tsx       # Net worth history visualization
-│   ├── debt-analysis.tsx            # Debt analysis and management
-│   ├── liquidity-analysis.tsx       # Liquidity metrics and analysis
-│   ├── diversification-analysis.tsx # Portfolio diversification analysis
-│   ├── private-asset-form.tsx       # Add/edit private assets
-│   ├── private-asset-detail.tsx     # Private asset details view
-│   ├── manage-subscriptions.tsx     # Subscription management
+│   │   └── login.tsx                 # Login page
+│   ├── signup.tsx                    # Multi-step signup with Gmail auth
+│   ├── ai-chat.tsx                   # AI chat assistant
+│   ├── stress-test.tsx               # Portfolio stress testing
+│   ├── stress-test-ai-chat.tsx       # AI-powered stress test analysis
+│   ├── net-worth-timeline.tsx        # Net worth history visualization
+│   ├── debt-analysis.tsx             # Debt analysis and management
+│   ├── liquidity-analysis.tsx        # Liquidity metrics and analysis
+│   ├── diversification-analysis.tsx  # Portfolio diversification analysis
+│   ├── private-asset-form.tsx        # Add/edit private assets
+│   ├── private-asset-detail.tsx      # Private asset details view
+│   ├── manage-subscriptions.tsx      # Subscription management
 │   ├── oauth/                        # OAuth callback handlers
 │   ├── dev/                          # Development utilities
-│   └── _layout.tsx                  # Root layout with providers
+│   └── _layout.tsx                   # Root layout with providers
 │
 ├── components/                       # Reusable UI components
 │   ├── ui/                           # Base UI components
-│   │   └── icon-symbol.tsx          # Icon mapping for tabs
+│   │   └── icon-symbol.tsx           # Icon mapping for tabs
 │   ├── cpf/                          # CPF-specific components
 │   │   ├── cpf-overview-card.tsx
 │   │   ├── cpf-retirement-sums.tsx
 │   │   └── cpf-payout-estimator.tsx
-│   ├── metric-card.tsx              # Financial metric cards
-│   ├── screen-container.tsx         # SafeArea wrapper for all screens
-│   └── haptic-tab.tsx               # Tab bar with haptic feedback
+│   ├── metric-card.tsx               # Financial metric cards
+│   ├── screen-container.tsx          # SafeArea wrapper for all screens
+│   └── haptic-tab.tsx                # Tab bar with haptic feedback
 │
 ├── lib/                              # Core libraries and utilities
-│   ├── app-data-context.tsx         # Global app state and user profile
-│   ├── theme-provider.tsx           # Dark/light mode provider
-│   ├── app-data-context.tsx         # User data management
-│   ├── store.ts                     # Data calculations and storage
-│   ├── types.ts                     # TypeScript interfaces (UserProfile, PrivateAsset, etc.)
-│   ├── cpf-calculations.ts          # CPF-specific calculations
-│   ├── cpf-constants.ts             # CPF retirement sums (2026 values)
-│   ├── gemini-ai-service.ts         # Google Gemini AI integration
-│   ├── metric-insight-engine.ts     # Financial insights generation
-│   ├── wellness-score-calculator.ts # Wealth Wellness Score calculation
-│   ├── cbs-score-calculator.ts      # CBS credit score calculation
-│   ├── diversification-analyzer.ts  # Portfolio diversification analysis
-│   ├── portfolio-risk-analytics.ts  # Portfolio risk assessment
-│   ├── firebase-auth.ts             # Firebase authentication
-│   ├── firebase-auth-context.tsx    # Auth state provider
-│   ├── firebase-config.ts           # Firebase configuration
-│   ├── trpc.ts                      # tRPC client setup
-│   └── utils.ts                     # Utility functions (cn, etc.)
+│   ├── app-data-context.tsx          # Global app state and user profile
+│   ├── theme-provider.tsx            # Dark/light mode provider
+│   ├── app-data-context.tsx          # User data management
+│   ├── store.ts                      # Data calculations and storage
+│   ├── types.ts                      # TypeScript interfaces (UserProfile, PrivateAsset, etc.)
+│   ├── cpf-calculations.ts           # CPF-specific calculations
+│   ├── cpf-constants.ts              # CPF retirement sums (2026 values)
+│   ├── gemini-ai-service.ts          # Google Gemini AI integration
+│   ├── metric-insight-engine.ts      # Financial insights generation
+│   ├── wellness-score-calculator.ts  # Wealth Wellness Score calculation
+│   ├── cbs-score-calculator.ts       # CBS credit score calculation
+│   ├── diversification-analyzer.ts   # Portfolio diversification analysis
+│   ├── portfolio-risk-analytics.ts   # Portfolio risk assessment
+│   ├── firebase-auth.ts              # Firebase authentication
+│   ├── firebase-auth-context.tsx     # Auth state provider
+│   ├── firebase-config.ts            # Firebase configuration
+│   ├── trpc.ts                       # tRPC client setup
+│   └── utils.ts                      # Utility functions (cn, etc.)
 │
 ├── hooks/                            # Custom React hooks
-│   ├── use-colors.ts                # Theme colors hook
-│   ├── use-app-colors.ts            # App-specific colors
-│   ├── use-auth.ts                  # Authentication hook
-│   ├── use-color-scheme.ts          # Dark/light mode detection
-│   └── use-app-data.ts              # App data context hook
+│   ├── use-colors.ts                 # Theme colors hook
+│   ├── use-app-colors.ts             # App-specific colors
+│   ├── use-auth.ts                   # Authentication hook
+│   ├── use-color-scheme.ts           # Dark/light mode detection
+│   └── use-app-data.ts               # App data context hook
 │
 ├── server/                           # Backend server
 │   ├── _core/                        # Framework-level code
-│   │   ├── index.ts                 # Server entry point
-│   │   ├── oauth.ts                 # OAuth handlers
-│   │   └── errors.ts                # Error handling
-│   ├── routers.ts                   # tRPC API routes
-│   ├── db.ts                        # Database queries
-│   ├── storage.ts                   # S3 storage helpers
-│   └── README.md                    # Backend documentation
+│   │   ├── index.ts                  # Server entry point
+│   │   ├── oauth.ts                  # OAuth handlers
+│   │   └── errors.ts                 # Error handling
+│   ├── routers.ts                    # tRPC API routes
+│   ├── db.ts                         # Database queries
+│   ├── storage.ts                    # S3 storage helpers
+│   └── README.md                     # Backend documentation
 │
 ├── constants/                        # App constants
-│   └── theme.ts                     # Theme color exports
+│   └── theme.ts                      # Theme color exports
 │
 ├── __tests__/                        # Unit and integration tests
 │   ├── cpf-calculations.test.ts
@@ -175,22 +175,22 @@ wealth-wellness-hub/
 │
 ├── assets/                           # Images and static assets
 │   ├── images/
-│   │   ├── icon.png                 # App icon
-│   │   ├── splash-icon.png          # Splash screen icon
-│   │   ├── favicon.png              # Web favicon
+│   │   ├── icon.png                  # App icon
+│   │   ├── splash-icon.png           # Splash screen icon
+│   │   ├── favicon.png               # Web favicon
 │   │   ├── android-icon-foreground.png
 │   │   ├── android-icon-background.png
 │   │   └── android-icon-monochrome.png
 │
-├── theme.config.js                  # Tailwind theme configuration
-├── tailwind.config.js               # Tailwind CSS config
-├── theme.config.d.ts                # Theme type definitions
-├── global.css                       # Tailwind directives
-├── app.config.ts                    # Expo app configuration
-├── package.json                     # Dependencies and scripts
-├── design.md                        # UI/UX design specifications
-├── todo.md                          # Project roadmap and features
-└── README.md                        # This file
+├── theme.config.js                   # Tailwind theme configuration
+├── tailwind.config.js                # Tailwind CSS config
+├── theme.config.d.ts                 # Theme type definitions
+├── global.css                        # Tailwind directives
+├── app.config.ts                     # Expo app configuration
+├── package.json                      # Dependencies and scripts
+├── design.md                         # UI/UX design specifications
+├── todo.md                           # Project roadmap and features
+└── README.md                         # This file
 ```
 
 ---
