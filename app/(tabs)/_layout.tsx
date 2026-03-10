@@ -37,8 +37,8 @@ export default function TabLayout() {
 
   const handleTabChange = (tabName: string) => {
     setActiveTab(tabName);
-    // Let the Tabs component handle navigation naturally
-    router.push(`/(tabs)/${tabName}` as any);
+    // Use replace instead of push to avoid navigation stack issues when switching tabs
+    router.replace(`/(tabs)/${tabName}` as any);
   };
 
   return (
