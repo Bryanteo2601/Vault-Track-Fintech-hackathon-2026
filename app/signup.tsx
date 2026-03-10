@@ -18,7 +18,7 @@ export default function SignupScreen() {
 
 
   const handleGoogleSignup = async () => {
-    // Move to details form
+    // Move to details form for Gmail signup
     setStep('details');
   };
 
@@ -102,9 +102,9 @@ export default function SignupScreen() {
           <View style={{ flex: 1, justifyContent: 'center', paddingHorizontal: 24 }}>
             {step === 'method' ? (
               <View style={{ gap: 12 }}>
-                {/* Google Signup Button */}
+                {/* Sign In Button */}
                 <Pressable
-                  onPress={handleGoogleSignup}
+                  onPress={() => router.back()}
                   disabled={isLoading}
                   style={({ pressed }) => ({
                     flexDirection: 'row',
@@ -120,7 +120,6 @@ export default function SignupScreen() {
                     opacity: pressed ? 0.8 : 1,
                   })}
                 >
-                  <MaterialIcons name="mail" size={20} color={colors.foreground} />
                   <Text
                     style={{
                       fontSize: 16,
@@ -128,34 +127,9 @@ export default function SignupScreen() {
                       color: colors.foreground,
                     }}
                   >
-                    Continue with Gmail
+                    Sign In
                   </Text>
                 </Pressable>
-
-                {/* Divider */}
-                <View
-                  style={{
-                    flexDirection: 'row',
-                    alignItems: 'center',
-                    gap: 12,
-                    marginVertical: 16,
-                  }}
-                >
-                  <View style={{ flex: 1, height: 1, backgroundColor: colors.border }} />
-                  <Text style={{ color: colors.muted, fontSize: 12 }}>or</Text>
-                  <View style={{ flex: 1, height: 1, backgroundColor: colors.border }} />
-                </View>
-
-                {/* Email Input (future feature) */}
-                <Text
-                  style={{
-                    fontSize: 14,
-                    color: colors.muted,
-                    textAlign: 'center',
-                  }}
-                >
-                  Email signup coming soon
-                </Text>
               </View>
             ) : (
               <View style={{ gap: 16 }}>
@@ -255,7 +229,7 @@ export default function SignupScreen() {
                     color: colors.background,
                   }}
                 >
-                  {step === 'method' ? 'Continue with Gmail' : 'Complete Signup'}
+                  {step === 'method' ? 'Sign Up with Gmail' : 'Complete Signup'}
                 </Text>
               )}
             </Pressable>
