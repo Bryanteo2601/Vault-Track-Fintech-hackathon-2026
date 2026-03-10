@@ -37,7 +37,9 @@ export default function TabLayout() {
 
   const handleTabChange = (tabName: string) => {
     setActiveTab(tabName);
-    router.push(`/(tabs)/${tabName}` as any);
+    // Use replace instead of push to avoid navigation stack issues
+    // This ensures we go to the tab screen, not a detail screen
+    router.replace(`/(tabs)/${tabName}` as any);
   };
 
   return (
@@ -63,7 +65,10 @@ export default function TabLayout() {
         name="index"
         listeners={({ navigation }) => ({
           tabPress: (e) => {
+            // Reset to dashboard when tab is pressed
+            e.preventDefault();
             setActiveTab('index');
+            router.replace('/(tabs)/index' as any);
           },
         })}
         options={{
