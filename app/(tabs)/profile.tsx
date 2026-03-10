@@ -1,18 +1,18 @@
-import { useState, useMemo, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import { useRouter } from 'expo-router';
 import { ScrollView, Text, View, Pressable, Alert, ActivityIndicator, Modal, TextInput } from 'react-native';
 import { ScreenContainer } from '@/components/screen-container';
 import { useAppColors } from '@/hooks/use-app-colors';
 import { useAppData } from '@/lib/app-data-context';
 import { MaterialIcons } from '@expo/vector-icons';
-import { determineLifeStage, getLifeStageName } from '@/lib/life-stage';
+import { determineLifeStage, getLifeStageName, calculateAge } from '@/lib/life-stage';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { logOut } from '@/lib/firebase-auth';
 
 export default function ProfileScreen() {
   const router = useRouter();
   const colors = useAppColors();
-  const { data: appData, updateUserProfile, resetData } = useAppData();
+  const { data: appData, updateUserProfile, refreshData, resetData } = useAppData();
   const [showEditModal, setShowEditModal] = useState(false);
   const [userProfile, setUserProfile] = useState<{ name: string; age: number } | null>(null);
   const [nameInput, setNameInput] = useState('');
@@ -64,6 +64,22 @@ export default function ProfileScreen() {
       const updatedProfile = { name: nameInput.trim(), age: ageNum };
       await AsyncStorage.setItem('userProfile', JSON.stringify(updatedProfile));
       setUserProfile(updatedProfile);
+
+      // Calculate birthDate from age and update AppData
+      const today = new Date();
+      const birthYear = today.getFullYear() - ageNum;
+      const birthDate = new Date(birthYear, today.getMonth(), today.getDate());
+      const birthDateString = birthDate.toISOString().split('T')[0];
+
+      // Update the AppData userProfile with birthDate
+      await updateUserProfile({
+        birthDate: birthDateString,
+        name: nameInput.trim(),
+      });
+
+      // Refresh data to ensure all dependent calculations update
+      await refreshData();
+
       setShowEditModal(false);
       Alert.alert('Success', 'Profile updated successfully');
     } catch (err) {
@@ -80,8 +96,8 @@ export default function ProfileScreen() {
         (async () => { await AsyncStorage.removeItem('userProfile'); })(),
         (async () => { await resetData(); })(),
       ]);
-      // Navigate back to the landing page ("Grow your wealth today")
-      router.replace('/landing' as any);
+      // Navigate to dashboard
+      router.replace('/(tabs)' as any);
     } catch (error) {
       Alert.alert('Error', 'Failed to reset app');
     }
@@ -182,183 +198,7 @@ export default function ProfileScreen() {
             <MaterialIcons name="chevron-right" size={22} color={colors.muted} />
           </Pressable>
 
-          {/* Password */}
-          <Pressable
-            style={({ pressed }) => [
-              {
-                flexDirection: 'row',
-                alignItems: 'center',
-                justifyContent: 'space-between',
-                paddingHorizontal: 20,
-                paddingVertical: 16,
-                borderRadius: 12,
-                marginBottom: 8,
-                backgroundColor: colors.surface,
-                opacity: pressed ? 0.8 : 1,
-              },
-            ]}
-          >
-            <View style={{ flexDirection: 'row', alignItems: 'center', gap: 16, flex: 1 }}>
-              <MaterialIcons name="lock" size={22} color={colors.primary} />
-              <Text style={{ fontSize: 16, fontWeight: '500', color: colors.foreground }}>
-                Password
-              </Text>
-            </View>
-            <MaterialIcons name="chevron-right" size={22} color={colors.muted} />
-          </Pressable>
-
-          {/* Notifications */}
-          <Pressable
-            style={({ pressed }) => [
-              {
-                flexDirection: 'row',
-                alignItems: 'center',
-                justifyContent: 'space-between',
-                paddingHorizontal: 20,
-                paddingVertical: 16,
-                borderRadius: 12,
-                marginBottom: 8,
-                backgroundColor: colors.surface,
-                opacity: pressed ? 0.8 : 1,
-              },
-            ]}
-          >
-            <View style={{ flexDirection: 'row', alignItems: 'center', gap: 16, flex: 1 }}>
-              <MaterialIcons name="notifications" size={22} color={colors.primary} />
-              <Text style={{ fontSize: 16, fontWeight: '500', color: colors.foreground }}>
-                Notifications
-              </Text>
-            </View>
-            <MaterialIcons name="chevron-right" size={22} color={colors.muted} />
-          </Pressable>
-
-          {/* Manage Subscriptions */}
-          <Pressable
-            onPress={() => router.push('/manage-subscriptions' as any)}
-            style={({ pressed }) => [
-              {
-                flexDirection: 'row',
-                alignItems: 'center',
-                justifyContent: 'space-between',
-                paddingHorizontal: 20,
-                paddingVertical: 16,
-                borderRadius: 12,
-                marginBottom: 8,
-                backgroundColor: colors.surface,
-                opacity: pressed ? 0.8 : 1,
-              },
-            ]}
-          >
-            <View style={{ flexDirection: 'row', alignItems: 'center', gap: 16, flex: 1 }}>
-              <MaterialIcons name="card-membership" size={22} color={colors.primary} />
-              <Text style={{ fontSize: 16, fontWeight: '500', color: colors.foreground }}>
-                Manage Subscriptions
-              </Text>
-            </View>
-            <MaterialIcons name="chevron-right" size={22} color={colors.muted} />
-          </Pressable>
-
-          {/* Support */}
-          <Pressable
-            style={({ pressed }) => [
-              {
-                flexDirection: 'row',
-                alignItems: 'center',
-                justifyContent: 'space-between',
-                paddingHorizontal: 20,
-                paddingVertical: 16,
-                borderRadius: 12,
-                marginBottom: 8,
-                backgroundColor: colors.surface,
-                opacity: pressed ? 0.8 : 1,
-              },
-            ]}
-          >
-            <View style={{ flexDirection: 'row', alignItems: 'center', gap: 16, flex: 1 }}>
-              <MaterialIcons name="help" size={22} color={colors.primary} />
-              <Text style={{ fontSize: 16, fontWeight: '500', color: colors.foreground }}>
-                Support
-              </Text>
-            </View>
-            <MaterialIcons name="chevron-right" size={22} color={colors.muted} />
-          </Pressable>
-
-          {/* Report an Issue */}
-          <Pressable
-            style={({ pressed }) => [
-              {
-                flexDirection: 'row',
-                alignItems: 'center',
-                justifyContent: 'space-between',
-                paddingHorizontal: 20,
-                paddingVertical: 16,
-                borderRadius: 12,
-                marginBottom: 8,
-                backgroundColor: colors.surface,
-                opacity: pressed ? 0.8 : 1,
-              },
-            ]}
-          >
-            <View style={{ flexDirection: 'row', alignItems: 'center', gap: 16, flex: 1 }}>
-              <MaterialIcons name="bug-report" size={22} color={colors.primary} />
-              <Text style={{ fontSize: 16, fontWeight: '500', color: colors.foreground }}>
-                Report an Issue
-              </Text>
-            </View>
-            <MaterialIcons name="chevron-right" size={22} color={colors.muted} />
-          </Pressable>
-
-          {/* About */}
-          <Pressable
-            style={({ pressed }) => [
-              {
-                flexDirection: 'row',
-                alignItems: 'center',
-                justifyContent: 'space-between',
-                paddingHorizontal: 20,
-                paddingVertical: 16,
-                borderRadius: 12,
-                marginBottom: 8,
-                backgroundColor: colors.surface,
-                opacity: pressed ? 0.8 : 1,
-              },
-            ]}
-          >
-            <View style={{ flexDirection: 'row', alignItems: 'center', gap: 16, flex: 1 }}>
-              <MaterialIcons name="info" size={22} color={colors.primary} />
-              <Text style={{ fontSize: 16, fontWeight: '500', color: colors.foreground }}>
-                About Wealth Wellness Hub
-              </Text>
-            </View>
-            <MaterialIcons name="chevron-right" size={22} color={colors.muted} />
-          </Pressable>
-
-          {/* Language */}
-          <Pressable
-            style={({ pressed }) => [
-              {
-                flexDirection: 'row',
-                alignItems: 'center',
-                justifyContent: 'space-between',
-                paddingHorizontal: 20,
-                paddingVertical: 16,
-                borderRadius: 12,
-                marginBottom: 32,
-                backgroundColor: colors.surface,
-                opacity: pressed ? 0.8 : 1,
-              },
-            ]}
-          >
-            <View style={{ flexDirection: 'row', alignItems: 'center', gap: 16, flex: 1 }}>
-              <MaterialIcons name="language" size={22} color={colors.primary} />
-              <Text style={{ fontSize: 16, fontWeight: '500', color: colors.foreground }}>
-                Language
-              </Text>
-            </View>
-            <MaterialIcons name="chevron-right" size={22} color={colors.muted} />
-          </Pressable>
-
-          {/* ===== RESET APP BUTTON ===== */}
+          {/* Reset App */}
           <Pressable
             onPress={handleResetApp}
             style={({ pressed }) => [
@@ -369,15 +209,15 @@ export default function ProfileScreen() {
                 paddingHorizontal: 20,
                 paddingVertical: 16,
                 borderRadius: 12,
-                marginBottom: 32,
+                marginBottom: 8,
                 backgroundColor: colors.surface,
                 opacity: pressed ? 0.8 : 1,
               },
             ]}
           >
             <View style={{ flexDirection: 'row', alignItems: 'center', gap: 16, flex: 1 }}>
-              <MaterialIcons name="refresh" size={22} color="#EF5350" />
-              <Text style={{ fontSize: 16, fontWeight: '500', color: '#EF5350' }}>
+              <MaterialIcons name="refresh" size={22} color={colors.error} />
+              <Text style={{ fontSize: 16, fontWeight: '500', color: colors.error }}>
                 Reset App
               </Text>
             </View>
@@ -393,96 +233,94 @@ export default function ProfileScreen() {
         animationType="slide"
         onRequestClose={() => setShowEditModal(false)}
       >
-        <View style={{ flex: 1, backgroundColor: colors.background }}>
-          <View style={{ flex: 1, flexDirection: 'column' }}>
-            {/* Header */}
+        <ScreenContainer className="bg-background/80">
+          <View style={{ flex: 1, justifyContent: 'flex-end' }}>
             <View
               style={{
-                flexDirection: 'row',
-                alignItems: 'center',
-                justifyContent: 'space-between',
+                backgroundColor: colors.background,
+                borderTopLeftRadius: 24,
+                borderTopRightRadius: 24,
                 paddingHorizontal: 24,
                 paddingVertical: 24,
-                borderBottomWidth: 1,
-                borderBottomColor: colors.border,
+                paddingBottom: 40,
               }}
             >
-              <Pressable
-                onPress={() => setShowEditModal(false)}
-                hitSlop={8}
-                style={({ pressed }) => [{ opacity: pressed ? 0.6 : 1 }]}
-              >
-                <MaterialIcons name="arrow-back" size={28} color={colors.foreground} />
-              </Pressable>
-              <Text style={{ fontSize: 24, fontWeight: 'bold', color: colors.foreground }}>
-                Profile Details
-              </Text>
-              <View style={{ width: 28 }} />
-            </View>
+              <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 24 }}>
+                <Text style={{ fontSize: 20, fontWeight: 'bold', color: colors.foreground }}>
+                  Edit Profile
+                </Text>
+                <Pressable onPress={() => setShowEditModal(false)}>
+                  <MaterialIcons name="close" size={24} color={colors.foreground} />
+                </Pressable>
+              </View>
 
-            {/* Form Content */}
-            <View style={{ flex: 1, paddingHorizontal: 24, paddingVertical: 32 }}>
-              {/* Name and Age Inputs */}
+              {/* Name Input */}
               <View style={{ marginBottom: 20 }}>
-              <Text style={{ fontSize: 14, fontWeight: '600', color: colors.foreground, marginBottom: 8 }}>
-                Name
-              </Text>
-              <TextInput
-                placeholder="Enter your name"
-                placeholderTextColor={colors.muted}
-                value={nameInput}
-                onChangeText={setNameInput}
-                style={{
-                  borderWidth: 1,
-                  borderColor: colors.border,
-                  borderRadius: 12,
-                  paddingHorizontal: 16,
-                  paddingVertical: 12,
-                  fontSize: 16,
-                  color: colors.foreground,
-                  backgroundColor: colors.surface,
-                }}
-              />
-            </View>
-            <View style={{ marginBottom: 20 }}>
-              <Text style={{ fontSize: 14, fontWeight: '600', color: colors.foreground, marginBottom: 8 }}>
-                Age
-              </Text>
-              <TextInput
-                placeholder="Enter your age"
-                placeholderTextColor={colors.muted}
-                value={ageInput}
-                onChangeText={setAgeInput}
-                keyboardType="number-pad"
-                style={{
-                  borderWidth: 1,
-                  borderColor: colors.border,
-                  borderRadius: 12,
-                  paddingHorizontal: 16,
-                  paddingVertical: 12,
-                  fontSize: 16,
-                  color: colors.foreground,
-                  backgroundColor: colors.surface,
-                }}
-              />
-            </View>
-            <Pressable
-              onPress={handleSaveProfile}
-              style={({ pressed }) => ({
-                backgroundColor: colors.primary,
-                paddingVertical: 12,
-                borderRadius: 12,
-                alignItems: 'center',
-                opacity: pressed ? 0.8 : 1,
-              })}
-            >
-              <Text style={{ fontSize: 16, fontWeight: '600', color: colors.background }}>
-                Save Profile
-              </Text>
-            </Pressable>
+                <Text style={{ fontSize: 14, fontWeight: '600', color: colors.foreground, marginBottom: 8 }}>
+                  Name
+                </Text>
+                <TextInput
+                  style={{
+                    borderWidth: 1,
+                    borderColor: colors.border,
+                    borderRadius: 12,
+                    paddingHorizontal: 16,
+                    paddingVertical: 12,
+                    fontSize: 16,
+                    color: colors.foreground,
+                    backgroundColor: colors.surface,
+                  }}
+                  placeholder="Enter your name"
+                  placeholderTextColor={colors.muted}
+                  value={nameInput}
+                  onChangeText={setNameInput}
+                />
+              </View>
+
+              {/* Age Input */}
+              <View style={{ marginBottom: 24 }}>
+                <Text style={{ fontSize: 14, fontWeight: '600', color: colors.foreground, marginBottom: 8 }}>
+                  Age
+                </Text>
+                <TextInput
+                  style={{
+                    borderWidth: 1,
+                    borderColor: colors.border,
+                    borderRadius: 12,
+                    paddingHorizontal: 16,
+                    paddingVertical: 12,
+                    fontSize: 16,
+                    color: colors.foreground,
+                    backgroundColor: colors.surface,
+                  }}
+                  placeholder="Enter your age"
+                  placeholderTextColor={colors.muted}
+                  value={ageInput}
+                  onChangeText={setAgeInput}
+                  keyboardType="number-pad"
+                />
+              </View>
+
+              {/* Save Button */}
+              <Pressable
+                onPress={handleSaveProfile}
+                style={({ pressed }) => [
+                  {
+                    backgroundColor: colors.primary,
+                    paddingVertical: 14,
+                    borderRadius: 12,
+                    alignItems: 'center',
+                    opacity: pressed ? 0.8 : 1,
+                  },
+                ]}
+              >
+                <Text style={{ fontSize: 16, fontWeight: '600', color: colors.background }}>
+                  Save Profile
+                </Text>
+              </Pressable>
             </View>
           </View>
-        </View>
+        </ScreenContainer>
       </Modal>
     </ScreenContainer>
   );

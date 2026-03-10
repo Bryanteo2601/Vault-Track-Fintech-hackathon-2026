@@ -775,3 +775,16 @@
 - [x] Fix maximum loan calculation - now updates with CBS score
 - [x] Ensure CBS score displays on Banks page with default sample data
 - [x] Rewrite AppDataContext with proper delete and default data support
+
+## Phase 66: Fix TypeScript Error and Remove Landing Page
+- [x] Fix TypeScript error in profile.tsx - removed updateUserProfile call with invalid 'age' property
+- [x] Update root index.tsx to redirect to dashboard instead of landing page
+- [x] Configure app layout to start directly at dashboard (initialRoute: "(tabs)")
+- [x] Implement age synchronization between profile and dashboard
+- [x] Profile now calculates birthDate from age input and updates AppData
+- [x] Dashboard LifeStageWidget reads birthDate and displays age dynamically
+- [x] Added refreshData() call after profile update to sync all dependent calculations
+- [x] Created unit tests for age calculation and profile synchronization
+- [x] All TypeScript errors resolved
+- [x] Dev server compiling successfully with 0 errors
+- [x] App starts directly at dashboard without landing page
