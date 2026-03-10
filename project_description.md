@@ -1,4 +1,4 @@
-# 🛡️ VaultTrack- The Ultimate Wealth Wellness Hub for the Modern Singaporean
+# 🛡️ VaultTrack- Reach your financial goals while managing risks 
 
 ---
 ## Project Description
