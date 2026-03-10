@@ -5,9 +5,10 @@ import { HapticTab } from "@/components/haptic-tab";
 import { IconSymbol } from "@/components/ui/icon-symbol";
 import { useAppColors } from "@/hooks/use-app-colors";
 import { HorizontalTabBar } from "@/components/HorizontalTabBar";
-import { useState } from "react";
+import { useState, useRef } from "react";
 import React from "react";
 import { usePathname } from "expo-router";
+import { useFocusEffect } from "@react-navigation/native";
 
 export default function TabLayout() {
   const colors = useAppColors();
@@ -37,8 +38,8 @@ export default function TabLayout() {
 
   const handleTabChange = (tabName: string) => {
     setActiveTab(tabName);
-    // Use replace instead of push to avoid navigation stack issues when switching tabs
-    router.replace(`/(tabs)/${tabName}` as any);
+    // Use push to properly navigate within tabs, which resets the stack
+    router.push(`/(tabs)/${tabName}` as any);
   };
 
   return (
