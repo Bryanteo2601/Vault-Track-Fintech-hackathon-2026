@@ -8,17 +8,6 @@ interface LifeStageCardProps {
 }
 
 export function LifeStageCard({ userProfile }: LifeStageCardProps) {
-  const calculateAge = (birthDate: string) => {
-    const today = new Date();
-    const birth = new Date(birthDate);
-    let age = today.getFullYear() - birth.getFullYear();
-    const monthDiff = today.getMonth() - birth.getMonth();
-    if (monthDiff < 0 || (monthDiff === 0 && today.getDate() < birth.getDate())) {
-      age--;
-    }
-    return age;
-  };
-
   if (!userProfile || !userProfile.lifeStage) {
     return (
       <View className="bg-surface rounded-xl p-4 mb-4">
@@ -54,7 +43,7 @@ export function LifeStageCard({ userProfile }: LifeStageCardProps) {
           <Text className="text-4xl">{getStageIcon(userProfile.lifeStage)}</Text>
           <View className="flex-1">
             <Text className="text-xs font-semibold text-muted mb-1">
-              Age {userProfile.birthDate ? calculateAge(userProfile.birthDate) : 'N/A'}
+              {userProfile.ageRange}
             </Text>
             <Text className="text-lg font-bold text-foreground">
               {stageName}

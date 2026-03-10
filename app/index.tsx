@@ -2,17 +2,23 @@ import { View, Text, Pressable } from 'react-native';
 import { useRouter } from 'expo-router';
 import { ScreenContainer } from '@/components/screen-container';
 import { useAppColors } from '@/hooks/use-app-colors';
+import { useAuth } from '@/hooks/use-auth';
 import { useEffect } from 'react';
-import AsyncStorage from '@react-native-async-storage/async-storage';
 
 export default function LandingScreen() {
   const router = useRouter();
   const colors = useAppColors();
+  const { user } = useAuth();
 
-  // Landing page always shows - no auto-redirect
+  // If user is already logged in, redirect to main app
+  useEffect(() => {
+    if (user) {
+      router.replace('/(tabs)');
+    }
+  }, [user, router]);
 
   const handleGetStarted = () => {
-    router.push('/onboarding');
+    router.push('/signup');
   };
 
   return (
@@ -43,7 +49,7 @@ export default function LandingScreen() {
             style={{
               fontSize: 48,
               fontWeight: '700',
-              color: colors.primary,
+              color: colors.background,
               lineHeight: 56,
               textAlign: 'center',
               marginBottom: 24,

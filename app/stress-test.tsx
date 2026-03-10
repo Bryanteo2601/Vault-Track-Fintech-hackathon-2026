@@ -80,7 +80,7 @@ export default function StressTestScreen() {
     <ScreenContainer containerClassName="bg-background">
       {/* Header */}
       <View style={{ paddingBottom: 16, borderBottomWidth: 1, borderBottomColor: colors.border, marginBottom: 16 }}>
-        <Pressable onPress={() => router.replace('/investments' as any)} style={{ flexDirection: 'row', alignItems: 'center', gap: 8, marginBottom: 8 }}>
+        <Pressable onPress={() => router.back()} style={{ flexDirection: 'row', alignItems: 'center', gap: 8, marginBottom: 8 }}>
           <IconSymbol name="chevron.left" size={24} color={colors.accent} />
           <Text style={{ fontSize: 16, fontWeight: '600', color: colors.accent }}>Back</Text>
         </Pressable>

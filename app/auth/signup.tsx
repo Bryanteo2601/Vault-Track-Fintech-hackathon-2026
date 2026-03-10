@@ -1,29 +1,25 @@
-import { ScrollView, Text, View, TextInput, Pressable, ActivityIndicator, Platform } from 'react-native';
-import { useState, useEffect } from 'react';
+import { ScrollView, Text, View, TextInput, Pressable, ActivityIndicator } from 'react-native';
+import { useState } from 'react';
 import { useRouter } from 'expo-router';
 import { ScreenContainer } from '@/components/screen-container';
-import { signIn } from '@/lib/firebase-auth';
-import { signInWithApple, isAppleSignInAvailable } from '@/lib/firebase-apple-auth';
+import { signUp } from '@/lib/firebase-auth';
 
-export default function LoginScreen() {
+export default function SignupScreen() {
   const router = useRouter();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [fullName, setFullName] = useState('');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
-  const [appleAvailable, setAppleAvailable] = useState(false);
 
-  useEffect(() => {
-    const checkAppleAuth = async () => {
-      const available = await isAppleSignInAvailable();
-      setAppleAvailable(available);
-    };
-    checkAppleAuth();
-  }, []);
+  const handleSignup = async () => {
+    if (!email || !password || !fullName) {
+      setError('Please fill in all fields');
+      return;
+    }
 
-  const handleLogin = async () => {
-    if (!email || !password) {
-      setError('Please enter both email and password');
+    if (password.length < 6) {
+      setError('Password must be at least 6 characters');
       return;
     }
 
@@ -31,11 +27,11 @@ export default function LoginScreen() {
     setLoading(true);
 
     try {
-      const result = await signIn(email, password);
+      const result = await signUp(email, password, fullName);
       if (result.success) {
         router.replace('/(tabs)');
       } else {
-        setError(result.error || 'Login failed');
+        setError(result.error || 'Sign up failed');
       }
     } catch (err) {
       const error = err as Error;
@@ -45,26 +41,7 @@ export default function LoginScreen() {
     }
   };
 
-  const handleAppleSignIn = async () => {
-    setError('');
-    setLoading(true);
-
-    try {
-      const result = await signInWithApple();
-      if (result.success) {
-        router.replace('/(tabs)');
-      } else {
-        setError(result.error || 'Apple Sign-In failed');
-      }
-    } catch (err) {
-      const error = err as Error;
-      setError(error.message || 'An error occurred');
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const isFormValid = email && password;
+  const isFormValid = email && password && fullName && password.length >= 6;
 
   return (
     <ScreenContainer className="bg-background">
@@ -72,8 +49,8 @@ export default function LoginScreen() {
         <View className="flex-1 justify-center px-8 py-12">
           {/* Header */}
           <View className="mb-12">
-            <Text className="text-3xl font-bold text-foreground mb-2">Wealth Hub</Text>
-            <Text className="text-sm text-muted">Institutional Financial Dashboard</Text>
+            <Text className="text-3xl font-bold text-foreground mb-2">Create Account</Text>
+            <Text className="text-sm text-muted">Join Wealth Hub</Text>
           </View>
 
           {/* Error Message */}
@@ -85,6 +62,22 @@ export default function LoginScreen() {
 
           {/* Form */}
           <View className="gap-4 mb-8">
+            {/* Full Name */}
+            <View>
+              <Text className="text-xs font-semibold text-muted uppercase tracking-wide mb-2">
+                Full Name
+              </Text>
+              <TextInput
+                placeholder="John Doe"
+                placeholderTextColor="#6A6A6A"
+                value={fullName}
+                onChangeText={setFullName}
+                editable={!loading}
+                className="bg-surface border border-border rounded-md px-4 py-3 text-foreground text-sm"
+                style={{ color: '#E5E5E5' }}
+              />
+            </View>
+
             {/* Email */}
             <View>
               <Text className="text-xs font-semibold text-muted uppercase tracking-wide mb-2">
@@ -109,7 +102,7 @@ export default function LoginScreen() {
                 Password
               </Text>
               <TextInput
-                placeholder="Enter your password"
+                placeholder="Minimum 6 characters"
                 placeholderTextColor="#6A6A6A"
                 value={password}
                 onChangeText={setPassword}
@@ -118,17 +111,15 @@ export default function LoginScreen() {
                 className="bg-surface border border-border rounded-md px-4 py-3 text-foreground text-sm"
                 style={{ color: '#E5E5E5' }}
               />
+              {password && password.length < 6 && (
+                <Text className="text-error text-xs mt-2">Password must be at least 6 characters</Text>
+              )}
             </View>
           </View>
 
-          {/* Forgot Password Link */}
-          <Pressable onPress={() => router.navigate({ pathname: '/auth/forgot-password' } as any)} className="mb-8">
-            <Text className="text-xs text-primary font-semibold">Forgot password?</Text>
-          </Pressable>
-
-          {/* Login Button */}
+          {/* Sign Up Button */}
           <Pressable
-            onPress={handleLogin}
+            onPress={handleSignup}
             disabled={!isFormValid || loading}
             style={({ pressed }) => [
               {
@@ -141,41 +132,15 @@ export default function LoginScreen() {
             {loading ? (
               <ActivityIndicator color="#E5E5E5" size="small" />
             ) : (
-              <Text className="text-foreground font-semibold text-sm">Sign In</Text>
+              <Text className="text-foreground font-semibold text-sm">Create Account</Text>
             )}
           </Pressable>
 
-          {/* Divider */}
-          <View className="flex-row items-center gap-3 mb-6">
-            <View className="flex-1 h-px bg-border" />
-            <Text className="text-muted text-xs">or</Text>
-            <View className="flex-1 h-px bg-border" />
-          </View>
-
-          {/* Apple Sign-In Button */}
-          {appleAvailable && Platform.OS === 'ios' ? (
-            <Pressable
-              onPress={handleAppleSignIn}
-              disabled={loading}
-              style={({ pressed }) => [
-                {
-                  backgroundColor: '#1A1A1A',
-                  borderColor: '#2A2A2A',
-                  opacity: pressed ? 0.8 : 1,
-                },
-              ]}
-              className="rounded-md py-3 flex-row items-center justify-center gap-2 border mb-6"
-            >
-              <Text className="text-lg">🍎</Text>
-              <Text className="text-foreground font-semibold text-sm">Sign in with Apple</Text>
-            </Pressable>
-          ) : null}
-
-          {/* Sign Up Link */}
+          {/* Sign In Link */}
           <View className="flex-row items-center justify-center gap-1">
-            <Text className="text-muted text-sm">Don't have an account? </Text>
-            <Pressable onPress={() => router.navigate({ pathname: '/auth/signup' } as any)}>
-              <Text className="text-primary font-semibold text-sm">Sign Up</Text>
+            <Text className="text-muted text-sm">Already have an account? </Text>
+            <Pressable onPress={() => router.navigate({ pathname: '/auth/login' } as any)}>
+              <Text className="text-primary font-semibold text-sm">Sign In</Text>
             </Pressable>
           </View>
         </View>

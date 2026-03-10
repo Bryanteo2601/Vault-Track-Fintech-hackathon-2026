@@ -168,11 +168,6 @@
 - [ ] Fix any data isolation issues
 - [ ] Document data structure and paths
 
-## Phase 40: Fix Bank Account Deletion and Credit Score Updates
-- [x] Fix red delete button for bank accounts - not working
-- [x] Fix credit score calculation - not updating when bank values change
-- [x] Fix maximum loan calculation - not updating when data changes
-
 ## Phase 21: Comprehensive CPF Dashboard Upgrade
 - [x] Design CPF data model and create constants/config file
 - [x] Build CPF calculation logic and retirement estimator

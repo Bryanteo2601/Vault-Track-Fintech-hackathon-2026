@@ -464,38 +464,21 @@ export async function loadAppData(): Promise<AppData> {
         // Ensure userAccountStartDate is always present
         userAccountStartDate: firestoreData.userAccountStartDate || defaultAppData.userAccountStartDate,
       };
-      // Also save to AsyncStorage as backup
-      try {
-        await AsyncStorage.setItem(STORAGE_KEY, JSON.stringify(merged));
-      } catch (e) {
-        console.warn('Failed to backup to AsyncStorage:', e);
-      }
       return merged;
     } else {
       // First time user - initialize with default data
       await setDoc(userDataRef, defaultAppData);
       return defaultAppData;
     }
-  } catch (error: any) {
-    // Suppress 'client is offline' errors - they're expected and handled gracefully
-    const isOfflineError = error?.message?.includes('offline');
-    if (!isOfflineError) {
-      console.error('Error loading app data from Firestore:', error);
-    }
-    // Fallback to AsyncStorage if Firestore fails (e.g., offline)
+  } catch (error) {
+    console.error('Error loading app data from Firestore:', error);
+    // Fallback to AsyncStorage if Firestore fails
     try {
       const stored = await AsyncStorage.getItem(STORAGE_KEY);
-      if (stored) {
-        if (!isOfflineError) {
-          console.log('Loaded app data from AsyncStorage (offline mode)');
-        }
-        return JSON.parse(stored);
-      }
-    } catch (storageError) {
-      console.error('Error loading from AsyncStorage:', storageError);
+      return stored ? JSON.parse(stored) : defaultAppData;
+    } catch {
+      return defaultAppData;
     }
-    // Last resort: return default data
-    return defaultAppData;
   }
 }
 

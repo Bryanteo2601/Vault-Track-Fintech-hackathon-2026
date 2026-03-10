@@ -43,7 +43,7 @@ export default function PrivateAssetDetailScreen() {
             setIsDeleting(true);
             try {
               await deletePrivateAsset(asset.id);
-              router.replace('/(tabs)/index' as any);
+              router.back();
             } catch (error) {
               Alert.alert('Error', 'Failed to delete asset');
             } finally {
@@ -68,7 +68,7 @@ export default function PrivateAssetDetailScreen() {
       <ScrollView showsVerticalScrollIndicator={false}>
         {/* Header */}
         <View className="mb-6">
-          <Pressable onPress={() => router.replace('/(tabs)/index' as any)} className="mb-4">
+          <Pressable onPress={() => router.back()} className="mb-4">
             <Text className="text-accent text-base font-semibold">← Back</Text>
           </Pressable>
           <Text className="text-2xl font-bold text-foreground mb-1">{asset.assetName}</Text>

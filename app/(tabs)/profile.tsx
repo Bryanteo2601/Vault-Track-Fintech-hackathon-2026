@@ -1,100 +1,82 @@
-import { useState, useEffect } from 'react';
+import { useState, useMemo } from 'react';
 import { useRouter } from 'expo-router';
 import { ScrollView, Text, View, Pressable, Alert, ActivityIndicator, Modal, TextInput } from 'react-native';
 import { ScreenContainer } from '@/components/screen-container';
+import { useFirebaseAuth } from '@/lib/firebase-auth-context';
+import { logOut } from '@/lib/firebase-auth';
 import { useAppColors } from '@/hooks/use-app-colors';
 import { useAppData } from '@/lib/app-data-context';
 import { MaterialIcons } from '@expo/vector-icons';
 import { determineLifeStage, getLifeStageName } from '@/lib/life-stage';
-import AsyncStorage from '@react-native-async-storage/async-storage';
 
 export default function ProfileScreen() {
   const router = useRouter();
   const colors = useAppColors();
+  const { user, loading } = useFirebaseAuth();
   const { data: appData, updateUserProfile } = useAppData();
+  const [loggingOut, setLoggingOut] = useState(false);
   const [showEditModal, setShowEditModal] = useState(false);
-  const [userProfile, setUserProfile] = useState<{ name: string; age: number } | null>(null);
-  const [nameInput, setNameInput] = useState('');
-  const [ageInput, setAgeInput] = useState('');
-  const [loading, setLoading] = useState(true);
-
-  // Load user profile from AsyncStorage
-  useEffect(() => {
-    const loadProfile = async () => {
-      try {
-        const profile = await AsyncStorage.getItem('userProfile');
-        if (profile) {
-          const parsed = JSON.parse(profile);
-          setUserProfile(parsed);
-          setNameInput(parsed.name);
-          setAgeInput(parsed.age.toString());
-        }
-      } catch (error) {
-        console.error('Error loading profile:', error);
-      } finally {
-        setLoading(false);
-      }
-    };
-    loadProfile();
-  }, []);
+  const [birthDateInput, setBirthDateInput] = useState(appData?.userProfile?.birthDate || '');
 
   // Get life stage from userProfile if available
   const userLifeStage = appData?.userProfile?.lifeStage;
   const stageName = userLifeStage ? getLifeStageName(userLifeStage) : null;
 
-  const handleSaveProfile = async () => {
-    if (!nameInput.trim()) {
-      Alert.alert('Error', 'Please enter your name');
-      return;
+  // Calculate age from birthDate
+  const age = useMemo(() => {
+    if (!appData?.userProfile?.birthDate) return null;
+    const birthDate = new Date(appData.userProfile.birthDate);
+    const today = new Date();
+    let calculatedAge = today.getFullYear() - birthDate.getFullYear();
+    const monthDiff = today.getMonth() - birthDate.getMonth();
+    if (monthDiff < 0 || (monthDiff === 0 && today.getDate() < birthDate.getDate())) {
+      calculatedAge--;
     }
+    return calculatedAge;
+  }, [appData?.userProfile?.birthDate]);
 
-    if (!ageInput.trim()) {
-      Alert.alert('Error', 'Please enter your age');
-      return;
-    }
-
-    const ageNum = parseInt(ageInput, 10);
-    if (isNaN(ageNum)) {
-      Alert.alert('Error', 'Please enter a valid age');
-      return;
-    }
-    if (ageNum < 18) {
-      Alert.alert('Error', 'You must be 18 or above to use this app');
-      return;
-    }
-    if (ageNum > 120) {
-      Alert.alert('Error', 'Please enter a valid age');
-      return;
-    }
-
-    try {
-      const updatedProfile = { name: nameInput.trim(), age: ageNum };
-      await AsyncStorage.setItem('userProfile', JSON.stringify(updatedProfile));
-      setUserProfile(updatedProfile);
-      setShowEditModal(false);
-      Alert.alert('Success', 'Profile updated successfully');
-    } catch (err) {
-      const error = err as Error;
-      Alert.alert('Error', error.message || 'Failed to update profile');
-    }
-  };
-
-  const handleLogOut = async () => {
-    Alert.alert('Log Out', 'Are you sure you want to log out? You will return to the landing page.', [
+  const handleLogout = async () => {
+    Alert.alert('Sign Out', 'Are you sure you want to sign out?', [
       { text: 'Cancel', onPress: () => {}, style: 'cancel' },
       {
-        text: 'Log Out',
+        text: 'Sign Out',
         onPress: async () => {
+          setLoggingOut(true);
           try {
-            await AsyncStorage.removeItem('userProfile');
-            router.replace('/' as any);
-          } catch (error) {
-            Alert.alert('Error', 'Failed to log out');
+            const result = await logOut();
+            if (result.success) {
+              router.replace('/auth/login' as any);
+            } else {
+              Alert.alert('Error', result.error || 'Failed to sign out');
+            }
+          } catch (err) {
+            const error = err as Error;
+            Alert.alert('Error', error.message || 'An error occurred');
+          } finally {
+            setLoggingOut(false);
           }
         },
         style: 'destructive',
       },
     ]);
+  };
+
+  const handleSaveBirthDate = async () => {
+    if (!birthDateInput.trim()) {
+      Alert.alert('Error', 'Please enter a birth date');
+      return;
+    }
+
+    try {
+      await updateUserProfile({
+        birthDate: birthDateInput,
+      });
+      setShowEditModal(false);
+      Alert.alert('Success', 'Birth date updated successfully');
+    } catch (err) {
+      const error = err as Error;
+      Alert.alert('Error', error.message || 'Failed to update birth date');
+    }
   };
 
   if (loading) {
@@ -145,16 +127,16 @@ export default function ProfileScreen() {
                 }}
               >
                 <Text style={{ fontSize: 24, fontWeight: 'bold', color: colors.background }}>
-                  {userProfile?.name?.charAt(0).toUpperCase() || 'U'}
+                  {user?.displayName?.charAt(0).toUpperCase() || 'U'}
                 </Text>
               </View>
 
               <View style={{ flex: 1 }}>
                 <Text style={{ fontSize: 18, fontWeight: 'bold', color: colors.foreground, marginBottom: 4 }}>
-                  {userProfile?.name || 'User'}
+                  {appData?.userProfile?.name || user?.displayName || 'User'}
                 </Text>
                 <Text style={{ fontSize: 14, color: colors.muted }}>
-                  {userProfile?.age ? `${userProfile.age} years old` : 'Age not set'} • {stageName || 'Life stage not set'}
+                  {age ? `${age} years old` : 'Age not set'} • {stageName || 'Life stage not set'}
                 </Text>
               </View>
             </View>
@@ -244,7 +226,7 @@ export default function ProfileScreen() {
 
           {/* Manage Subscriptions */}
           <Pressable
-            onPress={() => router.push('/manage-subscriptions' as any)}
+            onPress={() => router.push('manage-subscriptions' as any)}
             style={({ pressed }) => [
               {
                 flexDirection: 'row',
@@ -370,27 +352,29 @@ export default function ProfileScreen() {
 
           {/* ===== LOG OUT BUTTON ===== */}
           <Pressable
-            onPress={handleLogOut}
-            hitSlop={10}
-            style={({ pressed }) => ({
-              flexDirection: 'row',
-              alignItems: 'center',
-              justifyContent: 'space-between',
-              paddingHorizontal: 20,
-              paddingVertical: 16,
-              borderRadius: 12,
-              marginBottom: 32,
-              backgroundColor: colors.surface,
-              opacity: pressed ? 0.8 : 1,
-            })}
+            onPress={handleLogout}
+            disabled={loggingOut}
+            style={({ pressed }) => [
+              {
+                flexDirection: 'row',
+                alignItems: 'center',
+                justifyContent: 'space-between',
+                paddingHorizontal: 20,
+                paddingVertical: 16,
+                borderRadius: 12,
+                marginBottom: 32,
+                backgroundColor: colors.surface,
+                opacity: pressed && !loggingOut ? 0.8 : loggingOut ? 0.6 : 1,
+              },
+            ]}
           >
             <View style={{ flexDirection: 'row', alignItems: 'center', gap: 16, flex: 1 }}>
               <MaterialIcons name="logout" size={22} color="#EF5350" />
               <Text style={{ fontSize: 16, fontWeight: '500', color: '#EF5350' }}>
-                Log Out
+                {loggingOut ? 'Signing Out...' : 'Log out'}
               </Text>
             </View>
-            <MaterialIcons name="chevron-right" size={22} color={colors.muted} />
+            {!loggingOut && <MaterialIcons name="chevron-right" size={22} color={colors.muted} />}
           </Pressable>
         </View>
       </ScrollView>
@@ -431,64 +415,63 @@ export default function ProfileScreen() {
 
             {/* Form Content */}
             <View style={{ flex: 1, paddingHorizontal: 24, paddingVertical: 32 }}>
-              {/* Name and Age Inputs */}
-              <View style={{ marginBottom: 20 }}>
-              <Text style={{ fontSize: 14, fontWeight: '600', color: colors.foreground, marginBottom: 8 }}>
-                Name
-              </Text>
-              <TextInput
-                placeholder="Enter your name"
-                placeholderTextColor={colors.muted}
-                value={nameInput}
-                onChangeText={setNameInput}
+              {/* User Info Display */}
+              <View
                 style={{
-                  borderWidth: 1,
-                  borderColor: colors.border,
+                  marginBottom: 32,
+                  padding: 20,
                   borderRadius: 12,
-                  paddingHorizontal: 16,
-                  paddingVertical: 12,
-                  fontSize: 16,
-                  color: colors.foreground,
                   backgroundColor: colors.surface,
                 }}
-              />
-            </View>
-            <View style={{ marginBottom: 20 }}>
-              <Text style={{ fontSize: 14, fontWeight: '600', color: colors.foreground, marginBottom: 8 }}>
-                Age
-              </Text>
-              <TextInput
-                placeholder="Enter your age"
-                placeholderTextColor={colors.muted}
-                value={ageInput}
-                onChangeText={setAgeInput}
-                keyboardType="number-pad"
-                style={{
-                  borderWidth: 1,
-                  borderColor: colors.border,
-                  borderRadius: 12,
-                  paddingHorizontal: 16,
-                  paddingVertical: 12,
-                  fontSize: 16,
-                  color: colors.foreground,
-                  backgroundColor: colors.surface,
-                }}
-              />
-            </View>
-            <Pressable
-              onPress={handleSaveProfile}
-              style={({ pressed }) => ({
-                backgroundColor: colors.primary,
-                paddingVertical: 12,
-                borderRadius: 12,
-                alignItems: 'center',
-                opacity: pressed ? 0.8 : 1,
-              })}
-            >
-              <Text style={{ fontSize: 16, fontWeight: '600', color: colors.background }}>
-                Save Profile
-              </Text>
-            </Pressable>
+              >
+                <Text style={{ fontSize: 14, color: colors.muted, marginBottom: 8 }}>
+                  Email
+                </Text>
+                <Text style={{ fontSize: 16, fontWeight: '500', color: colors.foreground }}>
+                  {appData?.userProfile?.email || user?.email || 'Not available'}
+                </Text>
+              </View>
+
+              {/* Birth Date Input */}
+              <View style={{ marginBottom: 24 }}>
+                <Text style={{ fontSize: 14, color: colors.muted, marginBottom: 8 }}>
+                  Birth Date (YYYY-MM-DD)
+                </Text>
+                <TextInput
+                  value={birthDateInput}
+                  onChangeText={setBirthDateInput}
+                  placeholder="e.g., 1990-01-15"
+                  placeholderTextColor={colors.muted}
+                  style={{
+                    borderWidth: 1,
+                    borderColor: colors.border,
+                    borderRadius: 8,
+                    paddingHorizontal: 12,
+                    paddingVertical: 12,
+                    fontSize: 16,
+                    color: colors.foreground,
+                    backgroundColor: colors.background,
+                  }}
+                />
+              </View>
+
+              {/* Save Button */}
+              <Pressable
+                onPress={handleSaveBirthDate}
+                style={({ pressed }) => [
+                  {
+                    backgroundColor: colors.primary,
+                    paddingVertical: 12,
+                    borderRadius: 8,
+                    alignItems: 'center',
+                    opacity: pressed ? 0.8 : 1,
+                  },
+                ]}
+              >
+                <Text style={{ fontSize: 16, fontWeight: '600', color: colors.background }}>
+                  Save Changes
+                </Text>
+              </Pressable>
             </View>
           </View>
         </View>

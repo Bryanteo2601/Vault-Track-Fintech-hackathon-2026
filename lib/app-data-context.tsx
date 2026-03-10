@@ -46,51 +46,41 @@ export function AppDataProvider({ children }: { children: React.ReactNode }) {
   const [data, setData] = useState<AppData>(defaultAppData);
   const [isLoading, setIsLoading] = useState(true);
   const [isAuthenticated, setIsAuthenticated] = useState(false);
-  const [hasLoadedOnce, setHasLoadedOnce] = useState(false);
 
   const refreshData = useCallback(async () => {
     if (!isAuthenticated) {
       setIsLoading(false);
       return;
     }
-    // Only show loading state on initial load, not on refreshes
-    if (!hasLoadedOnce) {
-      setIsLoading(true);
-    }
+    setIsLoading(true);
     try {
       const loaded = await loadAppData();
       setData(loaded);
-      setHasLoadedOnce(true);
     } catch (error) {
       console.error('Error loading data:', error);
-      setData(defaultAppData);
-      setHasLoadedOnce(true);
-    } finally {
-      setIsLoading(false);
+      // Keep default data on error
     }
+    setIsLoading(false);
   }, [isAuthenticated]);
 
-  // Monitor authentication state - load data only once
+  // Monitor authentication state
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, (user) => {
       setIsAuthenticated(!!user);
-      if (user && !hasLoadedOnce) {
-        // Only load data on initial authentication, not on every re-render
+      if (user) {
         refreshData();
-      } else if (!user) {
+      } else {
         // User logged out - reset to default data
         setData(defaultAppData);
         setIsLoading(false);
-        setHasLoadedOnce(false);
       }
     });
     return unsubscribe;
-  }, [hasLoadedOnce, refreshData]);
+  }, [refreshData]);
 
   const persist = useCallback(async (newData: AppData) => {
     setData(newData);
-    // Save in background without blocking UI
-    saveAppData(newData).catch(err => console.error('Error persisting data:', err));
+    await saveAppData(newData);
   }, []);
 
   // Bank accounts
@@ -182,9 +172,7 @@ export function AppDataProvider({ children }: { children: React.ReactNode }) {
     await resetAppData();
     const fresh = await loadAppData();
     setData(fresh);
-    setHasLoadedOnce(true);
   }, []);
-
 
   return (
     <AppDataContext.Provider value={{
