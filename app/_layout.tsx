@@ -47,7 +47,7 @@ function RootLayoutContent() {
       {/* Always register all routes */}
       <Stack.Screen name="index" />
       <Stack.Screen name="onboarding" />
-      <Stack.Screen name="(tabs)" options={{ animationEnabled: false }} />
+      <Stack.Screen name="(tabs)" />
       <Stack.Screen name="net-worth-timeline" />
       <Stack.Screen name="diversification-analysis" />
       <Stack.Screen name="liquidity-analysis" />
