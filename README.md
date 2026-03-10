@@ -4,6 +4,8 @@
 
 A comprehensive mobile financial planning app built with React Native and Expo, featuring AI-powered insights, multi-asset portfolio tracking, private asset management, and Singapore-specific financial tools.
 
+[Detailed Project Description](project_description.md)
+
 ---
 
 ## 🎯 Core Features
@@ -263,7 +265,7 @@ Wellness Score =
   - ≤1 month: 20 points
   - 1-3 months: 50 points
   - 3-6 months: 80 points
-  - >6 months: 100 points
+  - \>6 months: 100 points
 - **Diversification Score**: Penalizes concentration if one asset class >60%
   - Applies Herfindahl index for portfolio concentration analysis
   - Concentration penalty: 2% per 1% over 60% threshold
@@ -271,12 +273,12 @@ Wellness Score =
   - Negative growth: 40 points
   - 0-5% growth: 60 points
   - 5-10% growth: 80 points
-  - >10% growth: 100 points
+  - \>10% growth: 100 points
 - **Debt Ratio Score**: `(Liabilities / Assets)` ratio assessment
   - <20%: 100 points (Excellent)
   - 20-50%: 80 points (Good)
   - 50-100%: 60 points (Fair)
-  - >100%: 20 points (Critical)
+  - \>100%: 20 points (Critical)
 
 #### CBS Credit Score (1000-2000)
 Singapore-style credit score based on five weighted factors:
@@ -300,7 +302,7 @@ CBS Score =
   - <20%: 95 points
   - 20-50%: 75 points
   - 50-100%: 50 points
-  - >100%: 20 points
+  - \>100%: 20 points
 - **Length of Credit (15%)**: Account age and credit history duration
 - **Credit Mix (15%)**: Variety of credit types (secured, unsecured, revolving)
 - **New Credit (5%)**: Recent credit inquiries and new accounts
