@@ -331,7 +331,7 @@ export default function BanksScreen() {
 
           {/* Credit Score Section */}
           <Text style={[styles.sectionTitle, { color: colors.foreground }]}>Credit Bureau Singapore</Text>
-          {cbsScore.score === 0 ? (
+          {cbsScore.score === 0 && data.bankAccounts.length === 0 && data.loans.length === 0 ? (
             <View style={[glassContainerStyle, styles.emptyState]}>
               <Text style={styles.emptyIcon}>📊</Text>
               <Text style={[styles.emptyText, { color: colors.muted }]}>No credit score data yet. Add bank accounts and loans to build your credit history.</Text>
