@@ -1,6 +1,6 @@
 import { initializeApp, getApp, getApps } from 'firebase/app';
 import { initializeAuth, browserLocalPersistence, getAuth } from 'firebase/auth';
-import { getFirestore } from 'firebase/firestore';
+import { getFirestore, enableIndexedDbPersistence } from 'firebase/firestore';
 import { Platform } from 'react-native';
 
 /**
@@ -45,10 +45,28 @@ try {
 
   // Initialize Cloud Firestore
   db = getFirestore(app);
+  
+  // Enable offline persistence for Firestore (web only)
+  if (Platform.OS === 'web') {
+    enableIndexedDbPersistence(db).catch((err) => {
+      if (err.code === 'failed-precondition') {
+        console.warn('Multiple tabs open, persistence disabled');
+      } else if (err.code === 'unimplemented') {
+        console.warn('Browser does not support offline persistence');
+      }
+    });
+  }
 
   console.log('✅ Firebase initialized successfully');
-} catch (error) {
+} catch (error: any) {
   console.error('❌ Firebase initialization error:', error);
+  // Log more details about the error
+  if (error?.code) {
+    console.error('Error code:', error.code);
+  }
+  if (error?.message) {
+    console.error('Error message:', error.message);
+  }
 }
 
 export { auth, db, app };

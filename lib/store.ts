@@ -476,32 +476,20 @@ export async function loadAppData(): Promise<AppData> {
       await setDoc(userDataRef, defaultAppData);
       return defaultAppData;
     }
-  } catch (error: any) {
-    // Check if it's a Firestore offline error - suppress it
-    const isOfflineError = error?.code === 'failed-precondition' || 
-                          error?.message?.includes('offline') ||
-                          error?.message?.includes('Failed to get document because the client is offline');
-    
-    if (!isOfflineError) {
-      console.error('Error loading app data from Firestore:', error);
-    }
-    
+  } catch (error) {
+    console.error('Error loading app data from Firestore:', error);
     // Fallback to AsyncStorage if Firestore fails (e.g., offline)
     try {
       const stored = await AsyncStorage.getItem(STORAGE_KEY);
       if (stored) {
-        if (!isOfflineError) {
-          console.log('Loaded app data from AsyncStorage (offline mode)');
-        }
+        console.log('Loaded app data from AsyncStorage (offline mode)');
         return JSON.parse(stored);
       }
     } catch (storageError) {
       console.error('Error loading from AsyncStorage:', storageError);
     }
     // Last resort: return default data
-    if (!isOfflineError) {
-      console.log('Using default app data');
-    }
+    console.log('Using default app data');
     return defaultAppData;
   }
 }
