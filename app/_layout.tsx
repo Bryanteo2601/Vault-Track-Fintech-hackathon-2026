@@ -52,6 +52,12 @@ function RootLayoutContent() {
         </>
       )}
       <Stack.Screen name="oauth/callback" />
+      <Stack.Screen name="net-worth-timeline" />
+      <Stack.Screen name="diversification-analysis" />
+      <Stack.Screen name="liquidity-analysis" />
+      <Stack.Screen name="debt-analysis" />
+      <Stack.Screen name="ai-chat" />
+      <Stack.Screen name="stress-test-ai-chat" />
     </Stack>
   );
 }
