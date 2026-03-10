@@ -1,4 +1,4 @@
-import { View, Text, Pressable, ScrollView, TextInput, Alert, ActivityIndicator } from 'react-native';
+import { View, Text, Pressable, ScrollView, TextInput, ActivityIndicator, Alert } from 'react-native';
 import { useRouter } from 'expo-router';
 import { ScreenContainer } from '@/components/screen-container';
 import { useAppColors } from '@/hooks/use-app-colors';
