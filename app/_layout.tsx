@@ -43,10 +43,9 @@ function RootLayoutContent() {
 
   return (
     <Stack screenOptions={{ headerShown: false }}>
-      {/* Always register all routes - let screens handle auth redirects */}
+      {/* Always register all routes */}
       <Stack.Screen name="index" />
-      <Stack.Screen name="auth" />
-      <Stack.Screen name="signup" />
+      <Stack.Screen name="onboarding" />
       <Stack.Screen name="(tabs)" />
       <Stack.Screen name="net-worth-timeline" />
       <Stack.Screen name="diversification-analysis" />
