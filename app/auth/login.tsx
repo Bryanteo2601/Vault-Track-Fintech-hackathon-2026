@@ -1,180 +1,207 @@
-import { ScrollView, Text, View, TextInput, Pressable, ActivityIndicator, Platform } from 'react-native';
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
+import { View, Text, TextInput, Pressable, ActivityIndicator, Alert } from 'react-native';
 import { useRouter } from 'expo-router';
 import { ScreenContainer } from '@/components/screen-container';
+import { useAppColors } from '@/hooks/use-app-colors';
+import { MaterialIcons } from '@expo/vector-icons';
 import { signIn } from '@/lib/firebase-auth';
-import { signInWithApple, isAppleSignInAvailable } from '@/lib/firebase-apple-auth';
+import { db } from '@/lib/firebase-config';
+import { collection, getDocs, query, where, limit } from 'firebase/firestore';
 
 export default function LoginScreen() {
   const router = useRouter();
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState('');
-  const [appleAvailable, setAppleAvailable] = useState(false);
+  const colors = useAppColors();
 
-  useEffect(() => {
-    const checkAppleAuth = async () => {
-      const available = await isAppleSignInAvailable();
-      setAppleAvailable(available);
-    };
-    checkAppleAuth();
-  }, []);
+  const [identifier, setIdentifier] = useState(''); // email or username
+  const [password, setPassword] = useState('');
+  const [isLoading, setIsLoading] = useState(false);
 
   const handleLogin = async () => {
-    if (!email || !password) {
-      setError('Please enter both email and password');
+    if (!identifier.trim() || !password.trim()) {
+      Alert.alert('Error', 'Please enter your email/username and password');
       return;
     }
 
-    setError('');
-    setLoading(true);
-
     try {
-      const result = await signIn(email, password);
-      if (result.success) {
-        router.replace('/(tabs)');
-      } else {
-        setError(result.error || 'Login failed');
+      setIsLoading(true);
+
+      const raw = identifier.trim();
+
+      // Determine email to use: if identifier looks like an email, use directly;
+      // otherwise, try to resolve it as a username from Firestore.
+      let emailToUse = raw;
+      const looksLikeEmail = raw.includes('@');
+
+      if (!looksLikeEmail) {
+        const usersRef = collection(db, 'users');
+        const q = query(usersRef, where('displayName', '==', raw), limit(1));
+        const snapshot = await getDocs(q);
+
+        if (snapshot.empty) {
+          Alert.alert('Login failed', 'User not found');
+          return;
+        }
+
+        const userDoc = snapshot.docs[0].data() as { email?: string };
+        if (!userDoc.email) {
+          Alert.alert('Login failed', 'User does not have an email configured');
+          return;
+        }
+
+        emailToUse = userDoc.email;
       }
-    } catch (err) {
-      const error = err as Error;
-      setError(error.message || 'An error occurred');
+
+      const result = await signIn(emailToUse, password);
+
+      if (!result.success) {
+        Alert.alert('Login failed', result.error || 'Invalid credentials');
+        return;
+      }
+
+      // On successful login, go to main app tabs
+      router.replace('/(tabs)');
+    } catch (error) {
+      Alert.alert('Login failed', 'Something went wrong. Please try again.');
     } finally {
-      setLoading(false);
+      setIsLoading(false);
     }
   };
 
-  const handleAppleSignIn = async () => {
-    setError('');
-    setLoading(true);
-
-    try {
-      const result = await signInWithApple();
-      if (result.success) {
-        router.replace('/(tabs)');
-      } else {
-        setError(result.error || 'Apple Sign-In failed');
-      }
-    } catch (err) {
-      const error = err as Error;
-      setError(error.message || 'An error occurred');
-    } finally {
-      setLoading(false);
-    }
+  const handleBack = () => {
+    router.back();
   };
-
-  const isFormValid = email && password;
 
   return (
-    <ScreenContainer className="bg-background">
-      <ScrollView contentContainerStyle={{ flexGrow: 1 }} showsVerticalScrollIndicator={false}>
-        <View className="flex-1 justify-center px-8 py-12">
-          {/* Header */}
-          <View className="mb-12">
-            <Text className="text-3xl font-bold text-foreground mb-2">Wealth Hub</Text>
-            <Text className="text-sm text-muted">Institutional Financial Dashboard</Text>
-          </View>
-
-          {/* Error Message */}
-          {error ? (
-            <View className="bg-error/10 border border-error rounded-md p-4 mb-8">
-              <Text className="text-error text-sm font-medium">{error}</Text>
-            </View>
-          ) : null}
-
-          {/* Form */}
-          <View className="gap-4 mb-8">
-            {/* Email */}
-            <View>
-              <Text className="text-xs font-semibold text-muted uppercase tracking-wide mb-2">
-                Email Address
-              </Text>
-              <TextInput
-                placeholder="you@example.com"
-                placeholderTextColor="#6A6A6A"
-                value={email}
-                onChangeText={setEmail}
-                editable={!loading}
-                keyboardType="email-address"
-                autoCapitalize="none"
-                className="bg-surface border border-border rounded-md px-4 py-3 text-foreground text-sm"
-                style={{ color: '#E5E5E5' }}
-              />
-            </View>
-
-            {/* Password */}
-            <View>
-              <Text className="text-xs font-semibold text-muted uppercase tracking-wide mb-2">
-                Password
-              </Text>
-              <TextInput
-                placeholder="Enter your password"
-                placeholderTextColor="#6A6A6A"
-                value={password}
-                onChangeText={setPassword}
-                editable={!loading}
-                secureTextEntry
-                className="bg-surface border border-border rounded-md px-4 py-3 text-foreground text-sm"
-                style={{ color: '#E5E5E5' }}
-              />
-            </View>
-          </View>
-
-          {/* Login Button */}
+    <ScreenContainer containerClassName="bg-gradient-to-b from-slate-900 to-slate-800">
+      <View style={{ flex: 1, paddingHorizontal: 24, paddingVertical: 40 }}>
+        {/* Header */}
+        <View style={{ gap: 8 }}>
           <Pressable
-            onPress={handleLogin}
-            disabled={!isFormValid || loading}
-            style={({ pressed }) => [
-              {
-                backgroundColor: isFormValid && !loading ? '#2F6FED' : '#3A3A3A',
-                opacity: pressed && isFormValid && !loading ? 0.9 : 1,
-              },
-            ]}
-            className="rounded-md py-3 flex-row items-center justify-center gap-2 mb-6"
+            onPress={handleBack}
+            style={({ pressed }) => ({
+              opacity: pressed ? 0.6 : 1,
+              width: 40,
+              height: 40,
+              justifyContent: 'center',
+            })}
           >
-            {loading ? (
-              <ActivityIndicator color="#E5E5E5" size="small" />
-            ) : (
-              <Text className="text-foreground font-semibold text-sm">Sign In</Text>
-            )}
+            <MaterialIcons name="arrow-back" size={24} color={colors.foreground} />
           </Pressable>
 
-          {/* Divider */}
-          <View className="flex-row items-center gap-3 mb-6">
-            <View className="flex-1 h-px bg-border" />
-            <Text className="text-muted text-xs">or</Text>
-            <View className="flex-1 h-px bg-border" />
+          <Text
+            style={{
+              fontSize: 32,
+              fontWeight: '700',
+              color: colors.foreground,
+              marginTop: 16,
+            }}
+          >
+            Log in
+          </Text>
+
+          <Text
+            style={{
+              fontSize: 14,
+              color: colors.muted,
+              marginTop: 8,
+            }}
+          >
+            Enter your credentials to access your account
+          </Text>
+        </View>
+
+        {/* Form */}
+        <View style={{ flex: 1, justifyContent: 'center', gap: 16 }}>
+          <View style={{ gap: 8 }}>
+            <Text
+              style={{
+                fontSize: 14,
+                fontWeight: '600',
+                color: colors.foreground,
+              }}
+            >
+              Email or Username
+            </Text>
+            <TextInput
+              placeholder="Enter your email or username"
+              placeholderTextColor={colors.muted}
+              value={identifier}
+              onChangeText={setIdentifier}
+              autoCapitalize="none"
+              keyboardType="email-address"
+              style={{
+                paddingVertical: 12,
+                paddingHorizontal: 16,
+                borderRadius: 8,
+                borderWidth: 1,
+                borderColor: colors.border,
+                backgroundColor: colors.surface,
+                color: colors.foreground,
+                fontSize: 16,
+              }}
+            />
           </View>
 
-          {/* Apple Sign-In Button */}
-          {appleAvailable && Platform.OS === 'ios' ? (
-            <Pressable
-              onPress={handleAppleSignIn}
-              disabled={loading}
-              style={({ pressed }) => [
-                {
-                  backgroundColor: '#1A1A1A',
-                  borderColor: '#2A2A2A',
-                  opacity: pressed ? 0.8 : 1,
-                },
-              ]}
-              className="rounded-md py-3 flex-row items-center justify-center gap-2 border mb-6"
+          <View style={{ gap: 8 }}>
+            <Text
+              style={{
+                fontSize: 14,
+                fontWeight: '600',
+                color: colors.foreground,
+              }}
             >
-              <Text className="text-lg">🍎</Text>
-              <Text className="text-foreground font-semibold text-sm">Sign in with Apple</Text>
-            </Pressable>
-          ) : null}
-
-          {/* Sign Up Link */}
-          <View className="flex-row items-center justify-center gap-1">
-            <Text className="text-muted text-sm">Don't have an account? </Text>
-            <Pressable onPress={() => router.navigate({ pathname: '/auth/signup' } as any)}>
-              <Text className="text-primary font-semibold text-sm">Sign Up</Text>
-            </Pressable>
+              Password
+            </Text>
+            <TextInput
+              placeholder="Enter your password"
+              placeholderTextColor={colors.muted}
+              value={password}
+              onChangeText={setPassword}
+              secureTextEntry
+              style={{
+                paddingVertical: 12,
+                paddingHorizontal: 16,
+                borderRadius: 8,
+                borderWidth: 1,
+                borderColor: colors.border,
+                backgroundColor: colors.surface,
+                color: colors.foreground,
+                fontSize: 16,
+              }}
+            />
           </View>
         </View>
-      </ScrollView>
+
+        {/* Actions */}
+        <View style={{ gap: 12 }}>
+          <Pressable
+            onPress={handleLogin}
+            disabled={isLoading}
+            style={({ pressed }) => ({
+              backgroundColor: colors.primary,
+              paddingVertical: 16,
+              borderRadius: 12,
+              alignItems: 'center',
+              opacity: pressed || isLoading ? 0.8 : 1,
+            })}
+          >
+            {isLoading ? (
+              <ActivityIndicator color={colors.background} />
+            ) : (
+              <Text
+                style={{
+                  fontSize: 16,
+                  fontWeight: '600',
+                  color: colors.background,
+                }}
+              >
+                Log in
+              </Text>
+            )}
+          </Pressable>
+        </View>
+      </View>
     </ScreenContainer>
   );
 }
+

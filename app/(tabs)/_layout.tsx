@@ -19,16 +19,23 @@ export default function TabLayout() {
   const bottomPadding = Platform.OS === "web" ? 12 : Math.max(insets.bottom, 8);
   const tabBarHeight = 60 + bottomPadding;
 
-  // Update active tab based on current route
+  // Update active tab based on current route within the (tabs) group
   React.useEffect(() => {
-    // Remove any group segments like (tabs) and derive the last "real" segment
-    const segments = pathname
-      .split("/")
-      .filter(Boolean)
-      .filter((segment) => !segment.startsWith("("));
+    const segments = pathname.split("/").filter(Boolean);
 
-    // Root ("/") should map to the dashboard/index tab
-    const routeName = segments.length === 0 ? "index" : segments[segments.length - 1];
+    // Expect paths like "/(tabs)" or "/(tabs)/banks"
+    if (!segments[0] || !segments[0].startsWith("(tabs")) {
+      return;
+    }
+
+    // "/(tabs)" or "/(tabs)/index" should highlight the dashboard tab
+    if (segments.length === 1 || (segments.length === 2 && segments[1] === "index")) {
+      setActiveTab("index");
+      return;
+    }
+
+    // Otherwise, use the last segment as the tab name (e.g. "banks", "loans")
+    const routeName = segments[segments.length - 1];
     setActiveTab(routeName);
   }, [pathname]);
 
@@ -45,11 +52,13 @@ export default function TabLayout() {
 
   const handleTabChange = (tabName: string) => {
     setActiveTab(tabName);
-    // Navigate using URL paths without group segments so the dashboard (root) stays reachable
+
+    // Stay within the (tabs) group for all tab navigation
     if (tabName === "index") {
-      router.push("/");
+      // Default dashboard route for the tabs group
+      router.push("/(tabs)" as any);
     } else {
-      router.push(`/${tabName}` as any);
+      router.push(`/(tabs)/${tabName}` as any);
     }
   };
 

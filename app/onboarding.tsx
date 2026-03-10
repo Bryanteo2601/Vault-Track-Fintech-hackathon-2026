@@ -12,37 +12,57 @@ export default function OnboardingScreen() {
   const [age, setAge] = useState('');
   const [isLoading, setIsLoading] = useState(false);
 
+  const [nameError, setNameError] = useState('');
+  const [ageError, setAgeError] = useState('');
+
   const handleContinue = async () => {
-    // Validate inputs
+    // Clear previous errors
+    setNameError('');
+    setAgeError('');
+
+    let hasError = false;
+
+    // Name
     if (!name.trim()) {
-      Alert.alert('Error', 'Please enter your name');
-      return;
+      setNameError('Please enter your name.');
+      hasError = true;
     }
 
+    // Age
     if (!age.trim()) {
-      Alert.alert('Error', 'Please enter your age');
+      setAgeError('Please enter your age.');
+      hasError = true;
+    } else {
+      const ageNum = parseInt(age, 10);
+      if (isNaN(ageNum) || ageNum < 18 || ageNum > 120) {
+        setAgeError('Age must be a number between 18 and 120.');
+        hasError = true;
+      }
+    }
+
+    if (hasError) {
       return;
     }
 
     const ageNum = parseInt(age, 10);
-    if (isNaN(ageNum) || ageNum < 18 || ageNum > 120) {
-      Alert.alert('Error', 'Please enter a valid age (18-120)');
-      return;
-    }
 
     setIsLoading(true);
     try {
-      // Save to AsyncStorage
-      await AsyncStorage.setItem('userProfile', JSON.stringify({
-        name: name.trim(),
-        age: ageNum,
-        onboardingComplete: true,
-      }));
+      // Persist simple onboarding profile locally (name and age only)
+      await AsyncStorage.setItem(
+        'userProfile',
+        JSON.stringify({
+          name: name.trim(),
+          age: ageNum,
+          onboardingComplete: true,
+        }),
+      );
 
-      // Navigate to dashboard
+      // Navigate straight to dashboard tabs
       router.replace('/(tabs)');
     } catch (error) {
       Alert.alert('Error', 'Failed to save profile. Please try again.');
+    } finally {
       setIsLoading(false);
     }
   };
@@ -99,7 +119,7 @@ export default function OnboardingScreen() {
               </Text>
             </View>
 
-            {/* Form */}
+            {/* Form: only name and age */}
             <View style={{ gap: 20 }}>
               {/* Name Input */}
               <View>
@@ -130,6 +150,11 @@ export default function OnboardingScreen() {
                   }}
                   editable={!isLoading}
                 />
+                {nameError ? (
+                  <Text style={{ marginTop: 4, fontSize: 12, color: colors.error }}>
+                    {nameError}
+                  </Text>
+                ) : null}
               </View>
 
               {/* Age Input */}
@@ -162,6 +187,11 @@ export default function OnboardingScreen() {
                   }}
                   editable={!isLoading}
                 />
+                {ageError ? (
+                  <Text style={{ marginTop: 4, fontSize: 12, color: colors.error }}>
+                    {ageError}
+                  </Text>
+                ) : null}
               </View>
             </View>
 

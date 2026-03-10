@@ -7,11 +7,12 @@ import { useAppData } from '@/lib/app-data-context';
 import { MaterialIcons } from '@expo/vector-icons';
 import { determineLifeStage, getLifeStageName } from '@/lib/life-stage';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import { logOut } from '@/lib/firebase-auth';
 
 export default function ProfileScreen() {
   const router = useRouter();
   const colors = useAppColors();
-  const { data: appData, updateUserProfile } = useAppData();
+  const { data: appData, updateUserProfile, resetData } = useAppData();
   const [showEditModal, setShowEditModal] = useState(false);
   const [userProfile, setUserProfile] = useState<{ name: string; age: number } | null>(null);
   const [nameInput, setNameInput] = useState('');
@@ -72,21 +73,18 @@ export default function ProfileScreen() {
   };
 
   const handleResetApp = async () => {
-    Alert.alert('Reset App', 'This will clear all your data and return to the onboarding screen.', [
-      { text: 'Cancel', onPress: () => {}, style: 'cancel' },
-      {
-        text: 'Reset',
-        onPress: async () => {
-          try {
-            await AsyncStorage.removeItem('userProfile');
-            router.replace('/index' as any);
-          } catch (error) {
-            Alert.alert('Error', 'Failed to reset app');
-          }
-        },
-        style: 'destructive',
-      },
-    ]);
+    try {
+      // Best-effort reset: sign out, clear onboarding profile, and reset app data
+      await Promise.allSettled([
+        (async () => { await logOut(); })(),
+        (async () => { await AsyncStorage.removeItem('userProfile'); })(),
+        (async () => { await resetData(); })(),
+      ]);
+      // Navigate back to the landing page ("Grow your wealth today")
+      router.replace('/landing' as any);
+    } catch (error) {
+      Alert.alert('Error', 'Failed to reset app');
+    }
   };
 
   if (loading) {

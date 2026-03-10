@@ -247,11 +247,9 @@ export default function BanksScreen() {
     setModalVisible(true);
   };
 
-  const handleDelete = (account: BankAccount) => {
-    Alert.alert('Delete Account', `Remove ${account.bankName} account?`, [
-      { text: 'Cancel', style: 'cancel' },
-      { text: 'Delete', style: 'destructive', onPress: () => deleteBankAccount(account.id) },
-    ]);
+  const handleDelete = async (account: BankAccount) => {
+    // Delete immediately without extra confirmation for a smoother UX
+    await deleteBankAccount(account.id);
   };
 
   const handleSave = async (accountData: Omit<BankAccount, 'id' | 'createdAt'>) => {
