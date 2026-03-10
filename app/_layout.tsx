@@ -29,18 +29,8 @@ export const unstable_settings = {
   initialRoute: "index",
 };
 
-// Separate component to use auth context
+// Always show the root layout - index.tsx handles routing logic
 function RootLayoutContent() {
-  const { user, loading } = useFirebaseAuth();
-
-  if (loading) {
-    return (
-      <Stack screenOptions={{ headerShown: false }}>
-        <Stack.Screen name="index" />
-      </Stack>
-    );
-  }
-
   return (
     <Stack screenOptions={{ headerShown: false }}>
       {/* Always register all routes */}
