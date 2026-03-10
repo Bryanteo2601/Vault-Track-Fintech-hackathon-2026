@@ -88,19 +88,32 @@ export default function ProfileScreen() {
     }
   };
 
-  const handleResetApp = async () => {
-    try {
-      // Best-effort reset: sign out, clear onboarding profile, and reset app data
-      await Promise.allSettled([
-        (async () => { await logOut(); })(),
-        (async () => { await AsyncStorage.removeItem('userProfile'); })(),
-        (async () => { await resetData(); })(),
-      ]);
-      // Navigate to dashboard
-      router.replace('/(tabs)' as any);
-    } catch (error) {
-      Alert.alert('Error', 'Failed to reset app');
-    }
+  const handleLogOut = async () => {
+    Alert.alert(
+      'Log Out',
+      'Are you sure you want to log out?',
+      [
+        { text: 'Cancel', onPress: () => {}, style: 'cancel' },
+        {
+          text: 'Log Out',
+          onPress: async () => {
+            try {
+              // Best-effort logout: sign out, clear onboarding profile, and reset app data
+              await Promise.allSettled([
+                (async () => { await logOut(); })(),
+                (async () => { await AsyncStorage.removeItem('userProfile'); })(),
+                (async () => { await resetData(); })(),
+              ]);
+              // Navigate to dashboard
+              router.replace('/(tabs)' as any);
+            } catch (error) {
+              Alert.alert('Error', 'Failed to log out');
+            }
+          },
+          style: 'destructive',
+        },
+      ]
+    );
   };
 
   if (loading) {
@@ -198,9 +211,8 @@ export default function ProfileScreen() {
             <MaterialIcons name="chevron-right" size={22} color={colors.muted} />
           </Pressable>
 
-          {/* Reset App */}
+          {/* Password */}
           <Pressable
-            onPress={handleResetApp}
             style={({ pressed }) => [
               {
                 flexDirection: 'row',
@@ -216,9 +228,186 @@ export default function ProfileScreen() {
             ]}
           >
             <View style={{ flexDirection: 'row', alignItems: 'center', gap: 16, flex: 1 }}>
-              <MaterialIcons name="refresh" size={22} color={colors.error} />
+              <MaterialIcons name="lock" size={22} color={colors.primary} />
+              <Text style={{ fontSize: 16, fontWeight: '500', color: colors.foreground }}>
+                Password
+              </Text>
+            </View>
+            <MaterialIcons name="chevron-right" size={22} color={colors.muted} />
+          </Pressable>
+
+          {/* Notifications */}
+          <Pressable
+            style={({ pressed }) => [
+              {
+                flexDirection: 'row',
+                alignItems: 'center',
+                justifyContent: 'space-between',
+                paddingHorizontal: 20,
+                paddingVertical: 16,
+                borderRadius: 12,
+                marginBottom: 8,
+                backgroundColor: colors.surface,
+                opacity: pressed ? 0.8 : 1,
+              },
+            ]}
+          >
+            <View style={{ flexDirection: 'row', alignItems: 'center', gap: 16, flex: 1 }}>
+              <MaterialIcons name="notifications" size={22} color={colors.primary} />
+              <Text style={{ fontSize: 16, fontWeight: '500', color: colors.foreground }}>
+                Notifications
+              </Text>
+            </View>
+            <MaterialIcons name="chevron-right" size={22} color={colors.muted} />
+          </Pressable>
+
+          {/* Manage Subscriptions */}
+          <Pressable
+            onPress={() => router.push('/manage-subscriptions' as any)}
+            style={({ pressed }) => [
+              {
+                flexDirection: 'row',
+                alignItems: 'center',
+                justifyContent: 'space-between',
+                paddingHorizontal: 20,
+                paddingVertical: 16,
+                borderRadius: 12,
+                marginBottom: 8,
+                backgroundColor: colors.surface,
+                opacity: pressed ? 0.8 : 1,
+              },
+            ]}
+          >
+            <View style={{ flexDirection: 'row', alignItems: 'center', gap: 16, flex: 1 }}>
+              <MaterialIcons name="card-membership" size={22} color={colors.primary} />
+              <Text style={{ fontSize: 16, fontWeight: '500', color: colors.foreground }}>
+                Manage Subscriptions
+              </Text>
+            </View>
+            <MaterialIcons name="chevron-right" size={22} color={colors.muted} />
+          </Pressable>
+
+          {/* Support */}
+          <Pressable
+            style={({ pressed }) => [
+              {
+                flexDirection: 'row',
+                alignItems: 'center',
+                justifyContent: 'space-between',
+                paddingHorizontal: 20,
+                paddingVertical: 16,
+                borderRadius: 12,
+                marginBottom: 8,
+                backgroundColor: colors.surface,
+                opacity: pressed ? 0.8 : 1,
+              },
+            ]}
+          >
+            <View style={{ flexDirection: 'row', alignItems: 'center', gap: 16, flex: 1 }}>
+              <MaterialIcons name="help" size={22} color={colors.primary} />
+              <Text style={{ fontSize: 16, fontWeight: '500', color: colors.foreground }}>
+                Support
+              </Text>
+            </View>
+            <MaterialIcons name="chevron-right" size={22} color={colors.muted} />
+          </Pressable>
+
+          {/* Report an Issue */}
+          <Pressable
+            style={({ pressed }) => [
+              {
+                flexDirection: 'row',
+                alignItems: 'center',
+                justifyContent: 'space-between',
+                paddingHorizontal: 20,
+                paddingVertical: 16,
+                borderRadius: 12,
+                marginBottom: 8,
+                backgroundColor: colors.surface,
+                opacity: pressed ? 0.8 : 1,
+              },
+            ]}
+          >
+            <View style={{ flexDirection: 'row', alignItems: 'center', gap: 16, flex: 1 }}>
+              <MaterialIcons name="bug-report" size={22} color={colors.primary} />
+              <Text style={{ fontSize: 16, fontWeight: '500', color: colors.foreground }}>
+                Report an Issue
+              </Text>
+            </View>
+            <MaterialIcons name="chevron-right" size={22} color={colors.muted} />
+          </Pressable>
+
+          {/* About */}
+          <Pressable
+            style={({ pressed }) => [
+              {
+                flexDirection: 'row',
+                alignItems: 'center',
+                justifyContent: 'space-between',
+                paddingHorizontal: 20,
+                paddingVertical: 16,
+                borderRadius: 12,
+                marginBottom: 8,
+                backgroundColor: colors.surface,
+                opacity: pressed ? 0.8 : 1,
+              },
+            ]}
+          >
+            <View style={{ flexDirection: 'row', alignItems: 'center', gap: 16, flex: 1 }}>
+              <MaterialIcons name="info" size={22} color={colors.primary} />
+              <Text style={{ fontSize: 16, fontWeight: '500', color: colors.foreground }}>
+                About Wealth Wellness Hub
+              </Text>
+            </View>
+            <MaterialIcons name="chevron-right" size={22} color={colors.muted} />
+          </Pressable>
+
+          {/* Language */}
+          <Pressable
+            style={({ pressed }) => [
+              {
+                flexDirection: 'row',
+                alignItems: 'center',
+                justifyContent: 'space-between',
+                paddingHorizontal: 20,
+                paddingVertical: 16,
+                borderRadius: 12,
+                marginBottom: 32,
+                backgroundColor: colors.surface,
+                opacity: pressed ? 0.8 : 1,
+              },
+            ]}
+          >
+            <View style={{ flexDirection: 'row', alignItems: 'center', gap: 16, flex: 1 }}>
+              <MaterialIcons name="language" size={22} color={colors.primary} />
+              <Text style={{ fontSize: 16, fontWeight: '500', color: colors.foreground }}>
+                Language
+              </Text>
+            </View>
+            <MaterialIcons name="chevron-right" size={22} color={colors.muted} />
+          </Pressable>
+
+          {/* ===== LOG OUT BUTTON ===== */}
+          <Pressable
+            onPress={handleLogOut}
+            style={({ pressed }) => [
+              {
+                flexDirection: 'row',
+                alignItems: 'center',
+                justifyContent: 'space-between',
+                paddingHorizontal: 20,
+                paddingVertical: 16,
+                borderRadius: 12,
+                marginBottom: 32,
+                backgroundColor: colors.surface,
+                opacity: pressed ? 0.8 : 1,
+              },
+            ]}
+          >
+            <View style={{ flexDirection: 'row', alignItems: 'center', gap: 16, flex: 1 }}>
+              <MaterialIcons name="logout" size={22} color={colors.error} />
               <Text style={{ fontSize: 16, fontWeight: '500', color: colors.error }}>
-                Reset App
+                Log Out
               </Text>
             </View>
             <MaterialIcons name="chevron-right" size={22} color={colors.muted} />
