@@ -148,8 +148,6 @@ export type LifeStage =
 export type AgeRange = '19-29' | '25-34' | '35-59' | '30-59' | '55-64' | '65+';
 
 export interface UserProfile {
-  email?: string;
-  name?: string;
   birthDate?: string; // ISO date string (e.g., "1995-05-15")
   ageRange?: AgeRange;
   lifeStage?: LifeStage;

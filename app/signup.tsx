@@ -1,11 +1,9 @@
-import { View, Text, Pressable, ScrollView, TextInput, ActivityIndicator, Alert } from 'react-native';
+import { View, Text, Pressable, ScrollView, TextInput, Alert, ActivityIndicator } from 'react-native';
 import { useRouter } from 'expo-router';
 import { ScreenContainer } from '@/components/screen-container';
 import { useAppColors } from '@/hooks/use-app-colors';
 import { MaterialIcons } from '@expo/vector-icons';
 import { useState } from 'react';
-import { useAppData } from '@/lib/app-data-context';
-import { signUp } from '@/lib/firebase-auth';
 
 
 export default function SignupScreen() {
@@ -13,17 +11,14 @@ export default function SignupScreen() {
   const colors = useAppColors();
   const [name, setName] = useState('');
   const [age, setAge] = useState('');
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
-  const [confirmPassword, setConfirmPassword] = useState('');
   const [isLoading, setIsLoading] = useState(false);
-  const [step, setStep] = useState<'method' | 'gmail' | 'details' | 'password'>('method');
+  const [step, setStep] = useState<'method' | 'details'>('method');
 
-  const { updateUserProfile } = useAppData();
+
 
   const handleGoogleSignup = async () => {
-    // Move to Gmail authentication step
-    setStep('gmail');
+    // Move to details form
+    setStep('details');
   };
 
   const handleSignup = async () => {
@@ -38,72 +33,22 @@ export default function SignupScreen() {
       return;
     }
 
-    // Move to password setup step
-    setStep('password');
-  };
-
-  const handlePasswordSetup = async () => {
-    if (!password.trim() || !confirmPassword.trim()) {
-      Alert.alert('Error', 'Please enter a password');
-      return;
-    }
-
-    if (password.length < 6) {
-      Alert.alert('Error', 'Password must be at least 6 characters');
-      return;
-    }
-
-    if (password !== confirmPassword) {
-      Alert.alert('Error', 'Passwords do not match');
-      return;
-    }
-
     try {
       setIsLoading(true);
-
-      // Create Firebase Auth user with email and password
-      const result = await signUp(email.trim(), password, name.trim());
-
-      if (!result.success) {
-        Alert.alert('Error', result.error || 'Failed to create account');
-        return;
-      }
-
-      // Calculate birthDate from age
-      const today = new Date();
-      const birthYear = today.getFullYear() - parseInt(age);
-      const birthDate = new Date(birthYear, today.getMonth(), today.getDate());
-
-      // Save user profile data
-      await updateUserProfile({
-        email: email.trim(),
+      // Save user data to localStorage/AsyncStorage
+      const userData = {
         name: name.trim(),
-        birthDate: birthDate.toISOString().split('T')[0],
-      });
-
-      // Redirect to main app
+        age: ageNum,
+        createdAt: new Date().toISOString(),
+      };
+      // TODO: Save to backend via API
+      // For now, redirect to main app
       router.replace('/(tabs)');
     } catch (error) {
       Alert.alert('Error', 'Failed to create account');
     } finally {
       setIsLoading(false);
     }
-  };
-
-  const handleContinueFromGmail = () => {
-    if (!email.trim()) {
-      Alert.alert('Error', 'Please enter your email address');
-      return;
-    }
-
-    // Validate email format
-    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    if (!emailRegex.test(email.trim())) {
-      Alert.alert('Error', 'Please enter a valid email address');
-      return;
-    }
-
-    setStep('details');
   };
 
   return (
@@ -113,17 +58,7 @@ export default function SignupScreen() {
           {/* Header */}
           <View style={{ paddingHorizontal: 24, gap: 8 }}>
             <Pressable
-              onPress={() => {
-                if (step === 'password') {
-                  setStep('details');
-                } else if (step === 'details') {
-                  setStep('gmail');
-                } else if (step === 'gmail') {
-                  setStep('method');
-                } else {
-                  router.back();
-                }
-              }}
+              onPress={() => (step === 'details' ? setStep('method') : router.back())}
               style={({ pressed }) => ({
                 opacity: pressed ? 0.6 : 1,
                 width: 40,
@@ -142,13 +77,7 @@ export default function SignupScreen() {
                 marginTop: 16,
               }}
             >
-              {step === 'method'
-                ? 'Create Account'
-                : step === 'gmail'
-                ? 'Email'
-                : step === 'details'
-                ? 'Tell us about you'
-                : 'Set Password'}
+              {step === 'method' ? 'Create Account' : 'Tell us about you'}
             </Text>
 
             <Text
@@ -160,11 +89,7 @@ export default function SignupScreen() {
             >
               {step === 'method'
                 ? 'Sign up to get started'
-                : step === 'gmail'
-                ? 'Enter your email address'
-                : step === 'details'
-                ? 'Help us personalize your experience'
-                : 'Create a secure password for your account'}
+                : 'Help us personalize your experience'}
             </Text>
           </View>
 
@@ -172,9 +97,9 @@ export default function SignupScreen() {
           <View style={{ flex: 1, justifyContent: 'center', paddingHorizontal: 24 }}>
             {step === 'method' ? (
               <View style={{ gap: 12 }}>
-                {/* Sign In Button */}
+                {/* Google Signup Button */}
                 <Pressable
-                  onPress={() => router.push('/auth/login' as any)}
+                  onPress={handleGoogleSignup}
                   disabled={isLoading}
                   style={({ pressed }) => ({
                     flexDirection: 'row',
@@ -190,6 +115,7 @@ export default function SignupScreen() {
                     opacity: pressed ? 0.8 : 1,
                   })}
                 >
+                  <MaterialIcons name="mail" size={20} color={colors.foreground} />
                   <Text
                     style={{
                       fontSize: 16,
@@ -197,58 +123,36 @@ export default function SignupScreen() {
                       color: colors.foreground,
                     }}
                   >
-                    Sign In
+                    Continue with Gmail
                   </Text>
                 </Pressable>
-              </View>
-            ) : step === 'gmail' ? (
-              <View style={{ gap: 16, alignItems: 'center' }}>
-                {/* Email Icon */}
+
+                {/* Divider */}
                 <View
                   style={{
-                    width: 80,
-                    height: 80,
-                    borderRadius: 40,
-                    backgroundColor: colors.primary,
+                    flexDirection: 'row',
                     alignItems: 'center',
-                    justifyContent: 'center',
+                    gap: 12,
+                    marginVertical: 16,
                   }}
                 >
-                  <MaterialIcons name="mail" size={40} color={colors.background} />
+                  <View style={{ flex: 1, height: 1, backgroundColor: colors.border }} />
+                  <Text style={{ color: colors.muted, fontSize: 12 }}>or</Text>
+                  <View style={{ flex: 1, height: 1, backgroundColor: colors.border }} />
                 </View>
 
-                {/* Email Input */}
-                <View style={{ gap: 8, width: '100%' }}>
-                  <Text
-                    style={{
-                      fontSize: 14,
-                      fontWeight: '600',
-                      color: colors.foreground,
-                    }}
-                  >
-                    Email Address
-                  </Text>
-                  <TextInput
-                    placeholder="Enter your email"
-                    placeholderTextColor={colors.muted}
-                    value={email}
-                    onChangeText={setEmail}
-                    keyboardType="email-address"
-                    autoCapitalize="none"
-                    style={{
-                      paddingVertical: 12,
-                      paddingHorizontal: 16,
-                      borderRadius: 8,
-                      borderWidth: 1,
-                      borderColor: colors.border,
-                      backgroundColor: colors.surface,
-                      color: colors.foreground,
-                      fontSize: 16,
-                    }}
-                  />
-                </View>
+                {/* Email Input (future feature) */}
+                <Text
+                  style={{
+                    fontSize: 14,
+                    color: colors.muted,
+                    textAlign: 'center',
+                  }}
+                >
+                  Email signup coming soon
+                </Text>
               </View>
-            ) : step === 'details' ? (
+            ) : (
               <View style={{ gap: 16 }}>
                 {/* Name Input */}
                 <View style={{ gap: 8 }}>
@@ -320,96 +224,13 @@ export default function SignupScreen() {
                   We use this information to provide personalized financial insights and recommendations
                 </Text>
               </View>
-            ) : (
-              <View style={{ gap: 16 }}>
-                {/* Password Input */}
-                <View style={{ gap: 8 }}>
-                  <Text
-                    style={{
-                      fontSize: 14,
-                      fontWeight: '600',
-                      color: colors.foreground,
-                    }}
-                  >
-                    Password
-                  </Text>
-                  <TextInput
-                    placeholder="Enter a password"
-                    placeholderTextColor={colors.muted}
-                    value={password}
-                    onChangeText={setPassword}
-                    secureTextEntry
-                    style={{
-                      paddingVertical: 12,
-                      paddingHorizontal: 16,
-                      borderRadius: 8,
-                      borderWidth: 1,
-                      borderColor: colors.border,
-                      backgroundColor: colors.surface,
-                      color: colors.foreground,
-                      fontSize: 16,
-                    }}
-                  />
-                </View>
-
-                {/* Confirm Password Input */}
-                <View style={{ gap: 8 }}>
-                  <Text
-                    style={{
-                      fontSize: 14,
-                      fontWeight: '600',
-                      color: colors.foreground,
-                    }}
-                  >
-                    Confirm Password
-                  </Text>
-                  <TextInput
-                    placeholder="Confirm your password"
-                    placeholderTextColor={colors.muted}
-                    value={confirmPassword}
-                    onChangeText={setConfirmPassword}
-                    secureTextEntry
-                    style={{
-                      paddingVertical: 12,
-                      paddingHorizontal: 16,
-                      borderRadius: 8,
-                      borderWidth: 1,
-                      borderColor: colors.border,
-                      backgroundColor: colors.surface,
-                      color: colors.foreground,
-                      fontSize: 16,
-                    }}
-                  />
-                </View>
-
-                {/* Password Requirements */}
-                <Text
-                  style={{
-                    fontSize: 12,
-                    color: colors.muted,
-                    marginTop: 8,
-                  }}
-                >
-                  Password must be at least 6 characters long
-                </Text>
-              </View>
             )}
           </View>
 
           {/* Button */}
           <View style={{ paddingHorizontal: 24, gap: 12 }}>
             <Pressable
-              onPress={() => {
-                if (step === 'method') {
-                  handleGoogleSignup();
-                } else if (step === 'gmail') {
-                  handleContinueFromGmail();
-                } else if (step === 'details') {
-                  handleSignup();
-                } else {
-                  handlePasswordSetup();
-                }
-              }}
+              onPress={step === 'method' ? handleGoogleSignup : handleSignup}
               disabled={isLoading}
               style={({ pressed }) => ({
                 backgroundColor: colors.primary,
@@ -429,13 +250,7 @@ export default function SignupScreen() {
                     color: colors.background,
                   }}
                 >
-                  {step === 'method'
-                    ? 'Sign Up with Email'
-                    : step === 'gmail'
-                    ? 'Continue'
-                    : step === 'details'
-                    ? 'Next'
-                    : 'Create Account'}
+                  {step === 'method' ? 'Continue with Gmail' : 'Complete Signup'}
                 </Text>
               )}
             </Pressable>

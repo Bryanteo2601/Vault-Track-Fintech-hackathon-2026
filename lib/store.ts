@@ -25,7 +25,7 @@ function getCurrentUserId(): string {
 
 // ─── Firestore Paths ──────────────────────────────────────────────────────────
 function getUserDataPath(userId: string): string {
-  return `users/${userId}/appData/data`;
+  return `users/${userId}/appData`;
 }
 
 // ─── Default Sample Data ──────────────────────────────────────────────────────
@@ -452,7 +452,7 @@ export const defaultAppData: AppData = {
 export async function loadAppData(): Promise<AppData> {
   try {
     const userId = getCurrentUserId();
-    const userDataRef = doc(db, 'users', userId, 'appData', 'data');
+    const userDataRef = doc(db, getUserDataPath(userId));
     const snapshot = await getDoc(userDataRef);
 
     if (snapshot.exists()) {
@@ -486,7 +486,7 @@ export async function loadAppData(): Promise<AppData> {
 export async function saveAppData(data: AppData): Promise<void> {
   try {
     const userId = getCurrentUserId();
-    const userDataRef = doc(db, 'users', userId, 'appData', 'data');
+    const userDataRef = doc(db, getUserDataPath(userId));
     await setDoc(userDataRef, data, { merge: true });
     
     // Also save to AsyncStorage as backup
