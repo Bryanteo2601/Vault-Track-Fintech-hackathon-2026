@@ -15,7 +15,7 @@ A comprehensive mobile financial planning app built with React Native and Expo, 
 | **Investments** | Portfolio P&L tracking across 8 asset classes (stocks, crypto, ETFs, bonds, futures, options, REITs, commodities) with AI insights |
 | **Loans** | Loan management with CBS-format aggregated balances, 6-month liability trends, and amortization schedules |
 | **Insurance** | Policy tracking with expiry status badges, coverage breakdown, and PDF document import |
-| **Private Assets** | Track non-traditional assets (real estate, art, jewelry, vehicles, business stakes) with historical valuation tracking and confidence levels |
+| **Private Assets** | Track physical and non-physical assets (real estate, art, jewelry, vehicles, business stakes) with historical valuation tracking and confidence levels that is intended for personal investments|
 | **CPF (Singapore)** | CPF OA/SA/MA account tracking, contribution history, **CPF LIFE payout estimator**, retirement milestones (BRS/FRS/ERS), and withdrawal simulations |
 | **AI Chat** | Interactive AI financial advisor performing structured 5-point financial analysis: Snapshot → Observations → Risks → Opportunities → Questions |
 | **Stress Testing** | Scenario simulations for market crashes, interest rate changes, and economic downturns |
