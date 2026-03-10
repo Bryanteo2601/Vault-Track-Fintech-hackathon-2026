@@ -121,11 +121,6 @@ export default function LoginScreen() {
             </View>
           </View>
 
-          {/* Forgot Password Link */}
-          <Pressable onPress={() => router.navigate({ pathname: '/auth/forgot-password' } as any)} className="mb-8">
-            <Text className="text-xs text-primary font-semibold">Forgot password?</Text>
-          </Pressable>
-
           {/* Login Button */}
           <Pressable
             onPress={handleLogin}
