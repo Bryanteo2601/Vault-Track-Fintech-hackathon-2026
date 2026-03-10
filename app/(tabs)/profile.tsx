@@ -402,6 +402,7 @@ export default function ProfileScreen() {
             >
               <Pressable
                 onPress={() => setShowEditModal(false)}
+                hitSlop={8}
                 style={({ pressed }) => [{ opacity: pressed ? 0.6 : 1 }]}
               >
                 <MaterialIcons name="arrow-back" size={28} color={colors.foreground} />
