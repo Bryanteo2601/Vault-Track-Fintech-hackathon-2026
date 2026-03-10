@@ -2,9 +2,16 @@
 
 **Your complete financial health, in one place.**
 
-A comprehensive mobile financial planning app built with React Native and Expo, featuring AI-powered insights, multi-asset portfolio tracking, private asset management, and Singapore-specific financial tools.
+A comprehensive mobile financial planning app built with React Native and Expo, featuring AI-powered insights, multi-asset portfolio tracking, private asset management, and Singapore-specific financial tools. 
 
 [Detailed Project Description](project_description.md)
+---
+##For the judges
+
+** How to view our app? **
+Our mobile app can be viewed here: https://8081-i7c5n4unr096kz5acoa9r-78fc9c09.sg1.manus.computer
+
+P.S. Since our solution is a mobile app do view it on your mobile phones for the most optimal experience. Thank you.
 
 ---
 
