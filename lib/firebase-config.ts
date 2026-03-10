@@ -1,6 +1,6 @@
 import { initializeApp, getApp, getApps } from 'firebase/app';
 import { initializeAuth, browserLocalPersistence, getAuth } from 'firebase/auth';
-import { getFirestore, enableIndexedDbPersistence } from 'firebase/firestore';
+import { getFirestore, enableIndexedDbPersistence, connectFirestoreEmulator } from 'firebase/firestore';
 import { Platform } from 'react-native';
 
 /**
@@ -46,7 +46,9 @@ try {
   // Initialize Cloud Firestore
   db = getFirestore(app);
   
-  // Enable offline persistence for Firestore (web only)
+  // Enable offline persistence for Firestore
+  // On web: uses IndexedDB
+  // On React Native/Expo: uses SQLite (built-in)
   if (Platform.OS === 'web') {
     enableIndexedDbPersistence(db).catch((err) => {
       if (err.code === 'failed-precondition') {
@@ -56,6 +58,8 @@ try {
       }
     });
   }
+  // On React Native/Expo, Firestore automatically uses SQLite for persistence
+  // No additional setup needed - it works out of the box
 
   console.log('✅ Firebase initialized successfully');
 } catch (error: any) {
