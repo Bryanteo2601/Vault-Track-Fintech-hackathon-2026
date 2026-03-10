@@ -1,4 +1,4 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useCallback } from 'react';
 import {
   ScrollView, View, Text, StyleSheet, Pressable, Modal,
   TextInput, FlatList, Alert, KeyboardAvoidingView, Platform
@@ -102,101 +102,130 @@ function AccountCard({ account, onEdit, onDelete }: { account: BankAccount; onEd
           </View>
         </View>
         <View style={styles.accountRight}>
-          <Text style={[styles.interestLabel, { color: colors.muted }]}>Interest p.a.</Text>
-          <Text style={[styles.interestValue, { color: account.interestRate > 0 ? colors.success : colors.muted }]}>
-            {account.interestRate.toFixed(2)}%
-          </Text>
-          {account.accountType === 'savings' || account.accountType === 'fixed_deposit' ? (
-            <Text style={[styles.interestEarned, { color: colors.success }]}>
-              +{formatCurrency((account.balance * account.interestRate) / 100 / 12)}/mo
-            </Text>
-          ) : null}
+          <Text style={[styles.accountLabel, { color: colors.muted }]}>Interest p.a.</Text>
+          <Text style={[styles.accountRate, { color: colors.success }]}>{account.interestRate.toFixed(2)}%</Text>
+          <Text style={[styles.accountMonthly, { color: colors.muted }]}>+{formatCurrency((account.balance * account.interestRate) / 100 / 12)}/mo</Text>
         </View>
       </View>
     </View>
   );
 }
 
-// ─── Add/Edit Account Modal ───────────────────────────────────────────────────
+// ─── Account Modal ────────────────────────────────────────────────────────────
 function AccountModal({ visible, account, onClose, onSave }: {
   visible: boolean;
-  account?: BankAccount;
+  account: BankAccount | undefined;
   onClose: () => void;
-  onSave: (data: Omit<BankAccount, 'id' | 'createdAt'>) => void;
+  onSave: (data: Omit<BankAccount, 'id' | 'createdAt'>) => Promise<void>;
 }) {
   const colors = useAppColors();
   const [bankName, setBankName] = useState(account?.bankName || '');
   const [accountNumber, setAccountNumber] = useState(account?.accountNumber || '');
-  const [accountType, setAccountType] = useState<AccountType>(account?.accountType || 'savings');
   const [balance, setBalance] = useState(account?.balance?.toString() || '');
   const [interestRate, setInterestRate] = useState(account?.interestRate?.toString() || '');
+  const [accountType, setAccountType] = useState<AccountType>(account?.accountType || 'savings');
+  const [isSaving, setIsSaving] = useState(false);
 
-  React.useEffect(() => {
-    if (visible) {
-      setBankName(account?.bankName || '');
-      setAccountNumber(account?.accountNumber || '');
-      setAccountType(account?.accountType || 'savings');
-      setBalance(account?.balance?.toString() || '');
-      setInterestRate(account?.interestRate?.toString() || '');
+  const handleSavePress = async () => {
+    if (!bankName.trim() || !accountNumber.trim() || !balance.trim()) {
+      Alert.alert('Validation', 'Please fill in all required fields');
+      return;
     }
-  }, [visible, account]);
 
-  const handleSave = () => {
-    if (!bankName.trim()) { Alert.alert('Required', 'Please enter bank name'); return; }
-    onSave({
-      bankName: bankName.trim(),
-      accountNumber: accountNumber.trim() || '****',
-      accountType,
-      balance: parseFloat(balance) || 0,
-      interestRate: parseFloat(interestRate) || 0,
-      currency: 'SGD',
-      isPrimary: false,
-    });
-    onClose();
+    setIsSaving(true);
+    try {
+      await onSave({
+        bankName,
+        accountNumber,
+        balance: parseFloat(balance),
+        interestRate: parseFloat(interestRate) || 0,
+        accountType,
+        currency: 'SGD',
+        isPrimary: account?.isPrimary || false,
+      });
+    } finally {
+      setIsSaving(false);
+    }
   };
 
   return (
-    <Modal visible={visible} animationType="slide" presentationStyle="pageSheet" onRequestClose={onClose}>
-      <KeyboardAvoidingView behavior={Platform.OS === 'ios' ? 'padding' : 'height'} style={{ flex: 1 }}>
-        <View style={[styles.modal, { backgroundColor: colors.background }]}>
+    <Modal visible={visible} animationType="slide" transparent={true} onRequestClose={onClose}>
+      <KeyboardAvoidingView behavior={Platform.OS === 'ios' ? 'padding' : 'height'} style={styles.modalOverlay}>
+        <View style={[styles.modalContent, { backgroundColor: colors.background }]}>
           <View style={styles.modalHeader}>
-            <Text style={[styles.modalTitle, { color: colors.foreground }]}>{account ? 'Edit Account' : 'Add Bank Account'}</Text>
-            <Pressable onPress={onClose} style={({ pressed }) => [pressed && { opacity: 0.6 }]}>
-              <IconSymbol name="xmark.circle.fill" size={28} color={colors.muted} />
+            <Text style={[styles.modalTitle, { color: colors.foreground }]}>{account ? 'Edit Account' : 'Add Account'}</Text>
+            <Pressable onPress={onClose}>
+              <IconSymbol name="xmark" size={24} color={colors.foreground} />
             </Pressable>
           </View>
-          <ScrollView contentContainerStyle={styles.modalBody}>
-            <Text style={[styles.inputLabel, { color: colors.muted }]}>Bank Name</Text>
-            <TextInput style={[styles.input, { backgroundColor: colors.surface, borderColor: colors.border, color: colors.foreground }]}
-              value={bankName} onChangeText={setBankName} placeholder="e.g. DBS Bank" placeholderTextColor={colors.muted} />
 
-            <Text style={[styles.inputLabel, { color: colors.muted }]}>Account Number (last 4 digits)</Text>
-            <TextInput style={[styles.input, { backgroundColor: colors.surface, borderColor: colors.border, color: colors.foreground }]}
-              value={accountNumber} onChangeText={setAccountNumber} placeholder="****1234" placeholderTextColor={colors.muted} />
+          <ScrollView style={styles.modalBody}>
+            <Text style={[styles.fieldLabel, { color: colors.foreground }]}>Bank Name</Text>
+            <TextInput
+              style={[styles.input, { color: colors.foreground, borderColor: colors.border, backgroundColor: colors.surface }]}
+              placeholder="e.g., DBS, OCBC, UOB"
+              placeholderTextColor={colors.muted}
+              value={bankName}
+              onChangeText={setBankName}
+            />
 
-            <Text style={[styles.inputLabel, { color: colors.muted }]}>Account Type</Text>
-            <View style={styles.typeGrid}>
-              {(Object.keys(accountTypeConfig) as AccountType[]).map(t => (
-                <Pressable key={t} onPress={() => setAccountType(t)}
-                  style={[styles.typeOption, { borderColor: accountType === t ? accountTypeConfig[t].color : colors.border, backgroundColor: accountType === t ? accountTypeConfig[t].color + '15' : colors.surface }]}>
-                  <Text style={styles.typeOptionEmoji}>{accountTypeConfig[t].icon}</Text>
-                  <Text style={[styles.typeOptionText, { color: accountType === t ? accountTypeConfig[t].color : colors.muted }]}>{accountTypeConfig[t].label}</Text>
+            <Text style={[styles.fieldLabel, { color: colors.foreground }]}>Account Number</Text>
+            <TextInput
+              style={[styles.input, { color: colors.foreground, borderColor: colors.border, backgroundColor: colors.surface }]}
+              placeholder="e.g., ****1234"
+              placeholderTextColor={colors.muted}
+              value={accountNumber}
+              onChangeText={setAccountNumber}
+            />
+
+            <Text style={[styles.fieldLabel, { color: colors.foreground }]}>Account Type</Text>
+            <View style={styles.typeSelector}>
+              {(Object.keys(accountTypeConfig) as AccountType[]).map(type => (
+                <Pressable
+                  key={type}
+                  onPress={() => setAccountType(type)}
+                  style={[
+                    styles.typeOption,
+                    accountType === type && { backgroundColor: colors.primary },
+                    { borderColor: colors.border }
+                  ]}
+                >
+                  <Text style={[styles.typeOptionText, { color: accountType === type ? '#FFF' : colors.foreground }]}>
+                    {accountTypeConfig[type].label}
+                  </Text>
                 </Pressable>
               ))}
             </View>
 
-            <Text style={[styles.inputLabel, { color: colors.muted }]}>Balance (SGD)</Text>
-            <TextInput style={[styles.input, { backgroundColor: colors.surface, borderColor: colors.border, color: colors.foreground }]}
-              value={balance} onChangeText={setBalance} keyboardType="numeric" placeholder="45000" placeholderTextColor={colors.muted} />
+            <Text style={[styles.fieldLabel, { color: colors.foreground }]}>Balance (SGD)</Text>
+            <TextInput
+              style={[styles.input, { color: colors.foreground, borderColor: colors.border, backgroundColor: colors.surface }]}
+              placeholder="0"
+              placeholderTextColor={colors.muted}
+              value={balance}
+              onChangeText={setBalance}
+              keyboardType="decimal-pad"
+            />
 
-            <Text style={[styles.inputLabel, { color: colors.muted }]}>Interest Rate (% p.a.)</Text>
-            <TextInput style={[styles.input, { backgroundColor: colors.surface, borderColor: colors.border, color: colors.foreground }]}
-              value={interestRate} onChangeText={setInterestRate} keyboardType="numeric" placeholder="3.5" placeholderTextColor={colors.muted} />
-
-            <Pressable onPress={handleSave} style={[styles.saveBtn, { backgroundColor: colors.primary }]}>
-              <Text style={styles.saveBtnText}>Save Account</Text>
-            </Pressable>
+            <Text style={[styles.fieldLabel, { color: colors.foreground }]}>Interest Rate (% p.a.)</Text>
+            <TextInput
+              style={[styles.input, { color: colors.foreground, borderColor: colors.border, backgroundColor: colors.surface }]}
+              placeholder="0.5"
+              placeholderTextColor={colors.muted}
+              value={interestRate}
+              onChangeText={setInterestRate}
+              keyboardType="decimal-pad"
+            />
           </ScrollView>
+
+          <View style={styles.modalFooter}>
+            <Pressable onPress={onClose} style={[styles.btnSecondary, { borderColor: colors.border }]}>
+              <Text style={[styles.btnText, { color: colors.foreground }]}>Cancel</Text>
+            </Pressable>
+            <Pressable onPress={handleSavePress} disabled={isSaving} style={[styles.btnPrimary, { backgroundColor: colors.primary, opacity: isSaving ? 0.6 : 1 }]}>
+              <Text style={styles.btnTextPrimary}>{isSaving ? 'Saving...' : 'Save'}</Text>
+            </Pressable>
+          </View>
         </View>
       </KeyboardAvoidingView>
     </Modal>
@@ -223,45 +252,69 @@ export default function BanksScreen() {
   const [modalVisible, setModalVisible] = useState(false);
   const [editingAccount, setEditingAccount] = useState<BankAccount | undefined>();
 
-  const monthlyIncome = 5000; // TODO: Get from user profile
-  const cbsScore = useMemo(() => calculateCBSScore(data, monthlyIncome), [data, monthlyIncome]);
+  // Use default monthly income of 5000 for CBS calculation
+  const monthlyIncome = 5000;
+  
+  // Recalculate CBS score whenever data changes
+  const cbsScore = useMemo(() => {
+    const result = calculateCBSScore(data, monthlyIncome);
+    return result;
+  }, [data, monthlyIncome]);
+  
+  // Recalculate max loan whenever CBS score changes
   const maxLoan = useMemo(() => cbsScore.estimatedMaxLoan, [cbsScore]);
 
+  // Recalculate totals whenever data changes
   const totalBalance = useMemo(
     () => data.bankAccounts.filter(a => a.balance > 0).reduce((s, a) => s + a.balance, 0),
     [data.bankAccounts]
   );
+  
   const totalInterestEarned = useMemo(
     () => data.bankAccounts
       .filter(a => ['savings', 'fixed_deposit'].includes(a.accountType) && a.balance > 0)
       .reduce((s, a) => s + (a.balance * a.interestRate) / 100 / 12, 0),
     [data.bankAccounts]
   );
+  
   const totalMonthlyDebt = useMemo(
     () => data.loans.reduce((s, l) => s + l.monthlyInstalment, 0),
     [data.loans]
   );
 
-  const handleEdit = (account: BankAccount) => {
+  const handleEdit = useCallback((account: BankAccount) => {
     setEditingAccount(account);
     setModalVisible(true);
-  };
+  }, []);
 
-  const handleDelete = (account: BankAccount) => {
+  const handleDelete = useCallback((account: BankAccount) => {
     Alert.alert('Delete Account', `Remove ${account.bankName} account?`, [
       { text: 'Cancel', style: 'cancel' },
-      { text: 'Delete', style: 'destructive', onPress: () => deleteBankAccount(account.id) },
+      { text: 'Delete', style: 'destructive', onPress: async () => {
+        try {
+          await deleteBankAccount(account.id);
+        } catch (error) {
+          console.error('Error deleting account:', error);
+          Alert.alert('Error', 'Failed to delete account. Please try again.');
+        }
+      } },
     ]);
-  };
+  }, [deleteBankAccount]);
 
-  const handleSave = async (accountData: Omit<BankAccount, 'id' | 'createdAt'>) => {
-    if (editingAccount) {
-      await updateBankAccount(editingAccount.id, accountData);
-    } else {
-      await addBankAccount(accountData);
+  const handleSave = useCallback(async (accountData: Omit<BankAccount, 'id' | 'createdAt'>) => {
+    try {
+      if (editingAccount) {
+        await updateBankAccount(editingAccount.id, accountData);
+      } else {
+        await addBankAccount(accountData);
+      }
+      setEditingAccount(undefined);
+      setModalVisible(false);
+    } catch (error) {
+      console.error('Error saving account:', error);
+      Alert.alert('Error', 'Failed to save account. Please try again.');
     }
-    setEditingAccount(undefined);
-  };
+  }, [editingAccount, updateBankAccount, addBankAccount]);
 
   return (
     <ScreenContainer containerClassName="bg-background">
@@ -399,76 +452,79 @@ const styles = StyleSheet.create({
   headerTitle: { fontSize: 22, fontWeight: '800', color: '#FFFFFF', letterSpacing: -0.5 },
   headerSub: { fontSize: 12, color: 'rgba(255,255,255,0.7)', marginTop: 2 },
   addBtn: { width: 44, height: 44, borderRadius: 22, backgroundColor: 'rgba(255,255,255,0.2)', alignItems: 'center', justifyContent: 'center' },
-  content: { padding: 16, gap: 16 },
-  summaryRow: { flexDirection: 'row', gap: 10 },
-  summaryCard: { flex: 1, borderRadius: 14, padding: 12, alignItems: 'center' },
-  summaryLabel: { fontSize: 10, fontWeight: '500', textAlign: 'center', marginBottom: 4 },
-  summaryValue: { fontSize: 14, fontWeight: '700', textAlign: 'center' },
-  sectionTitle: { fontSize: 18, fontWeight: '700', letterSpacing: -0.3 },
-  accountCard: { borderRadius: 16, padding: 16, marginBottom: 0 },
-  accountHeader: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginBottom: 12 },
-  accountLeft: { flexDirection: 'row', alignItems: 'center', gap: 10 },
+  content: { paddingHorizontal: 16, paddingVertical: 16, gap: 16 },
+  summaryRow: { flexDirection: 'row', gap: 12 },
+  summaryCard: { flex: 1, paddingHorizontal: 12, paddingVertical: 12, borderRadius: 12 },
+  summaryLabel: { fontSize: 11, marginBottom: 4 },
+  summaryValue: { fontSize: 16, fontWeight: '700' },
+  sectionTitle: { fontSize: 16, fontWeight: '700', marginTop: 8 },
+  accountCard: { marginBottom: 12, paddingHorizontal: 16, paddingVertical: 12, borderRadius: 12 },
+  accountHeader: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 12 },
+  accountLeft: { flexDirection: 'row', alignItems: 'center', gap: 12, flex: 1 },
   accountEmoji: { fontSize: 28 },
-  accountBank: { fontSize: 16, fontWeight: '700' },
-  accountNum: { fontSize: 12, marginTop: 1 },
+  accountBank: { fontSize: 16, fontWeight: '600' },
+  accountNum: { fontSize: 12, marginTop: 2 },
   accountActions: { flexDirection: 'row', gap: 8 },
-  actionBtn: { padding: 6 },
-  accountBody: { flexDirection: 'row', alignItems: 'flex-end', justifyContent: 'space-between' },
-  accountBalance: { fontSize: 22, fontWeight: '800', letterSpacing: -0.5, marginBottom: 6 },
-  typeBadge: { paddingHorizontal: 10, paddingVertical: 4, borderRadius: 20, alignSelf: 'flex-start' },
+  actionBtn: { width: 32, height: 32, borderRadius: 8, alignItems: 'center', justifyContent: 'center' },
+  accountBody: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'flex-start' },
+  accountBalance: { fontSize: 20, fontWeight: '700', marginBottom: 8 },
+  typeBadge: { paddingHorizontal: 8, paddingVertical: 4, borderRadius: 6, alignSelf: 'flex-start' },
   typeBadgeText: { fontSize: 11, fontWeight: '600' },
   accountRight: { alignItems: 'flex-end' },
-  interestLabel: { fontSize: 11 },
-  interestValue: { fontSize: 18, fontWeight: '700' },
-  interestEarned: { fontSize: 11, marginTop: 2 },
-  emptyState: { borderRadius: 16, padding: 32, alignItems: 'center', gap: 8 },
-  emptyIcon: { fontSize: 40 },
+  accountLabel: { fontSize: 11, marginBottom: 2 },
+  accountRate: { fontSize: 14, fontWeight: '700', marginBottom: 2 },
+  accountMonthly: { fontSize: 11 },
+  emptyState: { paddingVertical: 32, alignItems: 'center', borderRadius: 12 },
+  emptyIcon: { fontSize: 48, marginBottom: 8 },
   emptyText: { fontSize: 14, textAlign: 'center' },
-  creditCard: { borderRadius: 16, padding: 16 },
-  creditTop: { flexDirection: 'row', alignItems: 'center', gap: 16, marginBottom: 16 },
-  gaugeWrap: { width: 140, height: 140, alignItems: 'center', justifyContent: 'center' },
-  gaugeCenter: { position: 'absolute', alignItems: 'center' },
-  gaugeScore: { fontSize: 26, fontWeight: '800', letterSpacing: -1 },
-  gaugeGrade: { fontSize: 14, fontWeight: '700' },
-  gaugeLabel: { fontSize: 10, marginTop: 2 },
-  creditRight: { flex: 1, gap: 4 },
-  creditTitle: { fontSize: 16, fontWeight: '700' },
-  creditSub: { fontSize: 12 },
-  gradeBadge: { paddingHorizontal: 12, paddingVertical: 4, borderRadius: 20, alignSelf: 'flex-start', marginTop: 4 },
-  gradeBadgeText: { fontSize: 13, fontWeight: '700' },
-  maxLoanLabel: { fontSize: 11, marginTop: 8 },
-  maxLoanValue: { fontSize: 18, fontWeight: '800', letterSpacing: -0.5 },
-  maxLoanNote: { fontSize: 10 },
-  lastUpdated: { fontSize: 9, marginTop: 6 },
+  creditCard: { paddingHorizontal: 16, paddingVertical: 16, borderRadius: 12 },
+  creditTop: { flexDirection: 'row', gap: 16, marginBottom: 16 },
+  creditRight: { flex: 1 },
+  creditTitle: { fontSize: 16, fontWeight: '700', marginBottom: 2 },
+  creditSub: { fontSize: 12, marginBottom: 8 },
+  gradeBadge: { paddingHorizontal: 8, paddingVertical: 4, borderRadius: 6, alignSelf: 'flex-start', marginBottom: 8 },
+  gradeBadgeText: { fontSize: 12, fontWeight: '600' },
+  maxLoanLabel: { fontSize: 11, marginBottom: 2 },
+  maxLoanValue: { fontSize: 18, fontWeight: '700', marginBottom: 2 },
+  maxLoanNote: { fontSize: 11, marginBottom: 8 },
+  lastUpdated: { fontSize: 10 },
   factorDivider: { height: 1, marginVertical: 12 },
   factorTitle: { fontSize: 14, fontWeight: '700', marginBottom: 12 },
-  factorRow: { marginBottom: 10 },
-  factorLabelRow: { flexDirection: 'row', alignItems: 'center', marginBottom: 4 },
-  factorLabel: { flex: 1, fontSize: 12, fontWeight: '500' },
-  factorWeight: { fontSize: 11, marginRight: 8 },
-  factorValue: { fontSize: 12, fontWeight: '700', width: 36, textAlign: 'right' },
-  factorTrack: { height: 6, borderRadius: 3, overflow: 'hidden' },
-  factorFill: { height: 6, borderRadius: 3 },
-  warningsBox: { borderRadius: 12, padding: 12, marginTop: 12, borderWidth: 1 },
-  warningText: { fontSize: 12, marginBottom: 6, lineHeight: 18 },
-  bankLoanCard: { borderRadius: 14, padding: 14 },
-  bankLoanHeader: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginBottom: 10 },
-  bankLoanName: { fontSize: 15, fontWeight: '700' },
+  factorRow: { marginBottom: 12 },
+  factorLabelRow: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 6 },
+  factorLabel: { fontSize: 13, fontWeight: '600' },
+  factorWeight: { fontSize: 11 },
+  factorValue: { fontSize: 12, fontWeight: '700' },
+  factorTrack: { height: 8, borderRadius: 4, overflow: 'hidden' },
+  factorFill: { height: '100%', borderRadius: 4 },
+  warningsBox: { marginTop: 12, paddingHorizontal: 12, paddingVertical: 8, borderRadius: 8, borderWidth: 1 },
+  warningText: { fontSize: 12, marginBottom: 4 },
+  bankLoanCard: { paddingHorizontal: 16, paddingVertical: 12, borderRadius: 12, marginBottom: 12 },
+  bankLoanHeader: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 12 },
+  bankLoanName: { fontSize: 16, fontWeight: '700' },
   bankLoanCount: { fontSize: 12 },
   bankLoanStats: { flexDirection: 'row', gap: 24 },
   bankLoanStatLabel: { fontSize: 11, marginBottom: 2 },
   bankLoanStatValue: { fontSize: 16, fontWeight: '700' },
-  // Modal
-  modal: { flex: 1 },
-  modalHeader: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', padding: 20, paddingBottom: 0 },
-  modalTitle: { fontSize: 20, fontWeight: '800' },
-  modalBody: { padding: 20, gap: 4, paddingBottom: 40 },
-  inputLabel: { fontSize: 12, fontWeight: '600', marginBottom: 4, marginTop: 12, textTransform: 'uppercase', letterSpacing: 0.5 },
-  input: { borderWidth: 1, borderRadius: 12, padding: 14, fontSize: 16 },
-  typeGrid: { flexDirection: 'row', flexWrap: 'wrap', gap: 8 },
-  typeOption: { borderWidth: 1.5, borderRadius: 10, padding: 10, alignItems: 'center', minWidth: '30%', flex: 1 },
-  typeOptionEmoji: { fontSize: 20, marginBottom: 4 },
-  typeOptionText: { fontSize: 11, fontWeight: '600', textAlign: 'center' },
-  saveBtn: { borderRadius: 14, padding: 16, alignItems: 'center', marginTop: 24 },
-  saveBtnText: { color: '#FFFFFF', fontSize: 16, fontWeight: '700' },
+  gaugeWrap: { alignItems: 'center', justifyContent: 'center', position: 'relative' },
+  gaugeCenter: { position: 'absolute', alignItems: 'center', justifyContent: 'center' },
+  gaugeScore: { fontSize: 24, fontWeight: '700' },
+  gaugeGrade: { fontSize: 12, fontWeight: '600' },
+  gaugeLabel: { fontSize: 10, marginTop: 2 },
+  // Modal styles
+  modalOverlay: { flex: 1, backgroundColor: 'rgba(0,0,0,0.5)', justifyContent: 'flex-end' },
+  modalContent: { borderTopLeftRadius: 20, borderTopRightRadius: 20, paddingTop: 16, maxHeight: '90%' },
+  modalHeader: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', paddingHorizontal: 16, paddingBottom: 16, borderBottomWidth: 1, borderBottomColor: '#E5E7EB' },
+  modalTitle: { fontSize: 18, fontWeight: '700' },
+  modalBody: { paddingHorizontal: 16, paddingVertical: 16 },
+  fieldLabel: { fontSize: 14, fontWeight: '600', marginBottom: 8, marginTop: 12 },
+  input: { borderWidth: 1, borderRadius: 8, paddingHorizontal: 12, paddingVertical: 10, fontSize: 14, marginBottom: 12 },
+  typeSelector: { flexDirection: 'row', flexWrap: 'wrap', gap: 8, marginBottom: 12 },
+  typeOption: { flex: 1, minWidth: '45%', paddingHorizontal: 12, paddingVertical: 10, borderWidth: 1, borderRadius: 8, alignItems: 'center' },
+  typeOptionText: { fontSize: 12, fontWeight: '600' },
+  modalFooter: { flexDirection: 'row', gap: 12, paddingHorizontal: 16, paddingBottom: 24 },
+  btnSecondary: { flex: 1, paddingHorizontal: 16, paddingVertical: 12, borderRadius: 8, borderWidth: 1, alignItems: 'center' },
+  btnPrimary: { flex: 1, paddingHorizontal: 16, paddingVertical: 12, borderRadius: 8, alignItems: 'center' },
+  btnText: { fontSize: 14, fontWeight: '600' },
+  btnTextPrimary: { fontSize: 14, fontWeight: '600', color: '#FFFFFF' },
 });
