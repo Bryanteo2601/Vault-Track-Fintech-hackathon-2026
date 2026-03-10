@@ -43,27 +43,22 @@ function RootLayoutContent() {
 
   return (
     <Stack screenOptions={{ headerShown: false }}>
-      {/* Always available routes */}
+      {/* Always register all routes - let screens handle auth redirects */}
+      <Stack.Screen name="index" />
+      <Stack.Screen name="auth" />
+      <Stack.Screen name="signup" />
+      <Stack.Screen name="(tabs)" />
       <Stack.Screen name="net-worth-timeline" />
       <Stack.Screen name="diversification-analysis" />
       <Stack.Screen name="liquidity-analysis" />
       <Stack.Screen name="debt-analysis" />
       <Stack.Screen name="ai-chat" />
       <Stack.Screen name="stress-test-ai-chat" />
+      <Stack.Screen name="manage-subscriptions" />
+      <Stack.Screen name="private-asset-form" />
+      <Stack.Screen name="private-asset-detail" />
+      <Stack.Screen name="stress-test" />
       <Stack.Screen name="oauth/callback" />
-      
-      {/* Auth-dependent routes */}
-      {user ? (
-        <>
-          <Stack.Screen name="(tabs)" />
-        </>
-      ) : (
-        <>
-          <Stack.Screen name="index" />
-          <Stack.Screen name="auth" />
-          <Stack.Screen name="signup" />
-        </>
-      )}
     </Stack>
   );
 }

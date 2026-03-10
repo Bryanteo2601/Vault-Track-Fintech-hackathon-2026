@@ -226,7 +226,7 @@ export default function ProfileScreen() {
 
           {/* Manage Subscriptions */}
           <Pressable
-            onPress={() => router.push('manage-subscriptions' as any)}
+            onPress={() => router.push('/manage-subscriptions' as any)}
             style={({ pressed }) => [
               {
                 flexDirection: 'row',
