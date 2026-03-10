@@ -49,7 +49,7 @@ export default function LandingScreen() {
             style={{
               fontSize: 48,
               fontWeight: '700',
-              color: colors.background,
+              color: colors.primary,
               lineHeight: 56,
               textAlign: 'center',
               marginBottom: 24,
