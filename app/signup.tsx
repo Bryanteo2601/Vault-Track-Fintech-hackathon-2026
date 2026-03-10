@@ -4,6 +4,7 @@ import { ScreenContainer } from '@/components/screen-container';
 import { useAppColors } from '@/hooks/use-app-colors';
 import { MaterialIcons } from '@expo/vector-icons';
 import { useState } from 'react';
+import { useAppData } from '@/lib/app-data-context';
 
 
 export default function SignupScreen() {
@@ -21,6 +22,8 @@ export default function SignupScreen() {
     setStep('details');
   };
 
+  const { updateUserProfile } = useAppData();
+
   const handleSignup = async () => {
     if (!name.trim() || !age.trim()) {
       Alert.alert('Error', 'Please fill in all fields');
@@ -35,14 +38,16 @@ export default function SignupScreen() {
 
     try {
       setIsLoading(true);
-      // Save user data to localStorage/AsyncStorage
-      const userData = {
-        name: name.trim(),
-        age: ageNum,
-        createdAt: new Date().toISOString(),
-      };
-      // TODO: Save to backend via API
-      // For now, redirect to main app
+      // Calculate birthDate from age
+      const today = new Date();
+      const birthYear = today.getFullYear() - ageNum;
+      const birthDate = new Date(birthYear, today.getMonth(), today.getDate());
+      
+      // Save user data to AppData context
+      await updateUserProfile({
+        birthDate: birthDate.toISOString().split('T')[0],
+      });
+      // Redirect to main app
       router.replace('/(tabs)');
     } catch (error) {
       Alert.alert('Error', 'Failed to create account');
