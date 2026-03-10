@@ -71,17 +71,17 @@ export default function ProfileScreen() {
     }
   };
 
-  const handleResetApp = async () => {
-    Alert.alert('Reset App', 'This will clear all your data and return to the onboarding screen.', [
+  const handleLogOut = async () => {
+    Alert.alert('Log Out', 'Are you sure you want to log out? You will return to the landing page.', [
       { text: 'Cancel', onPress: () => {}, style: 'cancel' },
       {
-        text: 'Reset',
+        text: 'Log Out',
         onPress: async () => {
           try {
             await AsyncStorage.removeItem('userProfile');
-            router.replace('/index' as any);
+            router.replace('/' as any);
           } catch (error) {
-            Alert.alert('Error', 'Failed to reset app');
+            Alert.alert('Error', 'Failed to log out');
           }
         },
         style: 'destructive',
@@ -360,9 +360,9 @@ export default function ProfileScreen() {
             <MaterialIcons name="chevron-right" size={22} color={colors.muted} />
           </Pressable>
 
-          {/* ===== RESET APP BUTTON ===== */}
+          {/* ===== LOG OUT BUTTON ===== */}
           <Pressable
-            onPress={handleResetApp}
+            onPress={handleLogOut}
             style={({ pressed }) => [
               {
                 flexDirection: 'row',
@@ -378,9 +378,9 @@ export default function ProfileScreen() {
             ]}
           >
             <View style={{ flexDirection: 'row', alignItems: 'center', gap: 16, flex: 1 }}>
-              <MaterialIcons name="refresh" size={22} color="#EF5350" />
+              <MaterialIcons name="logout" size={22} color="#EF5350" />
               <Text style={{ fontSize: 16, fontWeight: '500', color: '#EF5350' }}>
-                Reset App
+                Log Out
               </Text>
             </View>
             <MaterialIcons name="chevron-right" size={22} color={colors.muted} />
