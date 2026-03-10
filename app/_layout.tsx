@@ -35,7 +35,7 @@ function RootLayoutContent() {
   if (loading) {
     return (
       <Stack screenOptions={{ headerShown: false }}>
-        <Stack.Screen name="(tabs)" />
+        <Stack.Screen name="index" />
       </Stack>
     );
   }
@@ -45,7 +45,11 @@ function RootLayoutContent() {
       {user ? (
         <Stack.Screen name="(tabs)" />
       ) : (
-        <Stack.Screen name="auth" />
+        <>
+          <Stack.Screen name="index" />
+          <Stack.Screen name="auth" />
+          <Stack.Screen name="signup" />
+        </>
       )}
       <Stack.Screen name="oauth/callback" />
     </Stack>
