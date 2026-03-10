@@ -1,0 +1,11 @@
+services:
+  app:
+    build: .
+    ports:
+      - "8081:8081"
+      - "8082:8082"  # Or change to another port if needed
+    environment:
+      - NODE_ENV=development
+    volumes:
+      - .:/app
+    command: pnpm dev:metro
