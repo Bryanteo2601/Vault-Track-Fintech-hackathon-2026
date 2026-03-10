@@ -47,131 +47,175 @@ export function AppDataProvider({ children }: { children: React.ReactNode }) {
   const [isLoading, setIsLoading] = useState(true);
   const [isAuthenticated, setIsAuthenticated] = useState(false);
 
-  const refreshData = useCallback(async () => {
-    if (!isAuthenticated) {
-      setIsLoading(false);
-      return;
-    }
+  // Load data on auth state change
+  const loadUserData = useCallback(async (authenticated: boolean) => {
     setIsLoading(true);
     try {
-      const loaded = await loadAppData();
-      setData(loaded);
+      if (authenticated) {
+        console.log('User authenticated, loading data from Firestore');
+        const loaded = await loadAppData();
+        setData(loaded);
+      } else {
+        console.log('User not authenticated, using default data');
+        setData(defaultAppData);
+      }
     } catch (error) {
       console.error('Error loading data:', error);
-      // Keep default data on error
+      // Fallback to default data on error
+      setData(defaultAppData);
     }
     setIsLoading(false);
-  }, [isAuthenticated]);
+  }, []);
 
   // Monitor authentication state
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, (user) => {
-      setIsAuthenticated(!!user);
-      if (user) {
-        refreshData();
-      } else {
-        // User logged out - reset to default data
-        setData(defaultAppData);
-        setIsLoading(false);
-      }
+      console.log('Auth state changed, user:', user ? user.uid : 'none');
+      const authenticated = !!user;
+      setIsAuthenticated(authenticated);
+      loadUserData(authenticated);
     });
     return unsubscribe;
-  }, [refreshData]);
+  }, [loadUserData]);
 
+  // Persist data to Firestore/AsyncStorage
   const persist = useCallback(async (newData: AppData) => {
+    console.log('Persisting data, bank accounts count:', newData.bankAccounts.length);
     setData(newData);
-    await saveAppData(newData);
+    try {
+      await saveAppData(newData);
+      console.log('Data persisted successfully');
+    } catch (error) {
+      console.error('Error persisting data:', error);
+      throw error;
+    }
   }, []);
 
   // Bank accounts
   const addBankAccount = useCallback(async (account: Omit<BankAccount, 'id' | 'createdAt'>) => {
-    const newAccount: BankAccount = { ...account, id: generateId(), createdAt: new Date().toISOString().split('T')[0] };
-    await persist({ ...data, bankAccounts: [...data.bankAccounts, newAccount] });
+    console.log('Adding bank account:', account.bankName);
+    const newAccount: BankAccount = { 
+      ...account, 
+      id: generateId(), 
+      createdAt: new Date().toISOString().split('T')[0] 
+    };
+    const newData = { ...data, bankAccounts: [...data.bankAccounts, newAccount] };
+    await persist(newData);
   }, [data, persist]);
 
   const updateBankAccount = useCallback(async (id: string, updates: Partial<BankAccount>) => {
-    await persist({ ...data, bankAccounts: data.bankAccounts.map(a => a.id === id ? { ...a, ...updates } : a) });
+    console.log('Updating bank account with id:', id);
+    const updated = data.bankAccounts.map(a => a.id === id ? { ...a, ...updates } : a);
+    const newData = { ...data, bankAccounts: updated };
+    await persist(newData);
   }, [data, persist]);
 
   const deleteBankAccount = useCallback(async (id: string) => {
-    await persist({ ...data, bankAccounts: data.bankAccounts.filter(a => a.id !== id) });
+    console.log('Deleting bank account with id:', id);
+    console.log('Current accounts before delete:', data.bankAccounts.length);
+    const filtered = data.bankAccounts.filter(a => a.id !== id);
+    console.log('Accounts after delete:', filtered.length);
+    const newData = { ...data, bankAccounts: filtered };
+    await persist(newData);
   }, [data, persist]);
 
   // Loans
   const addLoan = useCallback(async (loan: Omit<Loan, 'id'>) => {
     const newLoan: Loan = { ...loan, id: generateId() };
-    await persist({ ...data, loans: [...data.loans, newLoan] });
+    const newData = { ...data, loans: [...data.loans, newLoan] };
+    await persist(newData);
   }, [data, persist]);
 
   const updateLoan = useCallback(async (id: string, updates: Partial<Loan>) => {
-    await persist({ ...data, loans: data.loans.map(l => l.id === id ? { ...l, ...updates } : l) });
+    const updated = data.loans.map(l => l.id === id ? { ...l, ...updates } : l);
+    const newData = { ...data, loans: updated };
+    await persist(newData);
   }, [data, persist]);
 
   const deleteLoan = useCallback(async (id: string) => {
-    await persist({ ...data, loans: data.loans.filter(l => l.id !== id) });
+    const filtered = data.loans.filter(l => l.id !== id);
+    const newData = { ...data, loans: filtered };
+    await persist(newData);
   }, [data, persist]);
 
   // Holdings
   const addHolding = useCallback(async (holding: Omit<Holding, 'id'>) => {
     const newHolding: Holding = { ...holding, id: generateId() };
-    await persist({ ...data, holdings: [...data.holdings, newHolding] });
+    const newData = { ...data, holdings: [...data.holdings, newHolding] };
+    await persist(newData);
   }, [data, persist]);
 
   const updateHolding = useCallback(async (id: string, updates: Partial<Holding>) => {
-    await persist({ ...data, holdings: data.holdings.map(h => h.id === id ? { ...h, ...updates } : h) });
+    const updated = data.holdings.map(h => h.id === id ? { ...h, ...updates } : h);
+    const newData = { ...data, holdings: updated };
+    await persist(newData);
   }, [data, persist]);
 
   const deleteHolding = useCallback(async (id: string) => {
-    await persist({ ...data, holdings: data.holdings.filter(h => h.id !== id) });
+    const filtered = data.holdings.filter(h => h.id !== id);
+    const newData = { ...data, holdings: filtered };
+    await persist(newData);
   }, [data, persist]);
 
   // Insurance
   const addInsurancePolicy = useCallback(async (policy: Omit<InsurancePolicy, 'id'>) => {
     const newPolicy: InsurancePolicy = { ...policy, id: generateId() };
-    await persist({ ...data, insurancePolicies: [...data.insurancePolicies, newPolicy] });
+    const newData = { ...data, insurancePolicies: [...data.insurancePolicies, newPolicy] };
+    await persist(newData);
   }, [data, persist]);
 
   const updateInsurancePolicy = useCallback(async (id: string, updates: Partial<InsurancePolicy>) => {
-    await persist({ ...data, insurancePolicies: data.insurancePolicies.map(p => p.id === id ? { ...p, ...updates } : p) });
+    const updated = data.insurancePolicies.map(p => p.id === id ? { ...p, ...updates } : p);
+    const newData = { ...data, insurancePolicies: updated };
+    await persist(newData);
   }, [data, persist]);
 
   const deleteInsurancePolicy = useCallback(async (id: string) => {
-    await persist({ ...data, insurancePolicies: data.insurancePolicies.filter(p => p.id !== id) });
+    const filtered = data.insurancePolicies.filter(p => p.id !== id);
+    const newData = { ...data, insurancePolicies: filtered };
+    await persist(newData);
   }, [data, persist]);
 
   // Credit score
   const updateCreditScore = useCallback(async (score: Partial<CreditScoreData>) => {
-    await persist({ ...data, creditScore: { ...data.creditScore, ...score } });
+    const newData = { ...data, creditScore: { ...data.creditScore, ...score } };
+    await persist(newData);
   }, [data, persist]);
 
   // Private Assets
   const addPrivateAsset = useCallback(async (asset: Omit<PrivateAsset, 'id' | 'createdAt' | 'updatedAt'>) => {
     const now = new Date().toISOString().split('T')[0];
     const newAsset: PrivateAsset = { ...asset, id: generateId(), createdAt: now, updatedAt: now };
-    await persist({ ...data, privateAssets: [...data.privateAssets, newAsset] });
+    const newData = { ...data, privateAssets: [...data.privateAssets, newAsset] };
+    await persist(newData);
   }, [data, persist]);
 
   const updatePrivateAsset = useCallback(async (id: string, updates: Partial<PrivateAsset>) => {
     const now = new Date().toISOString().split('T')[0];
-    await persist({
-      ...data,
-      privateAssets: data.privateAssets.map(a => a.id === id ? { ...a, ...updates, updatedAt: now } : a),
-    });
+    const updated = data.privateAssets.map(a => a.id === id ? { ...a, ...updates, updatedAt: now } : a);
+    const newData = { ...data, privateAssets: updated };
+    await persist(newData);
   }, [data, persist]);
 
   const deletePrivateAsset = useCallback(async (id: string) => {
-    await persist({ ...data, privateAssets: data.privateAssets.filter(a => a.id !== id) });
+    const filtered = data.privateAssets.filter(a => a.id !== id);
+    const newData = { ...data, privateAssets: filtered };
+    await persist(newData);
   }, [data, persist]);
 
   // User Profile
   const updateUserProfile = useCallback(async (updates: Partial<AppData['userProfile']>) => {
-    await persist({ ...data, userProfile: { ...data.userProfile, ...updates } });
+    const newData = { ...data, userProfile: { ...data.userProfile, ...updates } };
+    await persist(newData);
   }, [data, persist]);
+
+  const refreshData = useCallback(async () => {
+    await loadUserData(isAuthenticated);
+  }, [isAuthenticated, loadUserData]);
 
   const resetData = useCallback(async () => {
     await resetAppData();
-    const fresh = await loadAppData();
-    setData(fresh);
+    setData(defaultAppData);
   }, []);
 
   return (
