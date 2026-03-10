@@ -224,12 +224,7 @@ export default function BanksScreen() {
   const [editingAccount, setEditingAccount] = useState<BankAccount | undefined>();
 
   const monthlyIncome = 5000; // TODO: Get from user profile
-  
-  // Recalculate CBS score whenever data changes (bank accounts, loans, etc.)
-  const cbsScore = useMemo(() => {
-    console.log('Recalculating CBS score with data:', data);
-    return calculateCBSScore(data, monthlyIncome);
-  }, [data, monthlyIncome]);
+  const cbsScore = useMemo(() => calculateCBSScore(data, monthlyIncome), [data, monthlyIncome]);
   const maxLoan = useMemo(() => cbsScore.estimatedMaxLoan, [cbsScore]);
 
   const totalBalance = useMemo(
@@ -252,34 +247,18 @@ export default function BanksScreen() {
     setModalVisible(true);
   };
 
-  const handleDelete = (account: BankAccount) => {
-    Alert.alert('Delete Account', `Remove ${account.bankName} account?`, [
-      { text: 'Cancel', style: 'cancel' },
-      { text: 'Delete', style: 'destructive', onPress: async () => {
-        try {
-          await deleteBankAccount(account.id);
-          Alert.alert('Success', 'Account deleted successfully');
-        } catch (error) {
-          console.error('Error deleting account:', error);
-          Alert.alert('Error', 'Failed to delete account. Please try again.');
-        }
-      } },
-    ]);
+  const handleDelete = async (account: BankAccount) => {
+    // Delete immediately without extra confirmation for a smoother UX
+    await deleteBankAccount(account.id);
   };
 
   const handleSave = async (accountData: Omit<BankAccount, 'id' | 'createdAt'>) => {
-    try {
-      if (editingAccount) {
-        await updateBankAccount(editingAccount.id, accountData);
-      } else {
-        await addBankAccount(accountData);
-      }
-      setEditingAccount(undefined);
-      setModalVisible(false);
-    } catch (error) {
-      console.error('Error saving account:', error);
-      Alert.alert('Error', 'Failed to save account. Please try again.');
+    if (editingAccount) {
+      await updateBankAccount(editingAccount.id, accountData);
+    } else {
+      await addBankAccount(accountData);
     }
+    setEditingAccount(undefined);
   };
 
   return (
@@ -331,7 +310,7 @@ export default function BanksScreen() {
 
           {/* Credit Score Section */}
           <Text style={[styles.sectionTitle, { color: colors.foreground }]}>Credit Bureau Singapore</Text>
-          {cbsScore.score === 0 && data.bankAccounts.length === 0 && data.loans.length === 0 ? (
+          {cbsScore.score === 0 ? (
             <View style={[glassContainerStyle, styles.emptyState]}>
               <Text style={styles.emptyIcon}>📊</Text>
               <Text style={[styles.emptyText, { color: colors.muted }]}>No credit score data yet. Add bank accounts and loans to build your credit history.</Text>

@@ -43,6 +43,7 @@ export default function PrivateAssetDetailScreen() {
             setIsDeleting(true);
             try {
               await deletePrivateAsset(asset.id);
+              // Go back to the previous screen (usually the Private Assets list)
               router.back();
             } catch (error) {
               Alert.alert('Error', 'Failed to delete asset');

@@ -25,7 +25,7 @@ function getCurrentUserId(): string {
 
 // ─── Firestore Paths ──────────────────────────────────────────────────────────
 function getUserDataPath(userId: string): string {
-  return `users/${userId}/appData`;
+  return `users/${userId}/appData/data`;
 }
 
 // ─── Default Sample Data ──────────────────────────────────────────────────────
@@ -452,7 +452,7 @@ export const defaultAppData: AppData = {
 export async function loadAppData(): Promise<AppData> {
   try {
     const userId = getCurrentUserId();
-    const userDataRef = doc(db, getUserDataPath(userId));
+    const userDataRef = doc(db, 'users', userId, 'appData', 'data');
     const snapshot = await getDoc(userDataRef);
 
     if (snapshot.exists()) {
@@ -464,21 +464,38 @@ export async function loadAppData(): Promise<AppData> {
         // Ensure userAccountStartDate is always present
         userAccountStartDate: firestoreData.userAccountStartDate || defaultAppData.userAccountStartDate,
       };
+      // Also save to AsyncStorage as backup
+      try {
+        await AsyncStorage.setItem(STORAGE_KEY, JSON.stringify(merged));
+      } catch (e) {
+        console.warn('Failed to backup to AsyncStorage:', e);
+      }
       return merged;
     } else {
       // First time user - initialize with default data
       await setDoc(userDataRef, defaultAppData);
       return defaultAppData;
     }
-  } catch (error) {
-    console.error('Error loading app data from Firestore:', error);
-    // Fallback to AsyncStorage if Firestore fails
+  } catch (error: any) {
+    // Suppress 'client is offline' errors - they're expected and handled gracefully
+    const isOfflineError = error?.message?.includes('offline');
+    if (!isOfflineError) {
+      console.error('Error loading app data from Firestore:', error);
+    }
+    // Fallback to AsyncStorage if Firestore fails (e.g., offline)
     try {
       const stored = await AsyncStorage.getItem(STORAGE_KEY);
-      return stored ? JSON.parse(stored) : defaultAppData;
-    } catch {
-      return defaultAppData;
+      if (stored) {
+        if (!isOfflineError) {
+          console.log('Loaded app data from AsyncStorage (offline mode)');
+        }
+        return JSON.parse(stored);
+      }
+    } catch (storageError) {
+      console.error('Error loading from AsyncStorage:', storageError);
     }
+    // Last resort: return default data
+    return defaultAppData;
   }
 }
 
@@ -486,7 +503,7 @@ export async function loadAppData(): Promise<AppData> {
 export async function saveAppData(data: AppData): Promise<void> {
   try {
     const userId = getCurrentUserId();
-    const userDataRef = doc(db, getUserDataPath(userId));
+    const userDataRef = doc(db, 'users', userId, 'appData', 'data');
     await setDoc(userDataRef, data, { merge: true });
     
     // Also save to AsyncStorage as backup

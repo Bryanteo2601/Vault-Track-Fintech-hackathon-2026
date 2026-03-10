@@ -71,6 +71,7 @@ export default function PrivateAssetFormScreen() {
       } else {
         await addPrivateAsset(assetData);
       }
+      // Return to the previous screen (usually the Private Assets tab)
       router.back();
     } catch (error) {
       Alert.alert('Error', 'Failed to save asset');

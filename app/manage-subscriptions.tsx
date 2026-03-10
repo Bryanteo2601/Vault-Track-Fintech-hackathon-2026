@@ -112,6 +112,7 @@ function ManageSubscriptionsContent() {
         {
           text: 'OK',
           onPress: () => {
+            // Return to the previous screen (typically the Profile tab)
             router.back();
           },
         },

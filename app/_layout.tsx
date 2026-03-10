@@ -25,7 +25,9 @@ const DEFAULT_WEB_INSETS: EdgeInsets = { top: 0, right: 0, bottom: 0, left: 0 };
 const DEFAULT_WEB_FRAME: Rect = { x: 0, y: 0, width: 0, height: 0 };
 
 export const unstable_settings = {
-  anchor: "(tabs)",
+  // Start the app on the marketing/landing screen
+  anchor: "landing",
+  initialRoute: "landing",
 };
 
 // Separate component to use auth context
@@ -35,18 +37,27 @@ function RootLayoutContent() {
   if (loading) {
     return (
       <Stack screenOptions={{ headerShown: false }}>
-        <Stack.Screen name="(tabs)" />
+        <Stack.Screen name="index" />
       </Stack>
     );
   }
 
   return (
     <Stack screenOptions={{ headerShown: false }}>
-      {user ? (
-        <Stack.Screen name="(tabs)" />
-      ) : (
-        <Stack.Screen name="auth" />
-      )}
+      {/* Always register all routes */}
+      <Stack.Screen name="index" />
+      <Stack.Screen name="onboarding" />
+      <Stack.Screen name="(tabs)" options={{ animationEnabled: false }} />
+      <Stack.Screen name="net-worth-timeline" />
+      <Stack.Screen name="diversification-analysis" />
+      <Stack.Screen name="liquidity-analysis" />
+      <Stack.Screen name="debt-analysis" />
+      <Stack.Screen name="ai-chat" />
+      <Stack.Screen name="stress-test-ai-chat" />
+      <Stack.Screen name="manage-subscriptions" />
+      <Stack.Screen name="private-asset-form" />
+      <Stack.Screen name="private-asset-detail" />
+      <Stack.Screen name="stress-test" />
       <Stack.Screen name="oauth/callback" />
     </Stack>
   );
