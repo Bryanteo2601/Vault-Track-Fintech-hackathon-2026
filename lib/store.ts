@@ -464,6 +464,12 @@ export async function loadAppData(): Promise<AppData> {
         // Ensure userAccountStartDate is always present
         userAccountStartDate: firestoreData.userAccountStartDate || defaultAppData.userAccountStartDate,
       };
+      // Also save to AsyncStorage as backup
+      try {
+        await AsyncStorage.setItem(STORAGE_KEY, JSON.stringify(merged));
+      } catch (e) {
+        console.warn('Failed to backup to AsyncStorage:', e);
+      }
       return merged;
     } else {
       // First time user - initialize with default data
@@ -472,13 +478,19 @@ export async function loadAppData(): Promise<AppData> {
     }
   } catch (error) {
     console.error('Error loading app data from Firestore:', error);
-    // Fallback to AsyncStorage if Firestore fails
+    // Fallback to AsyncStorage if Firestore fails (e.g., offline)
     try {
       const stored = await AsyncStorage.getItem(STORAGE_KEY);
-      return stored ? JSON.parse(stored) : defaultAppData;
-    } catch {
-      return defaultAppData;
+      if (stored) {
+        console.log('Loaded app data from AsyncStorage (offline mode)');
+        return JSON.parse(stored);
+      }
+    } catch (storageError) {
+      console.error('Error loading from AsyncStorage:', storageError);
     }
+    // Last resort: return default data
+    console.log('Using default app data');
+    return defaultAppData;
   }
 }
 
