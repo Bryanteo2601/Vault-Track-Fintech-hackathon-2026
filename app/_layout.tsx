@@ -26,6 +26,7 @@ const DEFAULT_WEB_FRAME: Rect = { x: 0, y: 0, width: 0, height: 0 };
 
 export const unstable_settings = {
   anchor: "(tabs)",
+  initialRoute: "(tabs)",
 };
 
 // Separate component to use auth context
@@ -43,7 +44,15 @@ function RootLayoutContent() {
   return (
     <Stack screenOptions={{ headerShown: false }}>
       {user ? (
-        <Stack.Screen name="(tabs)" />
+        <>
+          <Stack.Screen name="(tabs)" />
+          <Stack.Screen name="net-worth-timeline" />
+          <Stack.Screen name="diversification-analysis" />
+          <Stack.Screen name="liquidity-analysis" />
+          <Stack.Screen name="debt-analysis" />
+          <Stack.Screen name="ai-chat" />
+          <Stack.Screen name="stress-test-ai-chat" />
+        </>
       ) : (
         <>
           <Stack.Screen name="index" />
@@ -52,12 +61,6 @@ function RootLayoutContent() {
         </>
       )}
       <Stack.Screen name="oauth/callback" />
-      <Stack.Screen name="net-worth-timeline" />
-      <Stack.Screen name="diversification-analysis" />
-      <Stack.Screen name="liquidity-analysis" />
-      <Stack.Screen name="debt-analysis" />
-      <Stack.Screen name="ai-chat" />
-      <Stack.Screen name="stress-test-ai-chat" />
     </Stack>
   );
 }
