@@ -23,7 +23,7 @@ export default function DebtAnalysisScreen() {
       {/* Header */}
       <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', paddingBottom: 16, borderBottomWidth: 1, borderBottomColor: colors.border }}>
         <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
-          <Pressable onPress={() => router.replace('/(tabs)/index' as any)} style={{ padding: 8 }}>
+          <Pressable onPress={() => router.replace('/(tabs)' as any)} style={{ padding: 8 }}>
             <IconSymbol name="chevron.left" size={24} color={colors.foreground} />
           </Pressable>
           <View>
