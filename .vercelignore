@@ -1,0 +1,51 @@
+# Dependencies
+node_modules
+pnpm-lock.yaml
+package-lock.json
+yarn.lock
+
+# Development
+.env.local
+.env.*.local
+.expo
+.metro-cache
+.turbo
+
+# Testing
+coverage
+.vitest
+
+# Build outputs (keep dist for server)
+# dist is needed for the server
+
+# Mobile
+android
+ios
+
+# Git
+.git
+.gitignore
+
+# Documentation
+*.md
+docs
+
+# IDE
+.vscode
+.idea
+*.swp
+*.swo
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Project specific
+scripts
+__tests__
+.eslintrc.js
+tsconfig.json
+tailwind.config.js
+theme.config.js
+app.config.ts
+eas.json
