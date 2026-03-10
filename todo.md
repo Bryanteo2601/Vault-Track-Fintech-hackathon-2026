@@ -776,11 +776,6 @@
 - [x] Ensure CBS score displays on Banks page with default sample data
 - [x] Rewrite AppDataContext with proper delete and default data support
 
-## Phase 43: Fix Age Synchronization and Expo Connection
-- [x] Fix age not syncing between profile and dashboard - now saves birthDate and refreshes data
-- [ ] Fix Expo app connection issues
-- [x] Ensure profile changes update all dependent calculations - added refreshData() call
-
 
 ## Phase 42: Docker Setup and Cloud Run Deployment
 - [x] Create Dockerfile for containerized deployment
