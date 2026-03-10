@@ -224,7 +224,12 @@ export default function BanksScreen() {
   const [editingAccount, setEditingAccount] = useState<BankAccount | undefined>();
 
   const monthlyIncome = 5000; // TODO: Get from user profile
-  const cbsScore = useMemo(() => calculateCBSScore(data, monthlyIncome), [data, monthlyIncome]);
+  
+  // Recalculate CBS score whenever data changes (bank accounts, loans, etc.)
+  const cbsScore = useMemo(() => {
+    console.log('Recalculating CBS score with data:', data);
+    return calculateCBSScore(data, monthlyIncome);
+  }, [data, monthlyIncome]);
   const maxLoan = useMemo(() => cbsScore.estimatedMaxLoan, [cbsScore]);
 
   const totalBalance = useMemo(
@@ -250,17 +255,31 @@ export default function BanksScreen() {
   const handleDelete = (account: BankAccount) => {
     Alert.alert('Delete Account', `Remove ${account.bankName} account?`, [
       { text: 'Cancel', style: 'cancel' },
-      { text: 'Delete', style: 'destructive', onPress: () => deleteBankAccount(account.id) },
+      { text: 'Delete', style: 'destructive', onPress: async () => {
+        try {
+          await deleteBankAccount(account.id);
+          Alert.alert('Success', 'Account deleted successfully');
+        } catch (error) {
+          console.error('Error deleting account:', error);
+          Alert.alert('Error', 'Failed to delete account. Please try again.');
+        }
+      } },
     ]);
   };
 
   const handleSave = async (accountData: Omit<BankAccount, 'id' | 'createdAt'>) => {
-    if (editingAccount) {
-      await updateBankAccount(editingAccount.id, accountData);
-    } else {
-      await addBankAccount(accountData);
+    try {
+      if (editingAccount) {
+        await updateBankAccount(editingAccount.id, accountData);
+      } else {
+        await addBankAccount(accountData);
+      }
+      setEditingAccount(undefined);
+      setModalVisible(false);
+    } catch (error) {
+      console.error('Error saving account:', error);
+      Alert.alert('Error', 'Failed to save account. Please try again.');
     }
-    setEditingAccount(undefined);
   };
 
   return (
