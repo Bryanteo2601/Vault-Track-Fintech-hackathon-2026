@@ -1,6 +1,6 @@
 {
   "$schema": "https://vercel.com/schemas/vercel.json",
-  "buildCommand": "npm install && npm run build:web",
+  "buildCommand": "pnpm install --no-frozen-lockfile && pnpm build:web",
   "outputDirectory": "dist",
   "cleanUrls": true,
   "trailingSlash": false,
