@@ -363,19 +363,18 @@ export default function ProfileScreen() {
           {/* ===== LOG OUT BUTTON ===== */}
           <Pressable
             onPress={handleLogOut}
-            style={({ pressed }) => [
-              {
-                flexDirection: 'row',
-                alignItems: 'center',
-                justifyContent: 'space-between',
-                paddingHorizontal: 20,
-                paddingVertical: 16,
-                borderRadius: 12,
-                marginBottom: 32,
-                backgroundColor: colors.surface,
-                opacity: pressed ? 0.8 : 1,
-              },
-            ]}
+            hitSlop={10}
+            style={({ pressed }) => ({
+              flexDirection: 'row',
+              alignItems: 'center',
+              justifyContent: 'space-between',
+              paddingHorizontal: 20,
+              paddingVertical: 16,
+              borderRadius: 12,
+              marginBottom: 32,
+              backgroundColor: colors.surface,
+              opacity: pressed ? 0.8 : 1,
+            })}
           >
             <View style={{ flexDirection: 'row', alignItems: 'center', gap: 16, flex: 1 }}>
               <MaterialIcons name="logout" size={22} color="#EF5350" />
