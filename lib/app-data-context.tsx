@@ -58,9 +58,10 @@ export function AppDataProvider({ children }: { children: React.ReactNode }) {
       setData(loaded);
     } catch (error) {
       console.error('Error loading data:', error);
-      // Keep default data on error
+      setData(defaultAppData);
+    } finally {
+      setIsLoading(false);
     }
-    setIsLoading(false);
   }, [isAuthenticated]);
 
   // Monitor authentication state
