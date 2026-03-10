@@ -15,31 +15,42 @@ export default function TabLayout() {
   const insets = useSafeAreaInsets();
   const router = useRouter();
   const pathname = usePathname();
-  const [activeTab, setActiveTab] = useState('index');
+  const [activeTab, setActiveTab] = useState("index");
   const bottomPadding = Platform.OS === "web" ? 12 : Math.max(insets.bottom, 8);
   const tabBarHeight = 60 + bottomPadding;
 
   // Update active tab based on current route
   React.useEffect(() => {
-    const routeName = pathname.split('/').pop() || 'index';
+    // Remove any group segments like (tabs) and derive the last "real" segment
+    const segments = pathname
+      .split("/")
+      .filter(Boolean)
+      .filter((segment) => !segment.startsWith("("));
+
+    // Root ("/") should map to the dashboard/index tab
+    const routeName = segments.length === 0 ? "index" : segments[segments.length - 1];
     setActiveTab(routeName);
   }, [pathname]);
 
   const tabs = [
-    { name: 'index', title: 'Dashboard', icon: 'house.fill' },
-    { name: 'banks', title: 'Banks', icon: 'building.columns.fill' },
-    { name: 'investments', title: 'Investments', icon: 'chart.pie.fill' },
-    { name: 'loans', title: 'Loans', icon: 'creditcard.fill' },
-    { name: 'insurance', title: 'Insurance', icon: 'shield.fill' },
-    { name: 'cpf', title: 'CPF', icon: 'building.2.fill' },
-    { name: 'private-assets', title: 'Assets', icon: 'diamond.fill' },
-    { name: 'profile', title: 'Profile', icon: 'person.fill' },
+    { name: "index", title: "Dashboard", icon: "house.fill" },
+    { name: "banks", title: "Banks", icon: "building.columns.fill" },
+    { name: "investments", title: "Investments", icon: "chart.pie.fill" },
+    { name: "loans", title: "Loans", icon: "creditcard.fill" },
+    { name: "insurance", title: "Insurance", icon: "shield.fill" },
+    { name: "cpf", title: "CPF", icon: "building.2.fill" },
+    { name: "private-assets", title: "Assets", icon: "diamond.fill" },
+    { name: "profile", title: "Profile", icon: "person.fill" },
   ];
 
   const handleTabChange = (tabName: string) => {
     setActiveTab(tabName);
-    // Use push to properly navigate within tabs, which resets the stack
-    router.push(`/(tabs)/${tabName}` as any);
+    // Navigate using URL paths without group segments so the dashboard (root) stays reachable
+    if (tabName === "index") {
+      router.push("/");
+    } else {
+      router.push(`/${tabName}` as any);
+    }
   };
 
   return (
