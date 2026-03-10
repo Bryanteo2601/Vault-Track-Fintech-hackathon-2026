@@ -2,7 +2,7 @@
 
 ---
 ## Project Description
-VaultTrack by FintechG0Ns is a comprehensive "Wealth Wallet" designed to unify fragmented financial ecosystems. Tailored for the Singapore market, it aggregates data from banks, investments, loans, and insurance, alongside private assets and CPF data, to deliver a holistic, real-time view of total financial health.
+VaultTrack by FintechG0Ns is a premium fintech app that consolidates your entire financial life and helps you reach your financial goals while managing risks with AI-powered insights, portfolio analytics, and stress testing.
 
 ---
 
