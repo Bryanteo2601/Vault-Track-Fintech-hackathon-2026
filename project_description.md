@@ -7,7 +7,7 @@ VaultTrack by FintechG0Ns is a premium fintech app that consolidates your entire
 ---
 
 ## The Solution
-We believe financial planning should ensure clients not only reach their financial goals but also enjoy retirement. VaultTrack bridges the complexity gap with a proprietary Wealth Wellness Score and an in-depth CPF Financial Planner featuring automated payout estimators for BRS, FRS, and ERS milestones. To ensure resilience, the platform runs 10,000-run Monte Carlo simulations and scenario-based stress tests, supported by an integrated Gemini AI chatbot for data-driven insights.
+We chose to develop a mobile application because mobile phones have effectively become our digital wallets. Most banks, financial institutions, and brokerage platforms already operate through mobile apps, making it the most convenient and accessible platform for users to manage their finances in one place. We believe financial planning should ensure clients not only reach their financial goals but also enjoy retirement. VaultTrack bridges the complexity gap with a proprietary Wealth Wellness Score and an in-depth CPF Financial Planner featuring automated payout estimators for BRS, FRS, and ERS milestones. To ensure resilience, the platform runs 10,000-run Monte Carlo simulations and scenario-based stress tests, supported by an integrated Gemini AI chatbot for data-driven insights.
 
 ---
 
