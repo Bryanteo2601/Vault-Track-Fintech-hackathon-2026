@@ -9,20 +9,7 @@ export default function LandingScreen() {
   const router = useRouter();
   const colors = useAppColors();
 
-  // Check if user has completed onboarding
-  useEffect(() => {
-    const checkOnboarding = async () => {
-      try {
-        const profile = await AsyncStorage.getItem('userProfile');
-        if (profile) {
-          router.replace('/(tabs)');
-        }
-      } catch (error) {
-        console.error('Error checking onboarding:', error);
-      }
-    };
-    checkOnboarding();
-  }, [router]);
+  // Landing page always shows - no auto-redirect
 
   const handleGetStarted = () => {
     router.push('/onboarding');
