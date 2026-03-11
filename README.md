@@ -11,6 +11,7 @@ For the judges
 **How to view our app?**
 
 Our mobile app can be viewed here: https://8081-i7c5n4unr096kz5acoa9r-78fc9c09.sg1.manus.computer
+or here if the previous link doesn't work: https://dapper-caramel-929ad5.netlify.app
 
 P.S. Since our solution is a mobile app do view it on your mobile phones for the most optimal experience. Thank you.
 
